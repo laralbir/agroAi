@@ -1,29 +1,116 @@
+# ============================================================
+# Android / Gradle
+# ============================================================
 *.iml
-.gradle
+.gradle/
 /local.properties
-/.idea/caches
-/.idea/libraries
+local.properties
+/build/
+**/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Gradle wrapper binary (scripts gradlew/gradlew.bat se sí commitean)
+gradle/wrapper/gradle-wrapper.jar
+
+# Código fuente generado en tiempo de compilación
+**/generated/
+
+# ProGuard / R8 mapping
+*.map
+
+# ============================================================
+# IntelliJ IDEA / Android Studio
+# ============================================================
+/.idea/caches/
+/.idea/libraries/
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+/.idea/deploymentTargetDropDown.xml
+/.idea/deploymentTargetSelector.xml
+/.idea/uiDesigner.xml
+/.idea/jarRepositories.xml
+/.idea/httpRequests/
+/.idea/migrations.xml
 
-# Keystore
+# Se mantienen en el repo:
+# .idea/.gitignore, .idea/gradle.xml, .idea/misc.xml,
+# .idea/runConfigurations/, .idea/AndroidProjectSystem.xml, .idea/markdown.xml
+
+# ============================================================
+# macOS
+# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# ============================================================
+# Linux / Windows
+# ============================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# Android Keystore & firma — NUNCA subir al repo
+# ============================================================
 *.jks
 *.keystore
 keystore.properties
+release.keystore
+debug.keystore
 
-# Models (large binary files)
-app/src/main/assets/models/
-*.task
-*.bin
-
-# API keys
+# ============================================================
+# Secretos & API keys — NUNCA subir al repo
+# ============================================================
 api_keys.properties
 secrets.properties
+google-services.json
+local.defaults.properties
+
+# ============================================================
+# Pesos de modelos IA — binarios grandes, se descargan en runtime
+# ============================================================
+*.task
+*.bin
+*.tflite
+*.gguf
+*.ggml
+app/src/main/assets/models/
+
+# ============================================================
+# Resultados de tests y cobertura
+# ============================================================
+app/build/reports/
+app/build/test-results/
+app/build/outputs/androidTest-results/
+
+# ============================================================
+# Lint
+# ============================================================
+lint-results*.xml
+lint-results*.html
+*.sarif
+
+# ============================================================
+# APK / AAB — artefactos de build, no van al repo
+# ============================================================
+*.apk
+*.aab
+*.ap_
+output-metadata.json
+output.json
+
+# ============================================================
+# Crash dumps y logs de sesión
+# ============================================================
+*.hprof
+replay_pid*.log
