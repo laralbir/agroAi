@@ -132,6 +132,41 @@
     <string name="model_no_token_dialog_body">Los modelos Gemma están alojados en HuggingFace y requieren un token de acceso gratuito. Introdúcelo a continuación u obtenlo en huggingface.co/settings/tokens.</string>
     <string name="model_save_and_download">Guardar y descargar</string>
     <string name="model_accept_terms">Aceptar condiciones de Gemma en HuggingFace</string>
+    <!-- HuggingFace OAuth -->
+    <string name="model_no_account_title">Cuenta de HuggingFace necesaria</string>
+    <string name="model_no_account_subtitle">Conecta tu cuenta de HuggingFace para descargar los modelos Gemma.</string>
+    <string name="model_connect_hf">Conectar</string>
+    <string name="model_oauth_dialog_title">Conectar HuggingFace</string>
+    <string name="model_oauth_dialog_body">Inicia sesión con tu cuenta de HuggingFace para descargar los modelos Gemma. La app abrirá una ventana de navegador segura.</string>
+    <string name="model_oauth_connect_button">Iniciar sesión con HuggingFace</string>
+    <string name="model_oauth_connecting">Esperando autenticación…\nCompleta el inicio de sesión en el navegador.</string>
+    <!-- Settings OAuth -->
+    <string name="settings_hf_account">Cuenta de HuggingFace</string>
+    <string name="settings_hf_connected">Conectado</string>
+    <string name="settings_hf_connected_as">Conectado como @%1$s</string>
+    <string name="settings_hf_not_connected">No conectado — necesario para descargar modelos</string>
+    <string name="settings_hf_connect">Conectar</string>
+    <string name="settings_hf_disconnect">Desconectar</string>
+    <string name="settings_hf_disconnect_title">¿Desconectar HuggingFace?</string>
+    <string name="settings_hf_disconnect_body">Tendrás que iniciar sesión de nuevo antes de descargar modelos Gemma.</string>
+    <string name="settings_hf_disconnect_confirm">Desconectar</string>
+
+    <!-- Model test -->
+    <string name="model_test_run">Probar</string>
+    <string name="model_test_running">Ejecutando prueba…</string>
+    <string name="model_test_passed">Prueba superada</string>
+    <string name="model_test_failed_label">Prueba fallida</string>
+    <string name="model_test_details">Detalles del modelo</string>
+    <string name="model_test_disk_size">Tamaño en disco</string>
+    <string name="model_test_file_path">Ruta del archivo</string>
+    <string name="model_test_load_time">Carga del modelo</string>
+    <string name="model_test_inference_time">Tiempo de inferencia</string>
+    <string name="model_test_total_time">Tiempo total</string>
+    <string name="model_test_prompt">Prompt enviado</string>
+    <string name="model_test_response">Respuesta del modelo</string>
+    <string name="model_test_error">Error</string>
+    <string name="model_test_copy_error">Copiar error</string>
+    <string name="model_test_copied">¡Copiado!</string>
 
     <!-- Prompt editor -->
     <string name="prompt_editor_title">Editar Prompt</string>

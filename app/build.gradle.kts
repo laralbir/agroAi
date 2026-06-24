@@ -15,13 +15,15 @@ android {
         applicationId = "com.laralnet.agroai"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.4.0-alpha01"
+        versionCode = 5
+        versionName = "0.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "HF_CLIENT_ID", "\"55465e57-71a1-4e15-8894-869642fb6e3c\"")
 
         // Room schema export
         ksp {
@@ -133,6 +135,9 @@ dependencies {
 
     // OpenStreetMap — osmdroid (tiles online, Nominatim geocoding)
     implementation(libs.osmdroid)
+
+    // Chrome Custom Tabs (OAuth HuggingFace)
+    implementation(libs.androidx.browser)
 
     // Coil
     implementation(libs.coil.compose)

@@ -1,7 +1,9 @@
 package com.laralnet.agroai.ui.screens.aimodel
 
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,26 +17,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -42,29 +50,30 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 import com.laralnet.agroai.aimodel.domain.model.DownloadState
-
-private const val HF_TOKENS_URL = "https://huggingface.co/settings/tokens"
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +83,18 @@ fun ModelManagementScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
+
+    // Open Chrome Custom Tab when the ViewModel requests the browser
+    LaunchedEffect(Unit) {
+        viewModel.browserLaunchEvent.collect { uri ->
+            CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .setUrlBarHidingEnabled(true)
+                .build()
+                .launchUrl(context, uri)
+        }
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -106,7 +126,7 @@ fun ModelManagementScreen(
         ) {
             if (!uiState.hasHfToken) {
                 item(key = "hf_banner") {
-                    NoTokenBanner(onGetToken = { uriHandler.openUri(HF_TOKENS_URL) })
+                    NoTokenBanner(onConnect = viewModel::onConnectHuggingFace)
                 }
             }
 
@@ -115,9 +135,23 @@ fun ModelManagementScreen(
                     row = row,
                     onDownload = { viewModel.onDownloadClick(row.variant) },
                     onActivate = { row.model?.id?.let { viewModel.onActivate(it) } },
-                    onDelete = { row.model?.id?.let { viewModel.onDelete(it) } }
+                    onDelete = { row.model?.id?.let { viewModel.onDelete(it) } },
+                    onTest = { row.model?.filePath?.let { path ->
+                        viewModel.onTestModel(path, row.variant.displayName)
+                    }}
                 )
             }
+        }
+    }
+
+    // Model test bottom sheet
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    uiState.testResult?.let { result ->
+        ModalBottomSheet(
+            onDismissRequest = viewModel::dismissTestResult,
+            sheetState = sheetState
+        ) {
+            ModelTestSheet(result = result, onRetry = viewModel::retryTest)
         }
     }
 
@@ -148,21 +182,21 @@ fun ModelManagementScreen(
         )
     }
 
-    // No HuggingFace token dialog
-    uiState.noTokenDialogVariant?.let {
-        NoTokenDialog(
-            onGetToken = { uriHandler.openUri(HF_TOKENS_URL) },
-            onSaveAndDownload = viewModel::onTokenSavedAndDownload,
-            onDismiss = viewModel::dismissNoTokenDialog
+    // HuggingFace OAuth dialog (shown when download is requested but no account connected)
+    if (uiState.oauthDialogVariant != null) {
+        HuggingFaceOAuthDialog(
+            connecting = uiState.oauthConnecting,
+            onConnect = viewModel::onConnectHuggingFace,
+            onDismiss = viewModel::dismissOAuthDialog
         )
     }
 }
 
 @Composable
-private fun NoTokenBanner(onGetToken: () -> Unit) {
+private fun NoTokenBanner(onConnect: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -172,92 +206,80 @@ private fun NoTokenBanner(onGetToken: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(
-                Icons.Default.Warning,
+                Icons.Default.Key,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onErrorContainer,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(20.dp)
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.model_no_token_title),
+                    text = stringResource(R.string.model_no_account_title),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onErrorContainer
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
-                    text = stringResource(R.string.model_no_token_subtitle),
+                    text = stringResource(R.string.model_no_account_subtitle),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
-            TextButton(onClick = onGetToken) {
-                Icon(
-                    Icons.AutoMirrored.Filled.OpenInNew,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.size(4.dp))
-                Text(
-                    text = stringResource(R.string.model_get_token),
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
+            Button(onClick = onConnect) {
+                Text(stringResource(R.string.model_connect_hf))
             }
         }
     }
 }
 
 @Composable
-private fun NoTokenDialog(
-    onGetToken: () -> Unit,
-    onSaveAndDownload: (String) -> Unit,
+private fun HuggingFaceOAuthDialog(
+    connecting: Boolean,
+    onConnect: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var tokenInput by rememberSaveable { mutableStateOf("") }
-
     AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = { Icon(Icons.Default.Key, contentDescription = null) },
-        title = { Text(stringResource(R.string.model_no_token_dialog_title)) },
+        onDismissRequest = { if (!connecting) onDismiss() },
+        icon = { Icon(Icons.Default.HowToReg, contentDescription = null) },
+        title = { Text(stringResource(R.string.model_oauth_dialog_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = stringResource(R.string.model_no_token_dialog_body),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                OutlinedTextField(
-                    value = tokenInput,
-                    onValueChange = { tokenInput = it },
-                    label = { Text("hf_…") },
-                    placeholder = { Text("hf_xxxxxxxxxxxx") },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextButton(
-                    onClick = onGetToken,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.OpenInNew,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (connecting) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = stringResource(R.string.model_oauth_connecting),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
                     )
-                    Spacer(Modifier.size(4.dp))
-                    Text(stringResource(R.string.model_get_token_huggingface))
+                } else {
+                    Text(
+                        text = stringResource(R.string.model_oauth_dialog_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         },
         confirmButton = {
-            Button(
-                onClick = { if (tokenInput.isNotBlank()) onSaveAndDownload(tokenInput) },
-                enabled = tokenInput.isNotBlank()
-            ) {
-                Text(stringResource(R.string.model_save_and_download))
+            if (!connecting) {
+                Button(onClick = onConnect) {
+                    Icon(
+                        Icons.Default.HowToReg,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.size(6.dp))
+                    Text(stringResource(R.string.model_oauth_connect_button))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.btn_cancel))
+            if (!connecting) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
             }
         }
     )
@@ -268,7 +290,8 @@ private fun ModelVariantCard(
     row: ModelManagementViewModel.ModelRowState,
     onDownload: () -> Unit,
     onActivate: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onTest: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -320,7 +343,11 @@ private fun ModelVariantCard(
 
             Spacer(Modifier.height(12.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 when {
                     !row.isAvailable -> {
                         Surface(
@@ -356,11 +383,31 @@ private fun ModelVariantCard(
                         OutlinedButton(onClick = onDelete) {
                             Text(stringResource(R.string.btn_delete))
                         }
+                        Spacer(Modifier.weight(1f))
+                        OutlinedButton(onClick = onTest) {
+                            Icon(
+                                Icons.Default.Science,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.size(4.dp))
+                            Text(stringResource(R.string.model_test_run))
+                        }
                     }
 
                     row.isActive -> {
                         OutlinedButton(onClick = onDelete) {
                             Text(stringResource(R.string.btn_delete))
+                        }
+                        Spacer(Modifier.weight(1f))
+                        OutlinedButton(onClick = onTest) {
+                            Icon(
+                                Icons.Default.Science,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.size(4.dp))
+                            Text(stringResource(R.string.model_test_run))
                         }
                     }
                 }
@@ -450,6 +497,269 @@ private fun DownloadLogPanel(log: String, isFailed: Boolean, modelInfoUrl: Strin
         }
     }
 }
+
+@Composable
+private fun ModelTestSheet(
+    result: ModelManagementViewModel.ModelTestResult,
+    onRetry: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 40.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header row: model name + status
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(result.variantDisplayName, style = MaterialTheme.typography.titleLarge)
+            when {
+                result.isRunning -> Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                    Text(
+                        stringResource(R.string.model_test_running),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                result.isSuccess -> Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        stringResource(R.string.model_test_passed),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                else -> Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ErrorOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        stringResource(R.string.model_test_failed_label),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+
+        HorizontalDivider()
+
+        // Model details section
+        Text(
+            stringResource(R.string.model_test_details),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            TestDetailRow(
+                label = stringResource(R.string.model_test_disk_size),
+                value = "%.1f MB".format(result.fileSizeBytes / 1_048_576.0)
+            )
+            TestDetailRow(
+                label = stringResource(R.string.model_test_file_path),
+                value = result.filePath,
+                monospace = true
+            )
+            if (!result.isRunning || result.loadTimeMs > 0) {
+                TestDetailRow(
+                    label = stringResource(R.string.model_test_load_time),
+                    value = formatDuration(result.loadTimeMs)
+                )
+            }
+            if (result.inferenceTimeMs > 0) {
+                TestDetailRow(
+                    label = stringResource(R.string.model_test_inference_time),
+                    value = formatDuration(result.inferenceTimeMs)
+                )
+                TestDetailRow(
+                    label = stringResource(R.string.model_test_total_time),
+                    value = formatDuration(result.totalTimeMs)
+                )
+            }
+        }
+
+        HorizontalDivider()
+
+        // Prompt section
+        Text(
+            stringResource(R.string.model_test_prompt),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = result.prompt,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = TextUnit(10f, TextUnitType.Sp)
+                ),
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+
+        HorizontalDivider()
+
+        // Response / loading / error section
+        when {
+            result.isRunning -> Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        stringResource(R.string.model_test_running),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            result.error != null -> {
+                val clipboardManager = LocalClipboardManager.current
+                var copied by remember { mutableStateOf(false) }
+                LaunchedEffect(copied) {
+                    if (copied) {
+                        delay(1500)
+                        copied = false
+                    }
+                }
+
+                Text(
+                    stringResource(R.string.model_test_error),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = result.error,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            clipboardManager.setText(AnnotatedString(result.error))
+                            copied = true
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            if (copied) Icons.Default.CheckCircle else Icons.Default.ContentCopy,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.size(6.dp))
+                        Text(
+                            if (copied) stringResource(R.string.model_test_copied)
+                            else stringResource(R.string.model_test_copy_error)
+                        )
+                    }
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.size(6.dp))
+                        Text(stringResource(R.string.btn_retry))
+                    }
+                }
+            }
+
+            result.response != null -> {
+                Text(
+                    stringResource(R.string.model_test_response),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = result.response,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TestDetailRow(label: String, value: String, monospace: Boolean = false) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(0.38f)
+        )
+        Text(
+            text = value,
+            style = if (monospace)
+                MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace)
+            else
+                MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(0.62f),
+            textAlign = TextAlign.End
+        )
+    }
+}
+
+private fun formatDuration(ms: Long): String =
+    if (ms < 1000) "$ms ms" else "${"%.2f".format(ms / 1000.0)} s"
 
 @Composable
 private fun ModelStatusChip(row: ModelManagementViewModel.ModelRowState) {

@@ -162,6 +162,11 @@ class ModelDownloadWorker @AssistedInject constructor(
                 )
             )
 
+            if (repository.findActive() == null) {
+                repository.setActive(modelId)
+                log("Modelo activado automáticamente (ningún modelo activo previo)")
+            }
+
             Result.success(workDataOf(KEY_FILE_PATH to destFile.absolutePath))
         }.getOrElse { e ->
             Log.e(TAG, "=== DOWNLOAD FAILED: ${e.message} ===")

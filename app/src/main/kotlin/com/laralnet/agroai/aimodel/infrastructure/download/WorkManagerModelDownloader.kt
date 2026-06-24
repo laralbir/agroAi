@@ -1,24 +1,21 @@
 package com.laralnet.agroai.aimodel.infrastructure.download
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.laralnet.agroai.aimodel.application.port.ModelDownloader
 import com.laralnet.agroai.aimodel.domain.model.ModelVariant
-import kotlinx.coroutines.flow.first
+import com.laralnet.agroai.aimodel.domain.repository.HuggingFaceAuthRepository
 import javax.inject.Inject
 
 class WorkManagerModelDownloader @Inject constructor(
     private val workManager: WorkManager,
-    private val dataStore: DataStore<Preferences>
+    private val hfAuthRepository: HuggingFaceAuthRepository
 ) : ModelDownloader {
 
     override suspend fun enqueue(modelId: String, variant: ModelVariant) {
-        val token = dataStore.data.first()[KEY_HF_TOKEN] ?: ""
+        val token = hfAuthRepository.getValidAccessToken() ?: ""
         val request = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
             .setInputData(
                 workDataOf(
@@ -40,8 +37,4 @@ class WorkManagerModelDownloader @Inject constructor(
     }
 
     private fun workName(modelId: String) = "model_download_$modelId"
-
-    companion object {
-        val KEY_HF_TOKEN = stringPreferencesKey("hf_token")
-    }
 }

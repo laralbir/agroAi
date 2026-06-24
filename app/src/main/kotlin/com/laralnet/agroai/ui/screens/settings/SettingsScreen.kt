@@ -1,21 +1,23 @@
 package com.laralnet.agroai.ui.screens.settings
 
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.laralnet.agroai.R
+import com.laralnet.agroai.aimodel.domain.model.HuggingFaceCredential
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,12 +27,22 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
     val aemetApiKey by viewModel.aemetApiKey.collectAsState()
-    val hfToken by viewModel.hfToken.collectAsState()
+    val hfCredential by viewModel.hfCredential.collectAsState()
+    val context = LocalContext.current
     var showAemetDialog by remember { mutableStateOf(false) }
-    var showHfTokenDialog by remember { mutableStateOf(false) }
+    var showHfDisconnectDialog by remember { mutableStateOf(false) }
     var aemetKeyInput by remember(aemetApiKey) { mutableStateOf(aemetApiKey) }
-    var hfTokenInput by remember(hfToken) { mutableStateOf(hfToken) }
-    val uriHandler = LocalUriHandler.current
+
+    // Launch Chrome Custom Tab when the ViewModel requests it
+    LaunchedEffect(Unit) {
+        viewModel.browserLaunchEvent.collect { uri ->
+            CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .setUrlBarHidingEnabled(true)
+                .build()
+                .launchUrl(context, uri)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -79,11 +91,12 @@ fun SettingsScreen(
                 subtitle = if (aemetApiKey.isBlank()) "API key not configured" else "Configured",
                 onClick = { showAemetDialog = true }
             )
-            SettingsItem(
-                icon = Icons.Default.Key,
-                title = stringResource(R.string.settings_hf_token),
-                subtitle = if (hfToken.isBlank()) stringResource(R.string.settings_hf_token_hint) else "Configured",
-                onClick = { showHfTokenDialog = true }
+
+            // HuggingFace OAuth item
+            HuggingFaceConnectionItem(
+                credential = hfCredential,
+                onConnect = viewModel::connectHuggingFace,
+                onDisconnect = { showHfDisconnectDialog = true }
             )
 
             Divider(modifier = Modifier.padding(vertical = 12.dp))
@@ -101,47 +114,20 @@ fun SettingsScreen(
         }
     }
 
-    if (showHfTokenDialog) {
+    if (showHfDisconnectDialog) {
         AlertDialog(
-            onDismissRequest = { showHfTokenDialog = false },
-            icon = { Icon(Icons.Default.Key, contentDescription = null) },
-            title = { Text(stringResource(R.string.settings_hf_token)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.settings_hf_token_hint),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    OutlinedTextField(
-                        value = hfTokenInput,
-                        onValueChange = { hfTokenInput = it },
-                        label = { Text("hf_…") },
-                        placeholder = { Text("hf_xxxxxxxxxxxx") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    TextButton(
-                        onClick = { uriHandler.openUri("https://huggingface.co/settings/tokens") },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.size(4.dp))
-                        Text(stringResource(R.string.model_get_token_huggingface))
-                    }
-                }
-            },
+            onDismissRequest = { showHfDisconnectDialog = false },
+            icon = { Icon(Icons.Default.LinkOff, contentDescription = null) },
+            title = { Text(stringResource(R.string.settings_hf_disconnect_title)) },
+            text = { Text(stringResource(R.string.settings_hf_disconnect_body)) },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.setHfToken(hfTokenInput)
-                    showHfTokenDialog = false
-                }) { Text(stringResource(R.string.btn_save)) }
+                    viewModel.disconnectHuggingFace()
+                    showHfDisconnectDialog = false
+                }) { Text(stringResource(R.string.settings_hf_disconnect_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { showHfTokenDialog = false }) {
+                TextButton(onClick = { showHfDisconnectDialog = false }) {
                     Text(stringResource(R.string.btn_cancel))
                 }
             }
@@ -174,6 +160,60 @@ fun SettingsScreen(
             }
         )
     }
+}
+
+@Composable
+private fun HuggingFaceConnectionItem(
+    credential: HuggingFaceCredential?,
+    onConnect: () -> Unit,
+    onDisconnect: () -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_hf_account)) },
+        supportingContent = {
+            Text(
+                text = if (credential != null) {
+                    if (credential.username.isNotBlank())
+                        stringResource(R.string.settings_hf_connected_as, credential.username)
+                    else
+                        stringResource(R.string.settings_hf_connected)
+                } else {
+                    stringResource(R.string.settings_hf_not_connected)
+                },
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        leadingContent = {
+            if (credential != null && credential.avatarUrl.isNotBlank()) {
+                AsyncImage(
+                    model = credential.avatarUrl,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = if (credential != null) Icons.Default.AccountCircle else Icons.Default.Key,
+                    contentDescription = null,
+                    tint = if (credential != null)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        trailingContent = {
+            if (credential != null) {
+                TextButton(onClick = onDisconnect) {
+                    Text(stringResource(R.string.settings_hf_disconnect))
+                }
+            } else {
+                Button(onClick = onConnect) {
+                    Text(stringResource(R.string.settings_hf_connect))
+                }
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable

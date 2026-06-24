@@ -10,6 +10,32 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.5.0] - 2026-06-24
+
+### Añadido
+- Autenticación HuggingFace mediante **OAuth 2.0 con PKCE** — Chrome Custom Tab, sin copiar tokens manualmente
+- `HuggingFaceOAuthCallbackChannel` — puente singleton `Channel<OAuthCallback>` para entrega exacta del callback entre `MainActivity.onNewIntent` y el repositorio
+- `DataStoreHuggingFaceAuthRepository` — gestiona access token, refresh token, expiración, username y avatar; compatibilidad retroactiva con tokens PAT guardados en versiones anteriores
+- `HuggingFaceConnectionItem` en Settings — muestra avatar y username cuando está conectado; permite desconectar con confirmación
+- Botón **Probar** en tarjetas de modelo descargado/activo — lanza pregunta agrícola de muestra a Gemma y muestra sheet con: tamaño en disco, ruta, tiempo de carga, tiempo de inferencia, prompt enviado y respuesta completa
+- En el sheet de prueba, estado de error: botón *Copiar error* (con feedback visual de 1,5 s) y botón *Reintentar*
+- Activación automática del primer modelo descargado (si no hay ningún modelo activo al completarse la descarga)
+
+### Corregido
+- Backend MediaPipe cambiado de `DEFAULT` (legacy CPU, incompatible con firmas modernas) a `Backend.CPU` con fallback a `DEFAULT` para modelos más antiguos
+- `GEMMA4_2B` eliminado del enum `ModelVariant` — el archivo `.web.task` es formato WebAssembly, incompatible con el SDK Android de MediaPipe Tasks GenAI
+- Crash `SIGSEGV` al inicializar GPU via OpenCL: `libvndksupport.so` inaccesible desde apps con target SDK moderno — GPU eliminado del path de inicialización
+- Crash `IllegalArgumentException` al leer filas de BD con variantes de enum eliminadas (`GEMMA3_4B`, `GEMMA4_2B`)
+
+### Técnico
+- `BuildConfig.HF_CLIENT_ID` — Client ID OAuth inyectado en tiempo de compilación
+- `androidx.browser:browser:1.8.0` — Chrome Custom Tabs para flujo OAuth
+- `android:launchMode="singleTop"` en `MainActivity` + `onNewIntent` para recibir el deep link `agroai://oauth-callback-huggingface`
+- Migraciones BD: 2→3 (purga variantes desconocidas), 3→4 (elimina `GEMMA4_2B`)
+- `AppDatabase.version` → 4
+
+---
+
 ## [0.4.0-alpha01] - 2026-06-24
 
 ### Añadido
@@ -99,7 +125,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
-[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.4.0-alpha01...HEAD
+[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/laralbir/agroAi/compare/v0.4.0-alpha01...v0.5.0
 [0.4.0-alpha01]: https://github.com/laralbir/agroAi/compare/v0.3.0-alpha01...v0.4.0-alpha01
 [0.3.0-alpha01]: https://github.com/laralbir/agroAi/compare/v0.2.0...v0.3.0-alpha01
 [0.2.0]: https://github.com/laralbir/agroAi/compare/v0.1.0...v0.2.0

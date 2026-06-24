@@ -820,10 +820,10 @@
             <div class="step-line"></div>
           </div>
           <div class="step-body">
-            <h4 class="lang-es">Obtén un token de HuggingFace</h4>
-            <h4 class="lang-en">Get a HuggingFace token</h4>
-            <p class="lang-es">Crea una cuenta gratuita en <strong>huggingface.co</strong> y genera un token de acceso en <em>Settings → Access Tokens</em>. Este token es necesario para descargar los modelos Gemma.</p>
-            <p class="lang-en">Create a free account on <strong>huggingface.co</strong> and generate an access token at <em>Settings → Access Tokens</em>. This token is required to download Gemma models.</p>
+            <h4 class="lang-es">Conecta tu cuenta HuggingFace</h4>
+            <h4 class="lang-en">Connect your HuggingFace account</h4>
+            <p class="lang-es">Ve a <strong>Ajustes → Cuenta HuggingFace</strong> y pulsa <em>Conectar</em>. La app abrirá un navegador seguro con la pantalla de autorización de HuggingFace. Inicia sesión y aprueba el acceso: no necesitas copiar ningún token. Basta con tener una cuenta gratuita en <strong>huggingface.co</strong>.</p>
+            <p class="lang-en">Go to <strong>Settings → HuggingFace Account</strong> and tap <em>Connect</em>. The app will open a secure browser with HuggingFace's authorization screen. Sign in and approve access — no need to copy any token. A free account at <strong>huggingface.co</strong> is all you need.</p>
           </div>
         </div>
         <div class="step">
@@ -834,8 +834,8 @@
           <div class="step-body">
             <h4 class="lang-es">Descarga un modelo Gemma</h4>
             <h4 class="lang-en">Download a Gemma model</h4>
-            <p class="lang-es">Ve a <strong>Ajustes → Modelos de IA</strong> (o sigue el banner de bienvenida). Introduce tu token, selecciona Gemma 3 1B para empezar y pulsa <em>Descargar</em>. La descarga se realiza en segundo plano.</p>
-            <p class="lang-en">Go to <strong>Settings → AI Models</strong> (or follow the welcome banner). Enter your token, select Gemma 3 1B to get started, and tap <em>Download</em>. The download runs in the background.</p>
+            <p class="lang-es">Ve a <strong>Ajustes → Modelos de IA</strong> (o sigue el banner de bienvenida). Selecciona Gemma 3 1B para empezar y pulsa <em>Descargar</em>. Si aún no has conectado tu cuenta, la app te llevará al proceso de autorización antes de iniciar la descarga. La descarga se realiza en segundo plano.</p>
+            <p class="lang-en">Go to <strong>Settings → AI Models</strong> (or follow the welcome banner). Select Gemma 3 1B to get started and tap <em>Download</em>. If you haven't connected your account yet, the app will take you through the authorization flow before starting the download. The download runs in the background.</p>
           </div>
         </div>
         <div class="step">
@@ -972,10 +972,10 @@
       <div class="alert alert-info" style="margin-bottom:20px;">
         <span class="alert-icon">ℹ️</span>
         <div>
-          <strong class="lang-es">Fuente de los modelos: HuggingFace</strong>
-          <strong class="lang-en">Model source: HuggingFace</strong>
-          <span class="lang-es">Los modelos Gemma se descargan desde <strong>HuggingFace</strong> (repositorio <em>litert-community</em>). Necesitas una cuenta gratuita y un token de lectura. Los modelos están en formato <code>.task</code> compatible con MediaPipe Tasks GenAI para Android.</span>
-          <span class="lang-en">Gemma models are downloaded from <strong>HuggingFace</strong> (<em>litert-community</em> repository). You need a free account and a read token. Models are in <code>.task</code> format compatible with MediaPipe Tasks GenAI for Android.</span>
+          <strong class="lang-es">Fuente de los modelos: HuggingFace (autenticación OAuth)</strong>
+          <strong class="lang-en">Model source: HuggingFace (OAuth authentication)</strong>
+          <span class="lang-es">Los modelos Gemma se descargan desde <strong>HuggingFace</strong> (repositorio <em>litert-community</em>). La app gestiona la autenticación automáticamente con <strong>OAuth 2.0</strong>: no necesitas buscar ni copiar ningún token. Basta con una cuenta gratuita y aprobar el acceso una vez. Los modelos están en formato <code>.task</code> compatible con MediaPipe Tasks GenAI para Android.</span>
+          <span class="lang-en">Gemma models are downloaded from <strong>HuggingFace</strong> (<em>litert-community</em> repository). The app handles authentication automatically via <strong>OAuth 2.0</strong>: no need to find or copy any token. Just a free account and a one-time approval. Models are in <code>.task</code> format compatible with MediaPipe Tasks GenAI for Android.</span>
         </div>
       </div>
 
@@ -1034,10 +1034,10 @@
       <div class="alert alert-warn" style="margin-bottom:20px;">
         <span class="alert-icon">⚠️</span>
         <div>
-          <strong class="lang-es">Modelos 4B y 12B no disponibles para Android aún</strong>
-          <strong class="lang-en">4B and 12B models not yet available for Android</strong>
-          <span class="lang-es">Los repositorios HuggingFace de Gemma 3 4B y 12B solo contienen ficheros <code>-web.task</code> optimizados para WebAssembly. Estos <strong>no son compatibles</strong> con el SDK Android (<code>tasks-genai</code>). Cuando <em>litert-community</em> publique ficheros <code>.task</code> para Android se activarán automáticamente.</span>
-          <span class="lang-en">HuggingFace repos for Gemma 3 4B and 12B only contain <code>-web.task</code> files optimized for WebAssembly. These are <strong>not compatible</strong> with the Android SDK (<code>tasks-genai</code>). When <em>litert-community</em> publishes Android <code>.task</code> files they will be enabled automatically.</span>
+          <strong class="lang-es">Modelos 4B, 12B y Gemma 4 no disponibles para Android aún</strong>
+          <strong class="lang-en">4B, 12B and Gemma 4 models not yet available for Android</strong>
+          <span class="lang-es">Los repositorios HuggingFace de Gemma 3 4B, 12B y Gemma 4 solo contienen ficheros <code>.web.task</code> optimizados para WebAssembly. Estos <strong>no son compatibles</strong> con el SDK Android de MediaPipe (<code>tasks-genai</code>). Cuando <em>litert-community</em> publique ficheros <code>.task</code> para Android se habilitarán automáticamente en la app.</span>
+          <span class="lang-en">HuggingFace repos for Gemma 3 4B, 12B and Gemma 4 only contain <code>.web.task</code> files optimized for WebAssembly. These are <strong>not compatible</strong> with the Android MediaPipe SDK (<code>tasks-genai</code>). When <em>litert-community</em> publishes Android <code>.task</code> files they will be enabled automatically in the app.</span>
         </div>
       </div>
 
@@ -1048,19 +1048,19 @@
         <div class="step">
           <div class="step-left"><div class="step-number">1</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Ajustes → Modelos de IA</h4>
-            <h4 class="lang-en">Settings → AI Models</h4>
-            <p class="lang-es">Accede también desde el banner de bienvenida en la pantalla de inicio.</p>
-            <p class="lang-en">Also accessible from the welcome banner on the home screen.</p>
+            <h4 class="lang-es">Conecta tu cuenta HuggingFace (primera vez)</h4>
+            <h4 class="lang-en">Connect your HuggingFace account (first time)</h4>
+            <p class="lang-es">Ve a <strong>Ajustes → Cuenta HuggingFace</strong> y pulsa <em>Conectar</em>. La app abre un navegador seguro donde inicias sesión en HuggingFace y apruebas el acceso. Vuelves a la app ya autenticado, sin copiar ningún token.</p>
+            <p class="lang-en">Go to <strong>Settings → HuggingFace Account</strong> and tap <em>Connect</em>. The app opens a secure browser where you sign in to HuggingFace and approve access. You return to the app already authenticated — no token to copy.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-left"><div class="step-number">2</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Introduce tu token de HuggingFace</h4>
-            <h4 class="lang-en">Enter your HuggingFace token</h4>
-            <p class="lang-es">Si no ves el campo de token, pulsa el banner amarillo "Token de HuggingFace requerido".</p>
-            <p class="lang-en">If you don't see the token field, tap the yellow "HuggingFace token required" banner.</p>
+            <h4 class="lang-es">Ajustes → Modelos de IA</h4>
+            <h4 class="lang-en">Settings → AI Models</h4>
+            <p class="lang-es">Accede también desde el banner de bienvenida en la pantalla de inicio. Si aún no has conectado la cuenta, pulsar <em>Descargar</em> o <em>Conectar</em> en el banner te llevará al flujo OAuth automáticamente.</p>
+            <p class="lang-en">Also accessible from the welcome banner on the home screen. If you haven't connected your account yet, tapping <em>Download</em> or <em>Connect</em> on the banner will start the OAuth flow automatically.</p>
           </div>
         </div>
         <div class="step">
@@ -1075,10 +1075,19 @@
         <div class="step">
           <div class="step-left"><div class="step-number">4</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Espera a que termine y activa el modelo</h4>
-            <h4 class="lang-en">Wait for it to finish and activate the model</h4>
-            <p class="lang-es">La descarga continúa en segundo plano. Cuando termine, pulsa <em>Activar</em>. Solo puede haber un modelo activo a la vez.</p>
-            <p class="lang-en">The download continues in the background. When done, tap <em>Set as active</em>. Only one model can be active at a time.</p>
+            <h4 class="lang-es">El modelo se activa automáticamente</h4>
+            <h4 class="lang-en">The model activates automatically</h4>
+            <p class="lang-es">La descarga continúa en segundo plano. Al terminar, si no había ningún modelo activo, se activa solo. Si ya había otro activo, puedes cambiarlo pulsando <em>Activar</em> en la tarjeta.</p>
+            <p class="lang-en">The download continues in the background. When done, if no model was active, it activates automatically. If another model was already active, you can switch by tapping <em>Set as active</em> on the card.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">5</div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Verifica que funciona con el botón Probar</h4>
+            <h4 class="lang-en">Verify it works with the Test button</h4>
+            <p class="lang-es">En la tarjeta del modelo activo o descargado encontrarás el botón <em>Probar</em>. Al pulsarlo, la app envía una pregunta agrícola de muestra al modelo y muestra la respuesta junto con los tiempos de carga e inferencia. Si hay algún error, puedes copiar el diagnóstico o reintentar directamente desde el mismo panel.</p>
+            <p class="lang-en">On the active or downloaded model card you'll find a <em>Test</em> button. Tapping it sends a sample agricultural question to the model and shows the response along with load and inference times. If there's an error, you can copy the diagnostic log or retry directly from the panel.</p>
           </div>
         </div>
       </div>
@@ -1313,8 +1322,8 @@
             </tr>
             <tr>
               <td>🔑 HuggingFace</td>
-              <td class="lang-es">Token de acceso para descargar modelos Gemma</td>
-              <td class="lang-en">Access token to download Gemma models</td>
+              <td class="lang-es">Conecta tu cuenta HuggingFace con OAuth para descargar modelos Gemma. Muestra tu nombre de usuario y foto de perfil cuando estás conectado. Puedes desconectarte en cualquier momento.</td>
+              <td class="lang-en">Connect your HuggingFace account with OAuth to download Gemma models. Shows your username and profile picture when connected. You can disconnect at any time.</td>
             </tr>
             <tr>
               <td>✏️ <span class="lang-es">Editor de prompts</span><span class="lang-en">Prompt editor</span></td>
@@ -1445,7 +1454,7 @@
           <li>Las fotos que analizas <strong>nunca salen de tu dispositivo</strong>. Gemma corre localmente.</li>
           <li>Los datos de tus plantaciones se guardan <strong>solo en la base de datos local</strong> (SQLite via Room).</li>
           <li>No hay servidores propios de AgroAI. Solo se conecta a: HuggingFace (descarga del modelo), AEMET (meteorología), Nominatim/OSM (búsqueda de lugares y tiles de mapa) y Google Calendar (si lo configuras).</li>
-          <li>Tu token de HuggingFace y la clave de AEMET se guardan cifrados en <strong>DataStore</strong> del dispositivo.</li>
+          <li>Las credenciales OAuth de HuggingFace (token de acceso y de refresco) y la clave de AEMET se guardan en <strong>DataStore</strong> del dispositivo. Nunca se envían a servidores de AgroAI.</li>
           <li>La app funciona completamente <strong>sin conexión</strong> una vez descargado el modelo y cacheados los tiles del mapa.</li>
         </ul>
       </div>
@@ -1454,7 +1463,7 @@
           <li>The photos you analyze <strong>never leave your device</strong>. Gemma runs locally.</li>
           <li>Your plantation data is stored <strong>only in the local database</strong> (SQLite via Room).</li>
           <li>There are no AgroAI proprietary servers. It only connects to: HuggingFace (model download), AEMET (weather), Nominatim/OSM (place search and map tiles) and Google Calendar (if you configure it).</li>
-          <li>Your HuggingFace token and AEMET key are stored encrypted in the device's <strong>DataStore</strong>.</li>
+          <li>HuggingFace OAuth credentials (access and refresh tokens) and the AEMET key are stored in the device's <strong>DataStore</strong>. They are never sent to AgroAI servers.</li>
           <li>The app works completely <strong>offline</strong> once the model is downloaded and map tiles are cached.</li>
         </ul>
       </div>

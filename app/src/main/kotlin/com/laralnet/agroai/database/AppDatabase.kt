@@ -21,7 +21,7 @@ import com.laralnet.agroai.treatment.infrastructure.persistence.entity.Treatment
         AIModelEntity::class,
         PromptTemplateEntity::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -41,11 +41,24 @@ class GemmaInferenceEngine @Inject constructor(
     suspend fun loadModel(modelPath: String) = withContext(Dispatchers.Default) {
         if (currentModelPath == modelPath && inference != null) return@withContext
         inference?.close()
-        val options = LlmInferenceOptions.builder()
-            .setModelPath(modelPath)
-            .setMaxTokens(1024)
-            .build()
-        inference = LlmInference.createFromOptions(context, options)
+        inference = null
+        currentModelPath = null
+        // Use the new LiteRT CPU path explicitly. DEFAULT (legacy CPU) rejects newer model
+        // signatures; GPU can cause unrecoverable native crashes on some devices/models.
+        inference = try {
+            LlmInference.createFromOptions(context, LlmInferenceOptions.builder()
+                .setModelPath(modelPath)
+                .setMaxTokens(1024)
+                .setPreferredBackend(LlmInference.Backend.CPU)
+                .build())
+        } catch (_: Exception) {
+            // Fallback for older model formats that only work with the legacy path.
+            LlmInference.createFromOptions(context, LlmInferenceOptions.builder()
+                .setModelPath(modelPath)
+                .setMaxTokens(1024)
+                .setPreferredBackend(LlmInference.Backend.DEFAULT)
+                .build())
+        }
         currentModelPath = modelPath
     }
 

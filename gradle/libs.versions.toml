@@ -21,6 +21,7 @@ accompanist = "0.36.0"
 kotlinxCoroutines = "1.9.0"
 kotlinxSerializationJson = "1.7.3"
 osmdroid = "6.1.18"
+browser = "1.8.0"
 junit = "4.13.2"
 hiltTesting = "2.54"
 androidxTestCore = "1.6.1"
@@ -92,6 +93,9 @@ androidx-camera-extensions = { group = "androidx.camera", name = "camera-extensi
 
 # OpenStreetMap — osmdroid (tiles online, no map download required)
 osmdroid = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+
+# Browser (Chrome Custom Tabs for OAuth)
+androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 
 # Kotlinx
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }

@@ -19,23 +19,10 @@ enum class ModelVariant(
         "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
         GemmaVersion.GEMMA_3,
         "https://huggingface.co/litert-community/Gemma3-1B-IT"
-    ),
-    // litert-community/Gemma3-4B-IT — only -web.task variants exist (not compatible with
-    // Android tasks-genai SDK). URL empty until Android .task becomes available.
-    GEMMA3_4B(
-        "Gemma 3 4B", 2.6, 4.0,
-        "",
-        GemmaVersion.GEMMA_3,
-        "https://huggingface.co/litert-community/Gemma3-4B-IT"
-    ),
-    // litert-community/Gemma3-12B-IT — same situation as 4B (web-only .task files).
-    GEMMA3_12B(
-        "Gemma 3 12B", 7.6, 12.0,
-        "",
-        GemmaVersion.GEMMA_3,
-        "https://huggingface.co/litert-community/Gemma3-12B-IT"
-    ),
-    GEMMA4_2B("Gemma 4 2B", 3.0, 4.0, "", GemmaVersion.GEMMA_4)
+    )
+    // Gemma 4 variants: litert-community only publishes .web.task (WebAssembly) files,
+    // which are not compatible with the Android MediaPipe Tasks GenAI SDK.
+    // Re-add entries here once Android-compatible .task files are available.
 }
 
 enum class DownloadState { NOT_DOWNLOADED, DOWNLOADING, DOWNLOADED, FAILED }

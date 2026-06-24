@@ -132,6 +132,41 @@
     <string name="model_no_token_dialog_body">Gemma models are hosted on HuggingFace and require a free access token. Enter your token below or get one on huggingface.co/settings/tokens.</string>
     <string name="model_save_and_download">Save and download</string>
     <string name="model_accept_terms">Accept Gemma terms on HuggingFace</string>
+    <!-- HuggingFace OAuth -->
+    <string name="model_no_account_title">HuggingFace account required</string>
+    <string name="model_no_account_subtitle">Connect your HuggingFace account to download Gemma models.</string>
+    <string name="model_connect_hf">Connect</string>
+    <string name="model_oauth_dialog_title">Connect HuggingFace</string>
+    <string name="model_oauth_dialog_body">Sign in with your HuggingFace account to download Gemma models. The app will open a secure browser window.</string>
+    <string name="model_oauth_connect_button">Sign in with HuggingFace</string>
+    <string name="model_oauth_connecting">Waiting for authentication…\nComplete sign-in in the browser.</string>
+    <!-- Settings OAuth -->
+    <string name="settings_hf_account">HuggingFace Account</string>
+    <string name="settings_hf_connected">Connected</string>
+    <string name="settings_hf_connected_as">Connected as @%1$s</string>
+    <string name="settings_hf_not_connected">Not connected — required to download models</string>
+    <string name="settings_hf_connect">Connect</string>
+    <string name="settings_hf_disconnect">Disconnect</string>
+    <string name="settings_hf_disconnect_title">Disconnect HuggingFace?</string>
+    <string name="settings_hf_disconnect_body">You will need to sign in again before downloading Gemma models.</string>
+    <string name="settings_hf_disconnect_confirm">Disconnect</string>
+
+    <!-- Model test -->
+    <string name="model_test_run">Test</string>
+    <string name="model_test_running">Running test…</string>
+    <string name="model_test_passed">Test passed</string>
+    <string name="model_test_failed_label">Test failed</string>
+    <string name="model_test_details">Model details</string>
+    <string name="model_test_disk_size">Size on disk</string>
+    <string name="model_test_file_path">File path</string>
+    <string name="model_test_load_time">Model load time</string>
+    <string name="model_test_inference_time">Inference time</string>
+    <string name="model_test_total_time">Total time</string>
+    <string name="model_test_prompt">Prompt sent</string>
+    <string name="model_test_response">Model response</string>
+    <string name="model_test_error">Error</string>
+    <string name="model_test_copy_error">Copy error</string>
+    <string name="model_test_copied">Copied!</string>
 
     <!-- Prompt editor -->
     <string name="prompt_editor_title">Edit Prompt</string>
