@@ -310,6 +310,82 @@ AppDatabase (SQLite vía Room)
 
 ---
 
+## Testing
+
+### Regla fundamental — tests obligatorios por funcionalidad
+
+**Toda funcionalidad nueva DEBE incluir sus tests en el mismo commit o PR.** No se aprueba código sin tests.
+
+### Qué test escribir según el tipo de código
+
+| Tipo de código nuevo | Test requerido | Ubicación |
+|---------------------|---------------|-----------|
+| Modelo de dominio (aggregate, value object, event) | Unit test del modelo | `src/test/.../domain/` |
+| Handler de comando/query (application layer) | Unit test con mocks de repositorio y EventBus | `src/test/.../application/` |
+| Mapper entidad ↔ dominio | Unit test de round-trip | `src/test/.../infrastructure/persistence/mapper/` |
+| ViewModel | Unit test con `MainDispatcherRule` + MockK | `src/test/.../ui/` |
+| Room DAO / entidad nueva | Instrumented test con BD en memoria | `src/androidTest/.../database/` |
+| Pantalla Compose nueva | Instrumented Compose test con `createComposeRule()` | `src/androidTest/.../ui/` |
+
+### Stack de testing
+
+```
+# Unit tests (JVM — sin emulador)
+JUnit 4                  → runner + assertions
+MockK                    → mocking de interfaces y clases
+Turbine                  → test de Flow (app.cash.turbine)
+kotlinx-coroutines-test  → runTest, advanceTimeBy, MainDispatcherRule
+
+# Instrumented tests (requieren emulador o dispositivo real)
+AndroidJUnit4            → runner
+Room.inMemoryDatabaseBuilder → tests de DAO sin BD real
+ComposeTestRule          → tests de UI con createComposeRule()
+MockK-Android            → mocking en contexto Android
+```
+
+### Comandos para ejecutar tests
+
+```bash
+# Unit tests (rápido, sin emulador)
+./gradlew test
+
+# Unit tests de un módulo concreto
+./gradlew :app:testDebugUnitTest
+
+# Tests instrumentados (requiere emulador/dispositivo conectado)
+./gradlew connectedAndroidTest
+
+# Tests instrumentados de una clase concreta
+./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.laralnet.agroai.database.PlantationDaoTest
+```
+
+### Convenciones de nombrado
+
+- **Archivos**: `<ClaseQueTestea>Test.kt` — mismo paquete que la clase testeada
+- **Métodos**: backtick notation descriptiva: `` `método() hace X cuando Y`() ``
+- **Tests de ViewModel**: usar `MainDispatcherRule` siempre
+- **Tests de Flow**: usar Turbine (`.test { }`) o `collect` con `runTest`
+- **Datos de prueba**: crear funciones privadas `fun entity(...)` con parámetros con defaults razonables
+
+### Checklist de tests antes de cada PR / push
+
+1. [ ] Unit tests de dominio para cada nuevo aggregate o value object
+2. [ ] Unit tests del handler para cada nuevo Command o Query
+3. [ ] Unit test del ViewModel para cada pantalla nueva
+4. [ ] Instrumented DAO test para cada nueva entidad Room
+5. [ ] Instrumented Compose test para cada nueva pantalla
+6. [ ] `./gradlew test` pasa sin errores
+7. [ ] `./gradlew connectedAndroidTest` pasa sin errores (cuando hay emulador disponible)
+
+### TestContainers y casos especiales
+
+- **GemmaInferenceEngine**: no testear con el modelo real; usar una interfaz `AIEngine` y mockearla en tests
+- **GPS / LocationManager**: inyectar `GpsLocationProvider` como interfaz y mockearlo en unit tests
+- **AEMET / Nominatim**: mockear `NominatimApiService` y `AemetApiService` (son interfaces Retrofit)
+- **WorkManager**: usar `TestListenableWorkerBuilder` para tests de Workers
+
+---
+
 ## Versioning
 
 - **Semver**: `MAJOR.MINOR.PATCH`
