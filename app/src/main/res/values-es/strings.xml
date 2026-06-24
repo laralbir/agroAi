@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AgroAI</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_plantations">Plantaciones</string>
+    <string name="nav_analysis">Análisis</string>
+    <string name="nav_calendar">Calendario</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Home -->
+    <string name="home_welcome">Bienvenido a AgroAI</string>
+    <string name="home_subtitle">Tu asistente agrícola inteligente</string>
+    <string name="home_no_plantations">Aún no tienes plantaciones.\n¡Añade la primera!</string>
+    <string name="home_add_plantation">Añadir Plantación</string>
+
+    <!-- Plantation -->
+    <string name="plantation_title">Plantaciones</string>
+    <string name="plantation_add">Nueva Plantación</string>
+    <string name="plantation_name">Nombre de la plantación</string>
+    <string name="plantation_type">Tipo de plantación</string>
+    <string name="plantation_area">Superficie (m²)</string>
+    <string name="plantation_location">Ubicación</string>
+    <string name="plantation_notes">Notas</string>
+    <string name="plantation_plants">Plantas</string>
+    <string name="plantation_add_plant">Añadir tipo de planta</string>
+    <string name="plantation_wizard_step1">Información Básica</string>
+    <string name="plantation_wizard_step2">Ubicación</string>
+    <string name="plantation_wizard_step3">Plantas</string>
+    <string name="plantation_wizard_step4">Resumen</string>
+
+    <!-- Plant types -->
+    <string name="plant_name">Nombre de la planta</string>
+    <string name="plant_variety">Variedad</string>
+    <string name="plant_count">Número de plantas</string>
+    <string name="plant_row_spacing">Distancia entre filas (m)</string>
+    <string name="plant_plant_spacing">Distancia entre plantas (m)</string>
+
+    <!-- Plantation types -->
+    <string name="type_huerta">Huerta</string>
+    <string name="type_secano">Secano</string>
+    <string name="type_regadio">Regadío</string>
+    <string name="type_vinedo">Viñedo</string>
+    <string name="type_olivar">Olivar</string>
+    <string name="type_frutal">Frutal</string>
+    <string name="type_citricos">Cítricos</string>
+    <string name="type_invernadero">Invernadero</string>
+    <string name="type_aromaticas">Aromáticas</string>
+    <string name="type_medicinales">Medicinales</string>
+    <string name="type_cereal">Cereal</string>
+    <string name="type_leguminosas">Leguminosas</string>
+    <string name="type_tuberculos">Tubérculos</string>
+    <string name="type_floricultura">Floricultura</string>
+    <string name="type_vivero">Vivero</string>
+    <string name="type_bosque">Bosque / Silvicultura</string>
+    <string name="type_pradera">Pradera / Prado</string>
+    <string name="type_montana">Montaña / Terraza</string>
+    <string name="type_aguacate">Aguacate</string>
+    <string name="type_arroz">Arrozal</string>
+    <string name="type_platano">Platanera</string>
+    <string name="type_otro">Otro</string>
+
+    <!-- Analysis -->
+    <string name="analysis_title">Análisis por Foto</string>
+    <string name="analysis_take_photo">Tomar Foto</string>
+    <string name="analysis_choose_gallery">Elegir de Galería</string>
+    <string name="analysis_select_plantation">Seleccionar plantación</string>
+    <string name="analysis_analyzing">Analizando con Gemma…</string>
+    <string name="analysis_suggestions">Sugerencias</string>
+    <string name="analysis_schedule_calendar">Agendar en Calendario</string>
+    <string name="analysis_no_model">No hay modelo de IA descargado.\nVe a Ajustes para descargar Gemma.</string>
+
+    <!-- Treatment types -->
+    <string name="treatment_riego">Riego</string>
+    <string name="treatment_poda">Poda</string>
+    <string name="treatment_cosecha">Cosecha</string>
+    <string name="treatment_fertilizacion">Fertilización</string>
+    <string name="treatment_fumigacion">Fumigación</string>
+    <string name="treatment_injerto">Injerto</string>
+    <string name="treatment_transplante">Trasplante</string>
+    <string name="treatment_otro">Otro</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_theme_system">Seguir el sistema</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_en">Inglés</string>
+    <string name="settings_language_es">Español</string>
+    <string name="settings_language_system">Seguir el sistema</string>
+    <string name="settings_ai_model">Modelo de IA</string>
+    <string name="settings_model_download">Descargar Modelo</string>
+    <string name="settings_model_change">Cambiar Modelo</string>
+    <string name="settings_model_delete">Eliminar Modelo</string>
+    <string name="settings_apis">APIs Externas</string>
+    <string name="settings_aemet">AEMET (Meteorología España)</string>
+    <string name="settings_aemet_key">Clave API de AEMET</string>
+    <string name="settings_accounts">Cuentas Google</string>
+    <string name="settings_prompt_editor">Editor de Prompts</string>
+
+    <!-- Model management -->
+    <string name="model_gemma3_1b">Gemma 3 1B (~2 GB)</string>
+    <string name="model_gemma3_4b">Gemma 3 4B (~5 GB)</string>
+    <string name="model_gemma3_12b">Gemma 3 12B (~14 GB)</string>
+    <string name="model_gemma4">Gemma 4 (próximamente)</string>
+    <string name="model_downloading">Descargando…</string>
+    <string name="model_downloaded">Descargado</string>
+    <string name="model_download_failed">Error al descargar</string>
+    <string name="model_active">Activo</string>
+    <string name="model_space_required">Espacio necesario: %s GB</string>
+    <string name="model_ram_required">RAM necesaria: %s GB</string>
+
+    <!-- Prompt editor -->
+    <string name="prompt_editor_title">Editar Prompt</string>
+    <string name="prompt_warning_medium">Aviso: Modificar este prompt puede afectar a las sugerencias de la IA. Procede con cuidado.</string>
+    <string name="prompt_warning_high">Riesgo alto: Los cambios estructurales en este prompt pueden alterar significativamente el comportamiento de la IA. Edita solo si sabes lo que haces.</string>
+    <string name="prompt_reset">Restaurar por defecto</string>
+    <string name="prompt_save">Guardar</string>
+
+    <!-- Calendar -->
+    <string name="calendar_title">Calendario</string>
+    <string name="calendar_no_account">No hay cuenta Google vinculada.\nVe a Ajustes para añadir una.</string>
+    <string name="calendar_event_created">Evento creado en Google Calendar</string>
+    <string name="calendar_weather_alert">Alerta meteorológica: %s puede afectar a tus tareas agendadas</string>
+
+    <!-- Weather -->
+    <string name="weather_loading">Cargando datos meteorológicos…</string>
+    <string name="weather_no_key">Añade tu clave API de AEMET en Ajustes para ver los datos meteorológicos</string>
+    <string name="weather_today">Hoy</string>
+    <string name="weather_forecast">Previsión</string>
+
+    <!-- History -->
+    <string name="history_title">Historial</string>
+    <string name="history_empty">Aún no hay acciones registradas</string>
+
+    <!-- Permissions -->
+    <string name="permission_camera">Se necesita permiso de cámara para tomar fotos para el análisis</string>
+    <string name="permission_location">Se necesita permiso de ubicación para geolocalizar tu plantación</string>
+    <string name="permission_calendar">Se necesita permiso de calendario para agendar tratamientos</string>
+    <string name="permission_denied">Permiso denegado. Algunas funciones pueden no estar disponibles.</string>
+    <string name="permission_open_settings">Abrir Ajustes</string>
+
+    <!-- Common -->
+    <string name="btn_next">Siguiente</string>
+    <string name="btn_back">Atrás</string>
+    <string name="btn_save">Guardar</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_delete">Eliminar</string>
+    <string name="btn_confirm">Confirmar</string>
+    <string name="btn_retry">Reintentar</string>
+    <string name="btn_close">Cerrar</string>
+    <string name="loading">Cargando…</string>
+    <string name="error_generic">Ha ocurrido un error. Por favor, inténtalo de nuevo.</string>
+    <string name="error_network">Error de red. Comprueba tu conexión.</string>
+</resources>
