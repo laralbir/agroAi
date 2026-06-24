@@ -8,48 +8,54 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] - 2026-06-24
+
 ### Añadido
 - Selector de ubicación de plantación con mapa interactivo (osmdroid + OpenStreetMap)
-- Búsqueda de ubicación mediante Nominatim (geocodificación OSM, sin API key)
+- Búsqueda de lugares con autocompletado mediante Nominatim (OSM, sin API key)
 - Obtención de ubicación por GPS del dispositivo (LocationManager nativo, sin Google Play Services)
 - Geocodificación inversa automática al tocar el mapa o usar GPS
-- Atribución OSM requerida por la política de uso de tiles
-- Caché de tiles en directorio interno de la app (sin permiso de almacenamiento externo)
+- Atribución OSM visible en el mapa (requerida por política de uso de tiles)
+- Caché de tiles OSM en directorio interno de la app (sin permiso de almacenamiento externo)
 
 ### Técnico
-- Estructura inicial del proyecto con arquitectura hexagonal + DDD + CQRS
-- Configuración de Gradle con Version Catalog
-- Módulos de dominio: plantation, aimodel, treatment, weather, calendar, account
-- Integración MediaPipe Tasks GenAI para Gemma 3/4 en local
-- Base de datos Room con migraciones
-- Inyección de dependencias con Hilt
-- UI con Jetpack Compose + Material Design 3
-- Soporte de temas: claro, oscuro, sistema
-- Internacionalización: inglés y español
-- Wizard de alta de plantación con tipos de cultivo
-- Análisis de fotos con Gemma
-- Integración con Google Calendar (multi-cuenta)
-- Integración con API AEMET para meteorología
-- Gestión de descarga de modelos Gemma
-- Prompts editables con indicación de riesgo
-- Historial de acciones por plantación
+- Nuevo bounded context `location` con `NominatimApiService`, `GpsLocationProvider`
+- `LocationPickerScreen` y `LocationPickerViewModel` con arquitectura MVVM + StateFlow
+- Composable `OsmdroidMapView` con gestión correcta del ciclo de vida (onResume/onPause/onDetach)
+- Resultado del mapa devuelto al wizard mediante `NavController.savedStateHandle`
+- Retrofit separado para Nominatim con interceptor User-Agent obligatorio
+- Debounce 500 ms en búsqueda — cumple la política de 1 req/s de Nominatim
+- osmdroid configurado en `AgroAIApplication` con User-Agent y rutas de caché internas
 
 ---
 
 ## [0.1.0] - 2026-06-24
 
 ### Añadido
-- Inicialización del proyecto
-- Estructura de directorios y arquitectura base
-- CLAUDE.md con guía de desarrollo
-- README.md con documentación del proyecto
+- Inicialización del proyecto con arquitectura hexagonal + DDD + CQRS + Event-Driven
+- Estructura de directorios y bounded contexts: plantation, aimodel, treatment, weather, calendar, account
+- CLAUDE.md con guía de desarrollo, arquitectura y convenciones
+- README.md con documentación del proyecto y licencia Apache 2.0
 - CHANGELOG.md con historial de versiones
-- Configuración inicial de Gradle (Version Catalog)
-- AndroidManifest.xml con permisos necesarios
-- Tema Material You con soporte claro/oscuro
-- Modelos de dominio iniciales
+- Configuración Gradle con Version Catalog (AGP 8.7, Kotlin 2.1)
+- AndroidManifest.xml con todos los permisos necesarios
+- Tema Material You con soporte claro/oscuro/sistema
+- Internacionalización: inglés y español
+- Modelos de dominio iniciales (Plantation, AIModel, Treatment, WeatherData, CalendarEvent)
+- Base de datos Room con DAOs y migraciones
+- Integración MediaPipe Tasks GenAI para Gemma 3/4 en local
+- Wizard de alta de plantación (4 pasos) con 22 tipos de cultivo
+- Análisis de fotos con Gemma (streaming)
+- Integración con Google Calendar multi-cuenta
+- Integración con API AEMET para meteorología
+- Gestión de descarga de modelos Gemma con WorkManager
+- Prompts editables con indicación de nivel de riesgo
+- Inyección de dependencias con Hilt
 
 ---
 
-[Unreleased]: https://github.com/laralnet/agroai/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/laralnet/agroai/releases/tag/v0.1.0
+[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/laralbir/agroAi/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/laralbir/agroAi/releases/tag/v0.1.0
