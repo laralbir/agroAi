@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,6 +30,7 @@ fun SettingsScreen(
     var showHfTokenDialog by remember { mutableStateOf(false) }
     var aemetKeyInput by remember(aemetApiKey) { mutableStateOf(aemetApiKey) }
     var hfTokenInput by remember(hfToken) { mutableStateOf(hfToken) }
+    val uriHandler = LocalUriHandler.current
 
     Scaffold(
         topBar = {
@@ -101,21 +104,34 @@ fun SettingsScreen(
     if (showHfTokenDialog) {
         AlertDialog(
             onDismissRequest = { showHfTokenDialog = false },
+            icon = { Icon(Icons.Default.Key, contentDescription = null) },
             title = { Text(stringResource(R.string.settings_hf_token)) },
             text = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         stringResource(R.string.settings_hf_token_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        style = MaterialTheme.typography.bodySmall
                     )
                     OutlinedTextField(
                         value = hfTokenInput,
                         onValueChange = { hfTokenInput = it },
                         label = { Text("hf_…") },
+                        placeholder = { Text("hf_xxxxxxxxxxxx") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    TextButton(
+                        onClick = { uriHandler.openUri("https://huggingface.co/settings/tokens") },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.size(4.dp))
+                        Text(stringResource(R.string.model_get_token_huggingface))
+                    }
                 }
             },
             confirmButton = {

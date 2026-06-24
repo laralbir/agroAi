@@ -124,6 +124,14 @@
     <string name="home_no_model_title">No AI model loaded</string>
     <string name="home_no_model_subtitle">Download Gemma to enable photo analysis</string>
     <string name="home_download_model">Download model</string>
+    <string name="model_no_token_title">HuggingFace token required</string>
+    <string name="model_no_token_subtitle">You need a free HuggingFace token to download Gemma models.</string>
+    <string name="model_get_token">Get token</string>
+    <string name="model_get_token_huggingface">Get token on HuggingFace</string>
+    <string name="model_no_token_dialog_title">Token required</string>
+    <string name="model_no_token_dialog_body">Gemma models are hosted on HuggingFace and require a free access token. Enter your token below or get one on huggingface.co/settings/tokens.</string>
+    <string name="model_save_and_download">Save and download</string>
+    <string name="model_accept_terms">Accept Gemma terms on HuggingFace</string>
 
     <!-- Prompt editor -->
     <string name="prompt_editor_title">Edit Prompt</string>

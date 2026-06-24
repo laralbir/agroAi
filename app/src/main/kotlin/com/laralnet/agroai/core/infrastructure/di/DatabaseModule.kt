@@ -2,6 +2,8 @@ package com.laralnet.agroai.core.infrastructure.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.AIModelDao
 import com.laralnet.agroai.database.AppDatabase
 import com.laralnet.agroai.plantation.infrastructure.persistence.dao.PlantationDao
@@ -13,6 +15,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+private val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE ai_models ADD COLUMN last_error TEXT")
+    }
+}
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -21,6 +29,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "agroai.db")
+            .addMigrations(MIGRATION_1_2)
             .build()
 
     @Provides

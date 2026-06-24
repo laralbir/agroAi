@@ -51,13 +51,15 @@ class RoomAIModelRepository @Inject constructor(
     private fun AIModelEntity.toDomain() = AIModel(
         id = id, variant = variant, version = version,
         filePath = filePath, downloadState = downloadState,
-        downloadProgressPercent = downloadProgressPercent, isActive = isActive
+        downloadProgressPercent = downloadProgressPercent, isActive = isActive,
+        lastError = lastError
     )
 
     private fun AIModel.toEntity() = AIModelEntity(
         id = id, variant = variant, version = version,
         filePath = filePath, downloadState = downloadState,
-        downloadProgressPercent = downloadProgressPercent, isActive = isActive
+        downloadProgressPercent = downloadProgressPercent, isActive = isActive,
+        lastError = lastError
     )
 
     private fun PromptTemplateEntity.toDomain() = PromptTemplate(

@@ -9,19 +9,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -33,14 +42,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 import com.laralnet.agroai.aimodel.domain.model.DownloadState
+
+private const val HF_TOKENS_URL = "https://huggingface.co/settings/tokens"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +67,7 @@ fun ModelManagementScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -79,6 +97,12 @@ fun ModelManagementScreen(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (!uiState.hasHfToken) {
+                item(key = "hf_banner") {
+                    NoTokenBanner(onGetToken = { uriHandler.openUri(HF_TOKENS_URL) })
+                }
+            }
+
             items(uiState.rows, key = { it.variant.name }) { row ->
                 ModelVariantCard(
                     row = row,
@@ -90,6 +114,7 @@ fun ModelManagementScreen(
         }
     }
 
+    // Large model size warning
     uiState.pendingWarningVariant?.let { variant ->
         AlertDialog(
             onDismissRequest = viewModel::onWarningDismissed,
@@ -115,6 +140,120 @@ fun ModelManagementScreen(
             }
         )
     }
+
+    // No HuggingFace token dialog
+    uiState.noTokenDialogVariant?.let {
+        NoTokenDialog(
+            onGetToken = { uriHandler.openUri(HF_TOKENS_URL) },
+            onSaveAndDownload = viewModel::onTokenSavedAndDownload,
+            onDismiss = viewModel::dismissNoTokenDialog
+        )
+    }
+}
+
+@Composable
+private fun NoTokenBanner(onGetToken: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(
+                Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.size(20.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.model_no_token_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+                Text(
+                    text = stringResource(R.string.model_no_token_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            TextButton(onClick = onGetToken) {
+                Icon(
+                    Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    text = stringResource(R.string.model_get_token),
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NoTokenDialog(
+    onGetToken: () -> Unit,
+    onSaveAndDownload: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var tokenInput by rememberSaveable { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.Key, contentDescription = null) },
+        title = { Text(stringResource(R.string.model_no_token_dialog_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.model_no_token_dialog_body),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                OutlinedTextField(
+                    value = tokenInput,
+                    onValueChange = { tokenInput = it },
+                    label = { Text("hf_…") },
+                    placeholder = { Text("hf_xxxxxxxxxxxx") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                TextButton(
+                    onClick = onGetToken,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.size(4.dp))
+                    Text(stringResource(R.string.model_get_token_huggingface))
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { if (tokenInput.isNotBlank()) onSaveAndDownload(tokenInput) },
+                enabled = tokenInput.isNotBlank()
+            ) {
+                Text(stringResource(R.string.model_save_and_download))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.btn_cancel))
+            }
+        }
+    )
 }
 
 @Composable
@@ -152,21 +291,42 @@ private fun ModelVariantCard(
                         progress = { row.downloadProgress / 100f },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Text(
-                        text = "${row.downloadProgress}%",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
                 } else {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Text(
-                        text = stringResource(R.string.model_downloading),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
                 }
+                row.displayStatus?.let { status ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = if (row.downloadProgress > 0) "${row.downloadProgress}% — $status" else status,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } ?: Text(
+                    text = stringResource(R.string.model_downloading),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+
+            // Persistent error after failure
+            if (row.downloadState == DownloadState.FAILED && row.model?.lastError != null) {
+                Spacer(Modifier.height(8.dp))
+                DownloadErrorBox(
+                    error = row.model.lastError,
+                    modelInfoUrl = row.variant.infoUrl
+                )
             }
 
             Spacer(Modifier.height(12.dp))
@@ -214,6 +374,54 @@ private fun ModelVariantCard(
                             Text(stringResource(R.string.btn_delete))
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DownloadErrorBox(error: String, modelInfoUrl: String) {
+    val uriHandler = LocalUriHandler.current
+    val is403 = error.contains("403")
+
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    Icons.Default.ErrorOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            if (is403 && modelInfoUrl.isNotBlank()) {
+                TextButton(
+                    onClick = { uriHandler.openUri(modelInfoUrl) },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.size(4.dp))
+                    Text(
+                        text = stringResource(R.string.model_accept_terms),
+                        style = MaterialTheme.typography.labelSmall
+                    )
                 }
             }
         }

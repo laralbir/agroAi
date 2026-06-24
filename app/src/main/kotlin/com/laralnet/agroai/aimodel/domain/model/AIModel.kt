@@ -43,5 +43,6 @@ data class AIModel(
     val filePath: String? = null,
     val downloadState: DownloadState = DownloadState.NOT_DOWNLOADED,
     val downloadProgressPercent: Int = 0,
-    val isActive: Boolean = false
+    val isActive: Boolean = false,
+    val lastError: String? = null
 )

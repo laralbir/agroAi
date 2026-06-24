@@ -15,7 +15,8 @@ data class AIModelEntity(
     val filePath: String?,
     val downloadState: DownloadState,
     val downloadProgressPercent: Int,
-    val isActive: Boolean
+    val isActive: Boolean,
+    val lastError: String? = null
 )
 
 @Entity(tableName = "prompt_templates")
