@@ -22,11 +22,12 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Análisis de fotos de plantas, árboles, frutos y plantaciones
 - Identificación de enfermedades, plagas y necesidades de mantenimiento
 - Sugerencias de tratamientos con opción de agendarlos en Google Calendar
-- Modelos disponibles:
-  - **Gemma 3 1B** — Gama media (~2 GB)
-  - **Gemma 3 4B** — Gama alta (~5 GB)
-  - **Gemma 3 12B** — Gama premium (~14 GB)
+- Modelos disponibles vía MediaPipe Tasks GenAI (`.task`):
+  - **Gemma 3 1B** — ~0.6 GB · recomendado para gama media/alta ([litert-community/Gemma3-1B-IT](https://huggingface.co/litert-community/Gemma3-1B-IT))
+  - **Gemma 3 4B** — Próximamente para Android (solo variantes web disponibles actualmente)
+  - **Gemma 3 12B** — Próximamente para Android (solo variantes web disponibles actualmente)
   - **Gemma 4** — Próximamente
+- Requiere token gratuito de [HuggingFace](https://huggingface.co/settings/tokens) para descargar
 - Prompts editables con indicación de nivel de riesgo
 
 ### Integración Google Calendar
@@ -81,13 +82,9 @@ La aplicación sigue los principios de **Arquitectura Hexagonal (Ports & Adapter
 
 - Android 8.0 (API 26) o superior
 - **Recomendado**: Android 12+ para Material You
-- Espacio libre según modelo:
-  - Gemma 3 1B: ~2 GB
-  - Gemma 3 4B: ~5 GB
-  - Gemma 3 12B: ~14 GB
-- RAM según modelo:
-  - Gemma 3 1B: 3 GB disponibles
-  - Gemma 3 4B: 6 GB disponibles
+- Espacio libre: ~0.6 GB para Gemma 3 1B (único modelo disponible para Android actualmente)
+- RAM: mínimo 2 GB disponibles para inferencia
+- Token gratuito de HuggingFace (para descargar modelos Gemma)
 - Cuenta Google para integración con Calendar (opcional)
 - API key de AEMET para datos meteorológicos (opcional)
 
@@ -114,7 +111,12 @@ cd agroai
 ```
 
 ### Configurar modelo Gemma
-La primera vez que se inicia la app, aparece un wizard para descargar el modelo Gemma seleccionado. El modelo se descarga desde los servidores oficiales de Google/Kaggle y se almacena localmente.
+1. Crea una cuenta gratuita en [huggingface.co](https://huggingface.co) y genera un token en *Settings → Access Tokens*
+2. En la app: **Ajustes → Modelos de IA** → introduce el token → pulsa *Descargar* en Gemma 3 1B
+3. El modelo (`gemma3-1b-it-int4.task`, 555 MB) se descarga desde [litert-community/Gemma3-1B-IT](https://huggingface.co/litert-community/Gemma3-1B-IT) y se almacena en el almacenamiento externo de la app
+4. Una vez descargado, pulsa *Activar*
+
+> Los modelos 4B y 12B de Gemma 3 no tienen aún ficheros `.task` compatibles con el SDK Android (`tasks-genai`). Solo están disponibles variantes web (`.web.task`, para WebAssembly) que no funcionan con la API Android.
 
 ### Configurar API de AEMET (opcional)
 1. Registrarse en [OpenData AEMET](https://opendata.aemet.es/)

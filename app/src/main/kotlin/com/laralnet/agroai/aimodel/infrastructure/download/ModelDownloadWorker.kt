@@ -1,6 +1,7 @@
 package com.laralnet.agroai.aimodel.infrastructure.download
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -30,20 +31,24 @@ class ModelDownloadWorker @AssistedInject constructor(
         const val KEY_MODEL_VARIANT = "model_variant"
         const val KEY_MODEL_ID = "model_id"
         const val KEY_PROGRESS = "progress"
-        const val KEY_LOG = "log"         // cumulative log (replaces KEY_STATUS)
+        const val KEY_LOG = "log"
         const val KEY_FILE_PATH = "file_path"
         const val KEY_ERROR = "error"
         const val KEY_HF_TOKEN = "hf_token"
         const val NOTIFICATION_ID = 1001
 
-        // Keep for compat with ViewModel reads
         const val KEY_STATUS = KEY_LOG
+
+        private const val TAG = "ModelDownloadWorker"
+        // WorkManager Data hard limit is 10240 bytes; keep log under 8000 chars
+        private const val MAX_LOG_CHARS = 8000
     }
 
     private val log = StringBuilder()
     private var currentProgress = 0
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        Log.d(TAG, "doWork() started — Hilt Worker OK")
         val variantName = inputData.getString(KEY_MODEL_VARIANT) ?: return@withContext Result.failure()
         val modelId = inputData.getString(KEY_MODEL_ID) ?: return@withContext Result.failure()
         val variant = runCatching { ModelVariant.valueOf(variantName) }.getOrNull()
@@ -53,6 +58,7 @@ class ModelDownloadWorker @AssistedInject constructor(
             ?: applicationContext.filesDir.resolve("models").also { it.mkdirs() }
         val destFile = File(modelsDir, "${variant.name.lowercase()}.task")
 
+        Log.d(TAG, "variant=$variantName modelId=$modelId")
         runCatching {
             val hfToken = inputData.getString(KEY_HF_TOKEN).orEmpty()
             val tokenDisplay = if (hfToken.isNotBlank())
@@ -89,9 +95,18 @@ class ModelDownloadWorker @AssistedInject constructor(
                         429 -> "Demasiadas solicitudes — espera un momento"
                         else -> "Error inesperado"
                     }
+                    // Log response body so the exact server message appears in panel + Logcat
+                    val errorBody = runCatching {
+                        response.body?.string()?.take(1000)
+                    }.getOrNull()
+                    log("")
+                    log("--- RESPONSE BODY ---")
+                    if (!errorBody.isNullOrBlank()) log(errorBody) else log("(vacío)")
                     log("")
                     log("--- ERROR ---")
                     log(reason)
+                    Log.e(TAG, "HTTP ${response.code} — URL: ${variant.downloadUrl}")
+                    Log.e(TAG, "Body: $errorBody")
                     error("[HTTP ${response.code}] $reason")
                 }
 
@@ -149,17 +164,21 @@ class ModelDownloadWorker @AssistedInject constructor(
 
             Result.success(workDataOf(KEY_FILE_PATH to destFile.absolutePath))
         }.getOrElse { e ->
+            Log.e(TAG, "=== DOWNLOAD FAILED: ${e.message} ===")
+            Log.e(TAG, "Full log:\n${log}")
             destFile.delete()
             val fullLog = log.toString()
-            val existing = repository.findById(modelId)
-            repository.save(
-                (existing ?: AIModel(id = modelId, variant = variant, version = variant.gemmaVersion)).copy(
-                    filePath = null,
-                    downloadState = DownloadState.FAILED,
-                    downloadProgressPercent = 0,
-                    lastError = fullLog.ifBlank { e.message ?: "Error desconocido" }
+            runCatching {
+                val existing = repository.findById(modelId)
+                repository.save(
+                    (existing ?: AIModel(id = modelId, variant = variant, version = variant.gemmaVersion)).copy(
+                        filePath = null,
+                        downloadState = DownloadState.FAILED,
+                        downloadProgressPercent = 0,
+                        lastError = fullLog.ifBlank { e.message ?: "Error desconocido" }
+                    )
                 )
-            )
+            }.onFailure { dbErr -> Log.e(TAG, "Failed to save FAILED state to DB", dbErr) }
             Result.failure(workDataOf(KEY_ERROR to (e.message ?: "Error desconocido")))
         }
     }
@@ -167,12 +186,18 @@ class ModelDownloadWorker @AssistedInject constructor(
     /** Append a line to the log and push it via setProgress. */
     private suspend fun log(line: String) {
         log.appendLine(line)
+        Log.d(TAG, line)
         flush()
     }
 
     /** Push current log + optional progress line without appending a permanent entry. */
     private suspend fun flush(progressLine: String? = null) {
-        val output = if (progressLine != null) "$log$progressLine" else log.toString()
+        val rawOutput = if (progressLine != null) "$log$progressLine" else log.toString()
+        // WorkManager Data is capped at 10240 bytes; truncate to stay safe
+        val output = if (rawOutput.length > MAX_LOG_CHARS)
+            "…\n" + rawOutput.takeLast(MAX_LOG_CHARS)
+        else
+            rawOutput
         setProgress(workDataOf(KEY_PROGRESS to currentProgress, KEY_LOG to output))
     }
 

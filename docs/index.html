@@ -779,10 +779,10 @@
             <tr>
               <td class="lang-es">Almacenamiento libre</td>
               <td class="lang-en">Free storage</td>
-              <td class="lang-es">3 GB (modelo 1B)</td>
-              <td class="lang-en">3 GB (1B model)</td>
-              <td class="lang-es">6 GB o más (modelo 4B)</td>
-              <td class="lang-en">6 GB or more (4B model)</td>
+              <td class="lang-es">1 GB (modelo 1B: 0.6 GB)</td>
+              <td class="lang-en">1 GB (1B model: 0.6 GB)</td>
+              <td class="lang-es">2 GB o más</td>
+              <td class="lang-en">2 GB or more</td>
             </tr>
             <tr>
               <td class="lang-es">Conexión a internet</td>
@@ -969,43 +969,58 @@
         <p>AgroAI uses Google's <strong>Gemma 3</strong>, an open-source large language model that runs entirely on your device via <strong>MediaPipe Tasks GenAI</strong>. Models are downloaded from HuggingFace and stored in the app's external storage.</p>
       </div>
 
+      <div class="alert alert-info" style="margin-bottom:20px;">
+        <span class="alert-icon">ℹ️</span>
+        <div>
+          <strong class="lang-es">Fuente de los modelos: HuggingFace</strong>
+          <strong class="lang-en">Model source: HuggingFace</strong>
+          <span class="lang-es">Los modelos Gemma se descargan desde <strong>HuggingFace</strong> (repositorio <em>litert-community</em>). Necesitas una cuenta gratuita y un token de lectura. Los modelos están en formato <code>.task</code> compatible con MediaPipe Tasks GenAI para Android.</span>
+          <span class="lang-en">Gemma models are downloaded from <strong>HuggingFace</strong> (<em>litert-community</em> repository). You need a free account and a read token. Models are in <code>.task</code> format compatible with MediaPipe Tasks GenAI for Android.</span>
+        </div>
+      </div>
+
       <div class="model-cards" style="margin-bottom:24px;">
         <div class="model-card recommended">
-          <div class="model-recommend-label lang-es">Recomendado</div>
-          <div class="model-recommend-label lang-en">Recommended</div>
+          <div class="model-recommend-label lang-es">Disponible ✓</div>
+          <div class="model-recommend-label lang-en">Available ✓</div>
           <div class="model-name">Gemma 3 1B</div>
-          <div class="model-size lang-es">~2 GB de descarga</div>
-          <div class="model-size lang-en">~2 GB download</div>
+          <div class="model-size lang-es">~0.6 GB de descarga</div>
+          <div class="model-size lang-en">~0.6 GB download</div>
           <div class="model-specs">
-            <div class="model-spec">💾 <span class="lang-es">Espacio: 2 GB</span><span class="lang-en">Storage: 2 GB</span></div>
-            <div class="model-spec">🧠 RAM: 4 GB</div>
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 0.6 GB</span><span class="lang-en">Storage: 0.6 GB</span></div>
+            <div class="model-spec">🧠 RAM: 2 GB</div>
+            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)">litert-community/Gemma3-1B-IT</div>
           </div>
-          <span class="badge badge-green lang-es">Gama media</span>
-          <span class="badge badge-green lang-en">Mid-range</span>
+          <span class="badge badge-green lang-es">Recomendado</span>
+          <span class="badge badge-green lang-en">Recommended</span>
         </div>
-        <div class="model-card">
+        <div class="model-card" style="opacity:.7;">
           <div class="model-name">Gemma 3 4B</div>
-          <div class="model-size lang-es">~5 GB de descarga</div>
-          <div class="model-size lang-en">~5 GB download</div>
+          <div class="model-size lang-es">~2.6 GB · próximamente</div>
+          <div class="model-size lang-en">~2.6 GB · coming soon</div>
           <div class="model-specs">
-            <div class="model-spec">💾 <span class="lang-es">Espacio: 5 GB</span><span class="lang-en">Storage: 5 GB</span></div>
-            <div class="model-spec">🧠 RAM: 6 GB</div>
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 2.6 GB</span><span class="lang-en">Storage: 2.6 GB</span></div>
+            <div class="model-spec">🧠 RAM: 4 GB</div>
+            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-es">Sin .task Android aún</div>
+            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-en">No Android .task yet</div>
           </div>
-          <span class="badge badge-amber lang-es">Gama alta</span>
-          <span class="badge badge-amber lang-en">High-end</span>
+          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-es">No disponible</span>
+          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-en">Unavailable</span>
         </div>
-        <div class="model-card">
+        <div class="model-card" style="opacity:.7;">
           <div class="model-name">Gemma 3 12B</div>
-          <div class="model-size lang-es">~14 GB de descarga</div>
-          <div class="model-size lang-en">~14 GB download</div>
+          <div class="model-size lang-es">~7.6 GB · próximamente</div>
+          <div class="model-size lang-en">~7.6 GB · coming soon</div>
           <div class="model-specs">
-            <div class="model-spec">💾 <span class="lang-es">Espacio: 14 GB</span><span class="lang-en">Storage: 14 GB</span></div>
-            <div class="model-spec">🧠 RAM: 16 GB</div>
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 7.6 GB</span><span class="lang-en">Storage: 7.6 GB</span></div>
+            <div class="model-spec">🧠 RAM: 12 GB</div>
+            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-es">Sin .task Android aún</div>
+            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-en">No Android .task yet</div>
           </div>
-          <span class="badge badge-red lang-es">Premium</span>
-          <span class="badge badge-red lang-en">Premium</span>
+          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-es">No disponible</span>
+          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-en">Unavailable</span>
         </div>
-        <div class="model-card">
+        <div class="model-card" style="opacity:.6;">
           <div class="model-name">Gemma 4</div>
           <div class="model-size lang-es">Próximamente</div>
           <div class="model-size lang-en">Coming soon</div>
@@ -1013,6 +1028,16 @@
             <div class="model-spec" style="color:var(--text-muted)">—</div>
           </div>
           <span class="badge" style="background:var(--border);color:var(--text-muted)">Soon</span>
+        </div>
+      </div>
+
+      <div class="alert alert-warn" style="margin-bottom:20px;">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <strong class="lang-es">Modelos 4B y 12B no disponibles para Android aún</strong>
+          <strong class="lang-en">4B and 12B models not yet available for Android</strong>
+          <span class="lang-es">Los repositorios HuggingFace de Gemma 3 4B y 12B solo contienen ficheros <code>-web.task</code> optimizados para WebAssembly. Estos <strong>no son compatibles</strong> con el SDK Android (<code>tasks-genai</code>). Cuando <em>litert-community</em> publique ficheros <code>.task</code> para Android se activarán automáticamente.</span>
+          <span class="lang-en">HuggingFace repos for Gemma 3 4B and 12B only contain <code>-web.task</code> files optimized for WebAssembly. These are <strong>not compatible</strong> with the Android SDK (<code>tasks-genai</code>). When <em>litert-community</em> publishes Android <code>.task</code> files they will be enabled automatically.</span>
         </div>
       </div>
 
@@ -1058,13 +1083,13 @@
         </div>
       </div>
 
-      <div class="alert alert-warn" style="margin-top:16px;">
-        <span class="alert-icon">⚠️</span>
+      <div class="alert alert-tip" style="margin-top:16px;">
+        <span class="alert-icon">💡</span>
         <div>
-          <strong class="lang-es">Advertencia para modelos grandes</strong>
-          <strong class="lang-en">Warning for large models</strong>
-          <span class="lang-es">Gemma 3 12B requiere ~14 GB de espacio libre y al menos 16 GB de RAM. Comprueba el espacio disponible antes de descargar.</span>
-          <span class="lang-en">Gemma 3 12B requires ~14 GB of free space and at least 16 GB of RAM. Check available space before downloading.</span>
+          <strong class="lang-es">Solo Gemma 3 1B disponible actualmente</strong>
+          <strong class="lang-en">Only Gemma 3 1B available right now</strong>
+          <span class="lang-es">Es el único modelo con fichero <code>.task</code> compatible con Android. Pesa solo 0.6 GB y ofrece un rendimiento excelente para análisis agrícola en gama media y alta.</span>
+          <span class="lang-en">It's the only model with an Android-compatible <code>.task</code> file. It's only 0.6 GB and delivers excellent performance for agricultural analysis on mid-range and high-end devices.</span>
         </div>
       </div>
     </section>

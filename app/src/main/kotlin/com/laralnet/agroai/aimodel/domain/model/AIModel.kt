@@ -13,23 +13,27 @@ enum class ModelVariant(
     // Page the user visits to accept Gemma terms and get a token
     val infoUrl: String = ""
 ) {
+    // litert-community/Gemma3-1B-IT — gemma3-1b-it-int4.task (555 MB, Android-compatible)
     GEMMA3_1B(
-        "Gemma 3 1B", 2.0, 3.0,
-        "https://huggingface.co/google/gemma-3-1b-it-litert-preview/resolve/main/gemma3-1b-it-int4.task",
+        "Gemma 3 1B", 0.6, 2.0,
+        "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
         GemmaVersion.GEMMA_3,
-        "https://huggingface.co/google/gemma-3-1b-it-litert-preview"
+        "https://huggingface.co/litert-community/Gemma3-1B-IT"
     ),
+    // litert-community/Gemma3-4B-IT — only -web.task variants exist (not compatible with
+    // Android tasks-genai SDK). URL empty until Android .task becomes available.
     GEMMA3_4B(
-        "Gemma 3 4B", 5.0, 6.0,
-        "https://huggingface.co/google/gemma-3-4b-it-litert-preview/resolve/main/gemma3-4b-it-int4.task",
+        "Gemma 3 4B", 2.6, 4.0,
+        "",
         GemmaVersion.GEMMA_3,
-        "https://huggingface.co/google/gemma-3-4b-it-litert-preview"
+        "https://huggingface.co/litert-community/Gemma3-4B-IT"
     ),
+    // litert-community/Gemma3-12B-IT — same situation as 4B (web-only .task files).
     GEMMA3_12B(
-        "Gemma 3 12B", 14.0, 16.0,
-        "https://huggingface.co/google/gemma-3-12b-it-litert-preview/resolve/main/gemma3-12b-it-int4.task",
+        "Gemma 3 12B", 7.6, 12.0,
+        "",
         GemmaVersion.GEMMA_3,
-        "https://huggingface.co/google/gemma-3-12b-it-litert-preview"
+        "https://huggingface.co/litert-community/Gemma3-12B-IT"
     ),
     GEMMA4_2B("Gemma 4 2B", 3.0, 4.0, "", GemmaVersion.GEMMA_4)
 }

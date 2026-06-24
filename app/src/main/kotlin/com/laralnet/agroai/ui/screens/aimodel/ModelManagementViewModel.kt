@@ -88,10 +88,18 @@ class ModelManagementViewModel @Inject constructor(
         val workFlows = downloading.map { model ->
             workManager.getWorkInfosForUniqueWorkFlow("model_download_${model.id}")
                 .map { infos ->
-                    val progress = infos.firstOrNull()?.progress
+                    val info = infos.firstOrNull()
+                    val progress = info?.progress
                     val progressPct = progress?.getInt(ModelDownloadWorker.KEY_PROGRESS, 0) ?: 0
-                    val status = progress?.getString(ModelDownloadWorker.KEY_STATUS)
-                    Triple(model.id, progressPct, status)
+                    val logFromProgress = progress?.getString(ModelDownloadWorker.KEY_STATUS)
+                    // If WorkInfo finished (FAILED/CANCELLED) but DB model still shows
+                    // DOWNLOADING (e.g. Worker crashed before it could update Room),
+                    // surface the error from outputData so the panel appears.
+                    val logFromOutput = if (info != null && info.state.isFinished && logFromProgress == null) {
+                        info.outputData.getString(ModelDownloadWorker.KEY_ERROR)
+                            ?: "Worker terminado — estado ${info.state.name}"
+                    } else null
+                    Triple(model.id, progressPct, logFromProgress ?: logFromOutput)
                 }
         }
         return combine(workFlows) { triples ->

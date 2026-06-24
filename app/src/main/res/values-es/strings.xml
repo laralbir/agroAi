@@ -105,9 +105,9 @@
 
     <!-- Model management -->
     <string name="model_management_title">Modelos de IA</string>
-    <string name="model_gemma3_1b">Gemma 3 1B (~2 GB)</string>
-    <string name="model_gemma3_4b">Gemma 3 4B (~5 GB)</string>
-    <string name="model_gemma3_12b">Gemma 3 12B (~14 GB)</string>
+    <string name="model_gemma3_1b">Gemma 3 1B (~0.6 GB)</string>
+    <string name="model_gemma3_4b">Gemma 3 4B (~2.6 GB)</string>
+    <string name="model_gemma3_12b">Gemma 3 12B (~7.6 GB)</string>
     <string name="model_gemma4">Gemma 4 (próximamente)</string>
     <string name="model_downloading">Descargando…</string>
     <string name="model_downloaded">Descargado</string>
