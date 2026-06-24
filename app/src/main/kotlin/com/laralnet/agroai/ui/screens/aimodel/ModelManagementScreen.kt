@@ -1,5 +1,6 @@
 package com.laralnet.agroai.ui.screens.aimodel
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,11 +9,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -50,8 +54,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
@@ -294,37 +301,19 @@ private fun ModelVariantCard(
                 } else {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
-                row.displayStatus?.let { status ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = if (row.downloadProgress > 0) "${row.downloadProgress}% — $status" else status,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                } ?: Text(
-                    text = stringResource(R.string.model_downloading),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
             }
 
-            // Persistent error after failure
-            if (row.downloadState == DownloadState.FAILED && row.model?.lastError != null) {
+            // Log panel: shown while DOWNLOADING (live) or after FAILED (persisted)
+            val logText = when {
+                row.downloadState == DownloadState.DOWNLOADING -> row.displayStatus
+                row.downloadState == DownloadState.FAILED -> row.model?.lastError
+                else -> null
+            }
+            if (logText != null) {
                 Spacer(Modifier.height(8.dp))
-                DownloadErrorBox(
-                    error = row.model.lastError,
+                DownloadLogPanel(
+                    log = logText,
+                    isFailed = row.downloadState == DownloadState.FAILED,
                     modelInfoUrl = row.variant.infoUrl
                 )
             }
@@ -381,33 +370,67 @@ private fun ModelVariantCard(
 }
 
 @Composable
-private fun DownloadErrorBox(error: String, modelInfoUrl: String) {
+private fun DownloadLogPanel(log: String, isFailed: Boolean, modelInfoUrl: String) {
     val uriHandler = LocalUriHandler.current
-    val is403 = error.contains("403")
+    val is403 = log.contains("403")
+    val containerColor = if (isFailed)
+        MaterialTheme.colorScheme.errorContainer
+    else
+        MaterialTheme.colorScheme.surfaceVariant
+
+    val contentColor = if (isFailed)
+        MaterialTheme.colorScheme.onErrorContainer
+    else
+        MaterialTheme.colorScheme.onSurfaceVariant
 
     Surface(
-        color = MaterialTheme.colorScheme.errorContainer,
+        color = containerColor,
         shape = MaterialTheme.shapes.small,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    Icons.Default.ErrorOutline,
+                    if (isFailed) Icons.Default.ErrorOutline else Icons.Default.Info,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.size(16.dp)
+                    tint = contentColor,
+                    modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = error,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer
+                    text = if (isFailed) "Error — log completo" else "Log de descarga",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor
                 )
             }
-            if (is403 && modelInfoUrl.isNotBlank()) {
+
+            // Scrollable monospace log
+            val scrollV = rememberScrollState()
+            val scrollH = rememberScrollState()
+            Surface(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                shape = MaterialTheme.shapes.extraSmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 200.dp)
+            ) {
+                Text(
+                    text = log,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = TextUnit(10f, TextUnitType.Sp)
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .verticalScroll(scrollV)
+                        .horizontalScroll(scrollH)
+                        .padding(8.dp)
+                )
+            }
+
+            if (isFailed && is403 && modelInfoUrl.isNotBlank()) {
                 TextButton(
                     onClick = { uriHandler.openUri(modelInfoUrl) },
                     modifier = Modifier.align(Alignment.End)
