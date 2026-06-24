@@ -102,6 +102,7 @@
     <string name="settings_prompt_editor">Editor de Prompts</string>
 
     <!-- Model management -->
+    <string name="model_management_title">Modelos de IA</string>
     <string name="model_gemma3_1b">Gemma 3 1B (~2 GB)</string>
     <string name="model_gemma3_4b">Gemma 3 4B (~5 GB)</string>
     <string name="model_gemma3_12b">Gemma 3 12B (~14 GB)</string>
@@ -109,9 +110,18 @@
     <string name="model_downloading">Descargando…</string>
     <string name="model_downloaded">Descargado</string>
     <string name="model_download_failed">Error al descargar</string>
+    <string name="model_not_downloaded">No descargado</string>
     <string name="model_active">Activo</string>
+    <string name="model_coming_soon">Próximamente</string>
+    <string name="model_download">Descargar</string>
+    <string name="model_activate">Activar</string>
     <string name="model_space_required">Espacio necesario: %s GB</string>
     <string name="model_ram_required">RAM necesaria: %s GB</string>
+    <string name="model_warning_title">Modelo grande</string>
+    <string name="model_warning_message">Este modelo necesita %1$.1f GB de espacio en disco y %2$.1f GB de RAM. Asegúrate de tener suficiente almacenamiento antes de descargar.</string>
+    <string name="home_no_model_title">Sin modelo de IA cargado</string>
+    <string name="home_no_model_subtitle">Descarga Gemma para habilitar el análisis de fotos</string>
+    <string name="home_download_model">Descargar modelo</string>
 
     <!-- Prompt editor -->
     <string name="prompt_editor_title">Editar Prompt</string>

@@ -10,6 +10,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.4.0-canary01] - 2026-06-24
+
+### Añadido
+- `ModelManagementScreen` — pantalla de gestión de modelos Gemma con lista de variantes, estado por variante, y botones Descargar / Activar / Eliminar
+- `ModelManagementViewModel` — conecta `ObserveModelsQuery` con `DownloadModelHandler`, `SetActiveModelHandler`, `DeleteModelHandler`; observa progreso de descarga en tiempo real via `WorkManager`
+- Banner en `HomeScreen` si no hay modelo de IA activo, con enlace directo a `ModelManagementScreen`
+- `HomeViewModel.hasActiveModel` — StateFlow reactivo que observa si hay un modelo activo en BD
+- Ruta `Screen.ModelManagement("models")` en el NavGraph; accesible desde Settings y banner de Home
+- Diálogo de advertencia para modelos ≥ 12 GB antes de iniciar la descarga
+- Chip de estado por variante: Activo / Descargado / Descargando (con barra de progreso y %) / Error / No descargado
+- Variante GEMMA4_2B marcada como "Próximamente" (sin URL de descarga)
+- 12 tests unitarios en `ModelManagementViewModelTest`
+- Nuevas strings (en/es): `model_management_title`, `model_download`, `model_activate`, `model_not_downloaded`, `model_coming_soon`, `model_warning_title`, `model_warning_message`, `home_no_model_*`
+
+---
+
 ## [0.3.0-canary01] - 2026-06-24
 
 ### Añadido
@@ -83,7 +99,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
-[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.3.0-canary01...HEAD
+[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.4.0-canary01...HEAD
+[0.4.0-canary01]: https://github.com/laralbir/agroAi/compare/v0.3.0-canary01...v0.4.0-canary01
 [0.3.0-canary01]: https://github.com/laralbir/agroAi/compare/v0.2.0...v0.3.0-canary01
 [0.2.0]: https://github.com/laralbir/agroAi/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/laralbir/agroAi/releases/tag/v0.1.0

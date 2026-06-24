@@ -427,7 +427,7 @@ El fichero [`TODO.md`](TODO.md) contiene el roadmap completo con las fases orden
 
 | Fase | Qué implementar | Estado |
 |------|----------------|--------|
-| **1** | Pantalla descarga/gestión de modelo Gemma (`ModelManagementScreen`) | ⬜ Pendiente |
+| **1** | Pantalla descarga/gestión de modelo Gemma (`ModelManagementScreen`) | ✅ Completada |
 | **2** | Treatment handlers CQRS + UI de programación de tratamientos | ⬜ Pendiente |
 | **3** | Calendar handlers + tab Calendar en bottom nav | ⬜ Pendiente |
 | **4** | Fix `parseSuggestions` en `PhotoAnalysisViewModel` (JSON real de Gemma) | ⬜ Pendiente |

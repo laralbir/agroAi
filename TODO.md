@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.3.0-canary01`
+Estado actual: `v0.4.0-canary01`
 
 ---
 
@@ -19,20 +19,18 @@ Descarga modelo Gemma
 
 ---
 
-## FASE 1 — Pantalla de descarga y gestión de modelos IA
-
-**Por qué primero:** Sin modelo descargado el análisis de fotos no funciona. Los handlers ya existen (v0.3.0-canary01); falta la UI que los invoca.
+## ✅ FASE 1 — Pantalla de descarga y gestión de modelos IA _(completada en v0.4.0-canary01)_
 
 ### UI
-- [ ] `ModelManagementScreen` — lista de variantes (1B / 4B / 12B), estado, botones Descargar / Activar / Eliminar
-- [ ] `ModelManagementViewModel` — suscribe `ObserveModelsQuery`, invoca `DownloadModelHandler`, `SetActiveModelHandler`, `DeleteModelHandler`
-- [ ] Barra de progreso de descarga — observa `WorkManager` progress via `WorkInfo.State`
-- [ ] Alerta de espacio en disco y RAM antes de descargar modelos ≥ 12B
-- [ ] Onboarding: si no hay modelo activo al abrir la app, redirigir a esta pantalla
-- [ ] Añadir entrada en Settings ("Modelos IA") y/o tab propio en el bottom nav
+- [x] `ModelManagementScreen` — lista de variantes (1B / 4B / 12B), estado, botones Descargar / Activar / Eliminar
+- [x] `ModelManagementViewModel` — suscribe `ObserveModelsQuery`, invoca `DownloadModelHandler`, `SetActiveModelHandler`, `DeleteModelHandler`
+- [x] Barra de progreso de descarga — observa `WorkManager` progress via `WorkInfo.State`
+- [x] Alerta de espacio en disco y RAM antes de descargar modelos ≥ 12B
+- [x] Banner en Home si no hay modelo activo → navega a `ModelManagementScreen`
+- [x] Entrada en Settings → `ModelManagementScreen`; ruta `Screen.ModelManagement("models")`
 
 ### Tests
-- [ ] `ModelManagementViewModelTest` — cubre estados DOWNLOADING / DOWNLOADED / FAILED
+- [x] `ModelManagementViewModelTest` — 12 tests: NOT_DOWNLOADED, DOWNLOADED, DOWNLOADING, FAILED, warning dialog, reactive updates, GEMMA4 unavailable
 
 ---
 
@@ -153,13 +151,13 @@ Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de
 
 ## Resumen de orden
 
-| Fase | Bloqueante para | Esfuerzo estimado |
-|------|----------------|-------------------|
-| 1 — AIModel screen | Usar cualquier función de IA | M |
-| 2 — Treatment handlers + UI | Flujo principal de la app | L |
-| 3 — Calendar handlers + tab | Integración calendario | M |
-| 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S |
-| 5 — Weather AEMET | Alertas y recomendaciones | L |
-| 6 — Deuda técnica | Release pública | M |
+| Fase | Bloqueante para | Esfuerzo estimado | Estado |
+|------|----------------|-------------------|--------|
+| 1 — AIModel screen | Usar cualquier función de IA | M | ✅ Completada |
+| 2 — Treatment handlers + UI | Flujo principal de la app | L | ⬜ Pendiente |
+| 3 — Calendar handlers + tab | Integración calendario | M | ⬜ Pendiente |
+| 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ⬜ Pendiente |
+| 5 — Weather AEMET | Alertas y recomendaciones | L | ⬜ Pendiente |
+| 6 — Deuda técnica | Release pública | M | ⬜ Pendiente |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas

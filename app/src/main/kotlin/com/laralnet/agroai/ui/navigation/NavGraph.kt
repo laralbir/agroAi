@@ -26,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.screens.aimodel.ModelManagementScreen
 import com.laralnet.agroai.ui.screens.analysis.PhotoAnalysisScreen
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +53,7 @@ sealed class Screen(val route: String) {
     data object PhotoAnalysis : Screen("analysis")
     data object Calendar : Screen("calendar")
     data object Settings : Screen("settings")
+    data object ModelManagement : Screen("models")
 }
 
 private const val KEY_PICKED_LAT = "picked_lat"
@@ -130,6 +132,9 @@ fun AgroAINavGraph(
                     },
                     onNavigateToPlantationDetail = { id ->
                         navController.navigate(Screen.PlantationDetail.route(id))
+                    },
+                    onNavigateToModels = {
+                        navController.navigate(Screen.ModelManagement.route)
                     }
                 )
             }
@@ -208,7 +213,16 @@ fun AgroAINavGraph(
                 )
             }
             composable(Screen.Settings.route) {
-                SettingsScreen()
+                SettingsScreen(
+                    onNavigateToModels = {
+                        navController.navigate(Screen.ModelManagement.route)
+                    }
+                )
+            }
+            composable(Screen.ModelManagement.route) {
+                ModelManagementScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }

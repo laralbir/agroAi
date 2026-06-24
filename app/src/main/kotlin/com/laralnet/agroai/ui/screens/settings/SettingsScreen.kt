@@ -18,6 +18,7 @@ import com.laralnet.agroai.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onNavigateToModels: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
@@ -59,7 +60,7 @@ fun SettingsScreen(
                 icon = Icons.Default.SmartToy,
                 title = stringResource(R.string.settings_model_change),
                 subtitle = "Gemma 3 — select and download",
-                onClick = { /* navigate to model screen */ }
+                onClick = onNavigateToModels
             )
 
             Divider(modifier = Modifier.padding(vertical = 12.dp))

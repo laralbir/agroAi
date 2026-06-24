@@ -22,9 +22,11 @@ import com.laralnet.agroai.plantation.domain.model.Plantation
 fun HomeScreen(
     onNavigateToPlantations: () -> Unit,
     onNavigateToPlantationDetail: (String) -> Unit,
+    onNavigateToModels: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val plantations by viewModel.plantations.collectAsState()
+    val hasActiveModel by viewModel.hasActiveModel.collectAsState()
 
     Scaffold(
         topBar = {
@@ -45,6 +47,8 @@ fun HomeScreen(
     ) { paddingValues ->
         if (plantations.isEmpty()) {
             EmptyHomeState(
+                hasActiveModel = hasActiveModel,
+                onNavigateToModels = onNavigateToModels,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
@@ -62,6 +66,11 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                if (!hasActiveModel) {
+                    item {
+                        NoModelBanner(onClick = onNavigateToModels)
+                    }
+                }
                 item {
                     Text(
                         text = stringResource(R.string.home_welcome),
@@ -131,12 +140,55 @@ private fun PlantationSummaryCard(
 }
 
 @Composable
-private fun EmptyHomeState(modifier: Modifier = Modifier) {
+private fun NoModelBanner(onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.home_no_model_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                Text(
+                    text = stringResource(R.string.home_no_model_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+            TextButton(onClick = onClick) {
+                Text(stringResource(R.string.home_download_model))
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyHomeState(
+    hasActiveModel: Boolean,
+    onNavigateToModels: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        if (!hasActiveModel) {
+            NoModelBanner(onClick = onNavigateToModels)
+            Spacer(Modifier.height(24.dp))
+        }
         Icon(
             imageVector = Icons.Default.Agriculture,
             contentDescription = null,
