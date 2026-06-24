@@ -173,7 +173,18 @@ agroAI/
 
 ## Licencia
 
-Copyright © 2026 LaralNet. Todos los derechos reservados.
+Distribuido bajo la licencia **Apache 2.0**. Consulta el fichero [LICENSE](LICENSE) para más detalles.
+
+Las dependencias de terceros tienen sus propias licencias:
+
+| Librería | Licencia |
+|---------|---------|
+| Jetpack Compose, Room, Hilt, WorkManager, CameraX | Apache 2.0 |
+| Kotlin, Kotlinx Coroutines | Apache 2.0 |
+| MediaPipe Tasks GenAI (Gemma) | Apache 2.0 |
+| Retrofit, OkHttp | Apache 2.0 |
+| Coil | Apache 2.0 |
+| Gemma model weights | [Gemma Terms of Use](https://ai.google.dev/gemma/terms) |
 
 ---
 
