@@ -44,7 +44,6 @@ class GemmaInferenceEngine @Inject constructor(
         val options = LlmInferenceOptions.builder()
             .setModelPath(modelPath)
             .setMaxTokens(1024)
-            .setResultListener { _, _ -> }
             .build()
         inference = LlmInference.createFromOptions(context, options)
         currentModelPath = modelPath

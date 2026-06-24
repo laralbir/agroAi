@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/carlos/Projects/agroAI/.claude -name \"deploy*\" 2>/dev/null; find /Users/carlos/.claude -name \"deploy*\" 2>/dev/null | head -10)",
+      "Read(//Users/carlos/.claude/**)"
+    ]
+  }
+}

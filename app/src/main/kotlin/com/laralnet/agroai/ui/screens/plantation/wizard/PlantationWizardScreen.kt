@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -223,7 +224,7 @@ private fun Step2Location(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Map,
+                imageVector = Icons.Default.Map,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )

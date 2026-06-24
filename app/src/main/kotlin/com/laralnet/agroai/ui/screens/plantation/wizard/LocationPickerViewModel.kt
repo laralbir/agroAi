@@ -47,7 +47,7 @@ class LocationPickerViewModel @Inject constructor(
             _state.update { it.copy(isSearching = true) }
             nominatim.runCatching { search(query) }
                 .onSuccess { results -> _state.update { it.copy(searchResults = results, isSearching = false) } }
-                .onFailure { _state.update { it.copy(isSearching = false, error = it.message) } }
+                .onFailure { e -> _state.update { it.copy(isSearching = false, error = e.message) } }
         }
     }
 

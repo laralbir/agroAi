@@ -2,6 +2,7 @@ package com.laralnet.agroai.aimodel.infrastructure.repository
 
 import com.laralnet.agroai.aimodel.domain.model.AIModel
 import com.laralnet.agroai.aimodel.domain.model.DownloadState
+import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 import com.laralnet.agroai.aimodel.domain.model.PromptTemplate
 import com.laralnet.agroai.aimodel.domain.model.PromptWarningLevel
 import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
@@ -19,6 +20,11 @@ class RoomAIModelRepository @Inject constructor(
     override fun observeAll(): Flow<List<AIModel>> =
         dao.observeAll().map { list -> list.map { it.toDomain() } }
 
+    override suspend fun findById(modelId: String): AIModel? = dao.findById(modelId)?.toDomain()
+
+    override suspend fun findByVariant(variant: ModelVariant): AIModel? =
+        dao.findByVariant(variant)?.toDomain()
+
     override suspend fun findActive(): AIModel? = dao.findActive()?.toDomain()
 
     override suspend fun save(model: AIModel) = dao.insert(model.toEntity())
@@ -32,6 +38,9 @@ class RoomAIModelRepository @Inject constructor(
 
     override suspend fun findPromptTemplate(name: String): PromptTemplate? =
         dao.findPromptTemplate(name)?.toDomain()
+
+    override suspend fun findPromptTemplateById(id: String): PromptTemplate? =
+        dao.findPromptTemplateById(id)?.toDomain()
 
     override suspend fun savePromptTemplate(template: PromptTemplate) =
         dao.insertPromptTemplate(template.toEntity())

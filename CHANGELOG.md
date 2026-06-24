@@ -10,6 +10,33 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.3.0-canary01] - 2026-06-24
+
+### Añadido
+- Bounded context AIModel completamente implementado: handlers CQRS, queries, eventos de dominio y port `ModelDownloader`
+- `DownloadModelHandler` — encola descarga con WorkManager, idempotente (reutiliza id si ya existe la variante)
+- `SetActiveModelHandler` — activa modelo descargado, valida estado previo
+- `DeleteModelHandler` — cancela descarga en curso si aplica, borra fichero del disco
+- `SavePromptTemplateHandler` — edita contenido de prompt, marca como personalizado
+- Queries: `ObserveModelsQuery`, `GetActiveModelQuery`, `ObservePromptTemplatesQuery`, `GetPromptTemplateQuery`
+- Eventos de dominio: `ModelDownloadStarted`, `ModelActivated`, `ModelDeleted`, `PromptTemplateUpdated`
+- Port `ModelDownloader` — desacopla WorkManager de la capa application
+- `WorkManagerModelDownloader` — adaptador con `enqueueUniqueWork` (política KEEP)
+- 18 tests unitarios para los 4 handlers cubriendo casos de error y edge cases
+
+### Corregido
+- `ModelVariant` lleva `gemmaVersion` propio — elimina hardcode de `GemmaVersion.GEMMA_3` en el Worker
+- Doble `companion object` en `ModelDownloadWorker` (error de compilación)
+- `setResultListener` eliminado de `LlmInferenceOptions` — no existe en MediaPipe 0.10.22
+- Shadowing de `it` en `LocationPickerViewModel.onSearchQueryChange` (error de compilación)
+- `Icons.Default.Map` requería import explícito de extended icons (error de compilación)
+- Package de lanzamiento corregido en `/deploy` (`com.laralnet.agroai.debug`)
+
+### Eliminado
+- `account/domain/model/GoogleAccount.kt` — bounded context prematuro sin capa application ni infrastructure
+
+---
+
 ## [0.2.0] - 2026-06-24
 
 ### Añadido
@@ -56,6 +83,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
-[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.3.0-canary01...HEAD
+[0.3.0-canary01]: https://github.com/laralbir/agroAi/compare/v0.2.0...v0.3.0-canary01
 [0.2.0]: https://github.com/laralbir/agroAi/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/laralbir/agroAi/releases/tag/v0.1.0

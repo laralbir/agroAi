@@ -1,11 +1,14 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # AgroAI — Guía de Desarrollo para Claude
 
 ## Visión del Proyecto
 
 **AgroAI** es una app Android nativa para gestión agrícola inteligente que ejecuta modelos Gemma (3/4) completamente en local. No hay backend propio; toda la IA corre en el dispositivo.
 
-- **Package**: `com.laralnet.agroai`
-- **Dominio APK**: `laralnet.com.agroai`
+- **Package**: `com.laralnet.agroai` (debug: `com.laralnet.agroai.debug`)
 - **Dispositivos de prueba**: Google Pixel 9 Pro XL (Android 15), Google Pixel 10 Pro XL (Android 16)
 - **minSdk**: 26 (Android 8.0) — cubre ~95% de dispositivos Android
 - **targetSdk**: 36 (Android 16)
@@ -149,6 +152,14 @@ enum class PlantationType(val labelEn: String, val labelEs: String) {
 
 ---
 
+## Navegación actual (NavGraph)
+
+Bottom nav con 4 tabs: **Home → Plantations → Analysis → Settings**. El tab Calendar está definido en el dominio pero aún no está en el bottom nav. Pantallas adicionales sin tab propio: `PlantationDetail`, `PlantationWizard`, `LocationPicker`.
+
+El flujo de datos entre `LocationPickerScreen` y `PlantationWizardScreen` usa `savedStateHandle` (5 claves: `picked_lat`, `picked_lon`, `picked_address`, `picked_municipality`, `picked_province`).
+
+---
+
 ## Integración de Mapas
 
 ### Stack: osmdroid + Nominatim
@@ -261,7 +272,8 @@ AppDatabase (SQLite vía Room)
 ```
 
 - **Migraciones**: `Migration` con fallback `fallbackToDestructiveMigration(false)` en debug
-- **Exportar schema**: `room.schemaLocation` en build.gradle.kts
+- **Exportar schema**: schemas generados en `app/schemas/` (KSP arg `room.schemaLocation`)
+- **Procesador de anotaciones**: KSP (no kapt) — Hilt y Room usan `ksp()` en `app/build.gradle.kts`
 
 ---
 
@@ -289,22 +301,28 @@ AppDatabase (SQLite vía Room)
 ## Comandos Frecuentes
 
 ```bash
-# Build debug
+# Build debug (genera APKs por ABI + universal en app/build/outputs/apk/debug/)
 ./gradlew assembleDebug
 
-# Tests unitarios
+# Tests unitarios (JVM, sin dispositivo)
 ./gradlew test
+
+# Unit tests de módulo concreto
+./gradlew :app:testDebugUnitTest
 
 # Tests instrumentados (requiere dispositivo/emulador)
 ./gradlew connectedAndroidTest
 
+# Tests instrumentados de una clase concreta
+./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.laralnet.agroai.database.PlantationDaoTest
+
 # Análisis estático
 ./gradlew lint
 
-# Generar APK release
+# Generar APK release (minificado + shrinkResources)
 ./gradlew assembleRelease
 
-# Instalar en dispositivo conectado
+# Instalar en dispositivo conectado (instala como com.laralnet.agroai.debug)
 ./gradlew installDebug
 ```
 
@@ -341,22 +359,6 @@ AndroidJUnit4            → runner
 Room.inMemoryDatabaseBuilder → tests de DAO sin BD real
 ComposeTestRule          → tests de UI con createComposeRule()
 MockK-Android            → mocking en contexto Android
-```
-
-### Comandos para ejecutar tests
-
-```bash
-# Unit tests (rápido, sin emulador)
-./gradlew test
-
-# Unit tests de un módulo concreto
-./gradlew :app:testDebugUnitTest
-
-# Tests instrumentados (requiere emulador/dispositivo conectado)
-./gradlew connectedAndroidTest
-
-# Tests instrumentados de una clase concreta
-./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.laralnet.agroai.database.PlantationDaoTest
 ```
 
 ### Convenciones de nombrado

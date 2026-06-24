@@ -32,6 +32,7 @@ class ModelDownloadWorker @AssistedInject constructor(
         const val KEY_MODEL_ID = "model_id"
         const val KEY_PROGRESS = "progress"
         const val KEY_FILE_PATH = "file_path"
+        const val NOTIFICATION_ID = 1001
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
@@ -70,7 +71,7 @@ class ModelDownloadWorker @AssistedInject constructor(
                                     AIModel(
                                         id = modelId,
                                         variant = variant,
-                                        version = GemmaVersion.GEMMA_3,
+                                        version = variant.gemmaVersion,
                                         downloadState = DownloadState.DOWNLOADING,
                                         downloadProgressPercent = progress
                                     )
@@ -85,7 +86,7 @@ class ModelDownloadWorker @AssistedInject constructor(
                 AIModel(
                     id = modelId,
                     variant = variant,
-                    version = GemmaVersion.GEMMA_3,
+                    version = variant.gemmaVersion,
                     filePath = destFile.absolutePath,
                     downloadState = DownloadState.DOWNLOADED,
                     downloadProgressPercent = 100
@@ -99,7 +100,7 @@ class ModelDownloadWorker @AssistedInject constructor(
                 AIModel(
                     id = modelId,
                     variant = variant,
-                    version = GemmaVersion.GEMMA_3,
+                    version = variant.gemmaVersion,
                     downloadState = DownloadState.FAILED
                 )
             )
@@ -114,7 +115,4 @@ class ModelDownloadWorker @AssistedInject constructor(
         )
     }
 
-    private companion object {
-        const val NOTIFICATION_ID = 1001
-    }
 }
