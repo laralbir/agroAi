@@ -419,6 +419,25 @@ Antes de ejecutar `git push`, verificar y actualizar en este orden:
 
 ---
 
+## Plan de Implementación
+
+El fichero [`TODO.md`](TODO.md) contiene el roadmap completo con las fases ordenadas por dependencia y prioridad. Consúltalo antes de empezar cualquier tarea nueva para elegir el siguiente paso correcto.
+
+### Orden de fases (resumen)
+
+| Fase | Qué implementar | Estado |
+|------|----------------|--------|
+| **1** | Pantalla descarga/gestión de modelo Gemma (`ModelManagementScreen`) | ⬜ Pendiente |
+| **2** | Treatment handlers CQRS + UI de programación de tratamientos | ⬜ Pendiente |
+| **3** | Calendar handlers + tab Calendar en bottom nav | ⬜ Pendiente |
+| **4** | Fix `parseSuggestions` en `PhotoAnalysisViewModel` (JSON real de Gemma) | ⬜ Pendiente |
+| **5** | Weather AEMET: parseo real, caché Room, `WeatherRefreshWorker` | ⬜ Pendiente |
+| **6** | Deuda técnica: iconos reales, onboarding, capa domain de Location | ⬜ Pendiente |
+
+> Actualiza el estado en `TODO.md` a medida que se completen las fases. Marca ✅ cuando todos los tests de esa fase pasen.
+
+---
+
 ## Notas Importantes
 
 1. **El modelo Gemma DEBE descargarse antes de usar cualquier función de IA**. La app muestra un onboarding de descarga si no hay modelo disponible.
