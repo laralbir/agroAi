@@ -27,10 +27,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.laralnet.agroai.R
 import com.laralnet.agroai.ui.screens.analysis.PhotoAnalysisScreen
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.laralnet.agroai.plantation.domain.model.Location
 import com.laralnet.agroai.ui.screens.home.HomeScreen
 import com.laralnet.agroai.ui.screens.plantation.detail.PlantationDetailScreen
 import com.laralnet.agroai.ui.screens.plantation.list.PlantationListScreen
+import com.laralnet.agroai.ui.screens.plantation.wizard.LocationPickerScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardScreen
+import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardViewModel
 import com.laralnet.agroai.ui.screens.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
@@ -43,10 +48,17 @@ sealed class Screen(val route: String) {
     data object PlantationEdit : Screen("plantation/{id}/edit") {
         fun route(id: String) = "plantation/$id/edit"
     }
+    data object LocationPicker : Screen("location_picker")
     data object PhotoAnalysis : Screen("analysis")
     data object Calendar : Screen("calendar")
     data object Settings : Screen("settings")
 }
+
+private const val KEY_PICKED_LAT = "picked_lat"
+private const val KEY_PICKED_LON = "picked_lon"
+private const val KEY_PICKED_ADDRESS = "picked_address"
+private const val KEY_PICKED_MUNICIPALITY = "picked_municipality"
+private const val KEY_PICKED_PROVINCE = "picked_province"
 
 private data class BottomNavItem(
     val screen: Screen,
@@ -144,12 +156,49 @@ fun AgroAINavGraph(
                     }
                 )
             }
-            composable(Screen.PlantationWizard.route) {
+            composable(Screen.PlantationWizard.route) { backStack ->
+                val wizardViewModel: PlantationWizardViewModel = hiltViewModel()
+
+                // Receive location result posted by LocationPickerScreen
+                val savedStateHandle = backStack.savedStateHandle
+                LaunchedEffect(Unit) {
+                    savedStateHandle.getStateFlow<Double?>(KEY_PICKED_LAT, null).collect { lat ->
+                        if (lat == null) return@collect
+                        val location = Location(
+                            latitude = lat,
+                            longitude = savedStateHandle[KEY_PICKED_LON],
+                            address = savedStateHandle[KEY_PICKED_ADDRESS] ?: "",
+                            municipality = savedStateHandle[KEY_PICKED_MUNICIPALITY] ?: "",
+                            province = savedStateHandle[KEY_PICKED_PROVINCE] ?: ""
+                        )
+                        wizardViewModel.setLocationFromMap(location)
+                        savedStateHandle.remove<Double>(KEY_PICKED_LAT)
+                    }
+                }
+
                 PlantationWizardScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onPlantationCreated = { id ->
                         navController.popBackStack()
                         navController.navigate(Screen.PlantationDetail.route(id))
+                    },
+                    onOpenMapPicker = { navController.navigate(Screen.LocationPicker.route) },
+                    viewModel = wizardViewModel
+                )
+            }
+            composable(Screen.LocationPicker.route) {
+                LocationPickerScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onLocationConfirmed = { location ->
+                        // Pass result back to the wizard via savedStateHandle
+                        navController.previousBackStackEntry?.savedStateHandle?.apply {
+                            set(KEY_PICKED_LAT, location.latitude)
+                            set(KEY_PICKED_LON, location.longitude)
+                            set(KEY_PICKED_ADDRESS, location.address)
+                            set(KEY_PICKED_MUNICIPALITY, location.municipality)
+                            set(KEY_PICKED_PROVINCE, location.province)
+                        }
+                        navController.popBackStack()
                     }
                 )
             }

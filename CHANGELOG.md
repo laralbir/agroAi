@@ -9,6 +9,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 ## [Unreleased]
 
 ### Añadido
+- Selector de ubicación de plantación con mapa interactivo (osmdroid + OpenStreetMap)
+- Búsqueda de ubicación mediante Nominatim (geocodificación OSM, sin API key)
+- Obtención de ubicación por GPS del dispositivo (LocationManager nativo, sin Google Play Services)
+- Geocodificación inversa automática al tocar el mapa o usar GPS
+- Atribución OSM requerida por la política de uso de tiles
+- Caché de tiles en directorio interno de la app (sin permiso de almacenamiento externo)
+
+### Técnico
 - Estructura inicial del proyecto con arquitectura hexagonal + DDD + CQRS
 - Configuración de Gradle con Version Catalog
 - Módulos de dominio: plantation, aimodel, treatment, weather, calendar, account

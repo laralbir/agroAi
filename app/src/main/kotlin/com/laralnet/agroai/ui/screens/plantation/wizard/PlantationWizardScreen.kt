@@ -20,6 +20,7 @@ import com.laralnet.agroai.plantation.domain.model.PlantationType
 fun PlantationWizardScreen(
     onNavigateBack: () -> Unit,
     onPlantationCreated: (String) -> Unit,
+    onOpenMapPicker: () -> Unit,
     viewModel: PlantationWizardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -67,7 +68,7 @@ fun PlantationWizardScreen(
             ) {
                 when (currentStep) {
                     0 -> Step1BasicInfo(state = uiState, viewModel = viewModel)
-                    1 -> Step2Location(state = uiState, viewModel = viewModel)
+                    1 -> Step2Location(state = uiState, viewModel = viewModel, onOpenMapPicker = onOpenMapPicker)
                     2 -> Step3Plants(state = uiState, viewModel = viewModel)
                     3 -> Step4Summary(state = uiState)
                 }
@@ -180,8 +181,63 @@ private fun PlantationTypeGrid(
 }
 
 @Composable
-private fun Step2Location(state: PlantationWizardState, viewModel: PlantationWizardViewModel) {
+private fun Step2Location(
+    state: PlantationWizardState,
+    viewModel: PlantationWizardViewModel,
+    onOpenMapPicker: () -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+        // Location summary card — shown when location is already set
+        val hasLocation = state.latitude != null && state.longitude != null
+        if (hasLocation || state.municipality.isNotBlank()) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Selected location", style = MaterialTheme.typography.labelMedium)
+                    Spacer(Modifier.height(4.dp))
+                    if (state.municipality.isNotBlank()) {
+                        Text(
+                            buildString {
+                                append(state.municipality)
+                                if (state.province.isNotBlank()) append(", ${state.province}")
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    if (state.latitude != null) {
+                        Text(
+                            "%.5f, %.5f".format(state.latitude, state.longitude),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Map picker button — primary action
+        Button(
+            onClick = onOpenMapPicker,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.Map,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(if (hasLocation) "Change on map" else "Pick on map")
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+        Text(
+            "Or enter manually:",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         OutlinedTextField(
             value = state.address,
             onValueChange = viewModel::setAddress,

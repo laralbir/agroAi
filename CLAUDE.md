@@ -27,6 +27,9 @@
 | Imágenes | CameraX + Coil |
 | Trabajo background | WorkManager |
 | Calendario | Google Calendar ContentProvider (Android) |
+| Mapas | osmdroid + OpenStreetMap (tiles online, sin descarga) |
+| Geocodificación | Nominatim (OSM, sin API key) |
+| GPS | Android LocationManager (sin Google Play Services) |
 | Navegación | Navigation Compose |
 
 ---
@@ -141,6 +144,37 @@ enum class PlantationType(val labelEn: String, val labelEs: String) {
     ARROZ("Rice Paddy", "Arrozal"),
     PLATANO("Banana Plantation", "Platanera"),
     OTRO("Other", "Otro")
+}
+```
+
+---
+
+## Integración de Mapas
+
+### Stack: osmdroid + Nominatim
+
+| Componente | Librería / Servicio | Licencia | API key |
+|-----------|-------------------|---------|---------|
+| Tiles de mapa | osmdroid + OpenStreetMap MAPNIK | Apache 2.0 / ODbL | No |
+| Búsqueda de lugares | Nominatim (nominatim.openstreetmap.org) | ODbL | No |
+| Geocodificación inversa | Nominatim `/reverse` | ODbL | No |
+| GPS del dispositivo | Android `LocationManager` | Apache 2.0 | No |
+
+### Notas de implementación
+- **Tiles**: se cachean automáticamente en `cacheDir/osmdroid/tiles` (almacenamiento interno, sin permiso extra)
+- **Nominatim**: se requiere `User-Agent: AgroAI/X.Y.Z (laralbir@gmail.com)` en cada request (política de uso)
+- **Rate limit Nominatim**: máx. 1 req/s — el debounce de 500 ms en la búsqueda lo cumple sobradamente
+- **GPS**: `LocationManager.requestSingleUpdate` con timeout 15 s; usa última posición conocida si tiene < 2 min
+- **Atribución OSM obligatoria**: mostrar `"© OpenStreetMap contributors"` visible en el mapa en todo momento
+- **`OsmdroidMapView`** composable: usa `AndroidView` + `DisposableEffect` para lifecycle (onResume/onPause/onDetach)
+- **Flujo de ubicación en el wizard**: Step 2 → "Pick on map" → `LocationPickerScreen` → `savedStateHandle` → `PlantationWizardViewModel.setLocationFromMap()`
+
+### Configuración en AgroAIApplication
+```kotlin
+OsmConfiguration.getInstance().apply {
+    userAgentValue = "AgroAI/X.Y.Z (laralbir@gmail.com)"
+    osmdroidBasePath = File(cacheDir, "osmdroid")
+    osmdroidTileCache = File(cacheDir, "osmdroid/tiles")
 }
 ```
 

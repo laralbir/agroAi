@@ -13,8 +13,13 @@
 -keepattributes Signature
 -keepattributes Exceptions
 
-# Keep AEMET API models
+# Keep AEMET + Nominatim API models
 -keep class com.laralnet.agroai.weather.infrastructure.api.** { *; }
+-keep class com.laralnet.agroai.location.infrastructure.nominatim.** { *; }
+
+# osmdroid
+-keep class org.osmdroid.** { *; }
+-dontwarn org.osmdroid.**
 
 # Keep MediaPipe
 -keep class com.google.mediapipe.** { *; }

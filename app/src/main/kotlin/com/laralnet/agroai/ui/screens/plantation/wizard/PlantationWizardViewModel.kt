@@ -32,6 +32,8 @@ data class PlantationWizardState(
     val municipality: String = "",
     val province: String = "",
     val municipalityCode: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val plantForms: List<PlantForm> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -57,6 +59,16 @@ class PlantationWizardViewModel @Inject constructor(
     fun setMunicipality(value: String) = _uiState.update { it.copy(municipality = value) }
     fun setProvince(value: String) = _uiState.update { it.copy(province = value) }
     fun setMunicipalityCode(value: String) = _uiState.update { it.copy(municipalityCode = value) }
+
+    fun setLocationFromMap(location: Location) = _uiState.update {
+        it.copy(
+            latitude = location.latitude,
+            longitude = location.longitude,
+            address = location.address,
+            municipality = location.municipality,
+            province = location.province
+        )
+    }
 
     fun addPlant() = _uiState.update { it.copy(plantForms = it.plantForms + PlantForm()) }
 
@@ -85,6 +97,8 @@ class PlantationWizardViewModel @Inject constructor(
             name = state.name,
             type = state.type ?: PlantationType.OTRO,
             location = Location(
+                latitude = state.latitude,
+                longitude = state.longitude,
                 address = state.address,
                 municipality = state.municipality,
                 province = state.province,

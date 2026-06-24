@@ -131,6 +131,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
+    // OpenStreetMap — osmdroid (tiles online, Nominatim geocoding)
+    implementation(libs.osmdroid)
+
     // Coil
     implementation(libs.coil.compose)
 
