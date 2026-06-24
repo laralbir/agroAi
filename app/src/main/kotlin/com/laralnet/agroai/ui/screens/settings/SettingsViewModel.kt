@@ -26,6 +26,7 @@ class SettingsViewModel @Inject constructor(
         val KEY_LANGUAGE = stringPreferencesKey("language_mode")
         val KEY_AEMET_API_KEY = stringPreferencesKey("aemet_api_key")
         val KEY_SELECTED_ACCOUNT = stringPreferencesKey("selected_google_account")
+        val KEY_HF_TOKEN = stringPreferencesKey("hf_token")
     }
 
     val themeMode = dataStore.data
@@ -44,6 +45,10 @@ class SettingsViewModel @Inject constructor(
         .map { prefs -> prefs[KEY_AEMET_API_KEY] ?: "" }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
+    val hfToken = dataStore.data
+        .map { prefs -> prefs[KEY_HF_TOKEN] ?: "" }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch {
         dataStore.edit { it[KEY_THEME] = mode.name }
     }
@@ -54,5 +59,9 @@ class SettingsViewModel @Inject constructor(
 
     fun setAemetApiKey(key: String) = viewModelScope.launch {
         dataStore.edit { it[KEY_AEMET_API_KEY] = key }
+    }
+
+    fun setHfToken(token: String) = viewModelScope.launch {
+        dataStore.edit { it[KEY_HF_TOKEN] = token }
     }
 }

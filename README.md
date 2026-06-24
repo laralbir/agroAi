@@ -2,6 +2,8 @@
 
 **Gestión agrícola inteligente con IA local para Android**
 
+📖 **[Guía de Usuario / User Guide](https://laralbir.github.io/agroAi/)** — Documentación completa en español e inglés
+
 AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecutándose completamente en el dispositivo para asistir en la gestión y planificación de plantaciones agrícolas. No envía datos a servidores externos — toda la inteligencia artificial funciona en local.
 
 ---
@@ -90,8 +92,8 @@ La aplicación sigue los principios de **Arquitectura Hexagonal (Ports & Adapter
 - API key de AEMET para datos meteorológicos (opcional)
 
 ### Dispositivos de Desarrollo y Prueba
-- Google Pixel 9 Pro XL (Android 15)
-- Google Pixel 10 Pro XL (Android 16)
+- Google Pixel 9 Pro XL (7)
+- Google Pixel 10 Pro XL (Android 17)
 
 ---
 

@@ -98,6 +98,8 @@
     <string name="settings_apis">External APIs</string>
     <string name="settings_aemet">AEMET (Spain weather)</string>
     <string name="settings_aemet_key">AEMET API key</string>
+    <string name="settings_hf_token">HuggingFace token</string>
+    <string name="settings_hf_token_hint">Required to download Gemma models</string>
     <string name="settings_accounts">Google Accounts</string>
     <string name="settings_prompt_editor">Prompt Editor</string>
 

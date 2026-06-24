@@ -23,8 +23,11 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
     val aemetApiKey by viewModel.aemetApiKey.collectAsState()
+    val hfToken by viewModel.hfToken.collectAsState()
     var showAemetDialog by remember { mutableStateOf(false) }
+    var showHfTokenDialog by remember { mutableStateOf(false) }
     var aemetKeyInput by remember(aemetApiKey) { mutableStateOf(aemetApiKey) }
+    var hfTokenInput by remember(hfToken) { mutableStateOf(hfToken) }
 
     Scaffold(
         topBar = {
@@ -73,6 +76,12 @@ fun SettingsScreen(
                 subtitle = if (aemetApiKey.isBlank()) "API key not configured" else "Configured",
                 onClick = { showAemetDialog = true }
             )
+            SettingsItem(
+                icon = Icons.Default.Key,
+                title = stringResource(R.string.settings_hf_token),
+                subtitle = if (hfToken.isBlank()) stringResource(R.string.settings_hf_token_hint) else "Configured",
+                onClick = { showHfTokenDialog = true }
+            )
 
             Divider(modifier = Modifier.padding(vertical = 12.dp))
 
@@ -87,6 +96,40 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(16.dp))
         }
+    }
+
+    if (showHfTokenDialog) {
+        AlertDialog(
+            onDismissRequest = { showHfTokenDialog = false },
+            title = { Text(stringResource(R.string.settings_hf_token)) },
+            text = {
+                Column {
+                    Text(
+                        stringResource(R.string.settings_hf_token_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = hfTokenInput,
+                        onValueChange = { hfTokenInput = it },
+                        label = { Text("hf_…") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.setHfToken(hfTokenInput)
+                    showHfTokenDialog = false
+                }) { Text(stringResource(R.string.btn_save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showHfTokenDialog = false }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
     }
 
     if (showAemetDialog) {

@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroAI — Guía de Usuario / User Guide</title>
+  <style>
+    /* ─── Reset & Variables ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-900: #1b4332;
+      --green-800: #2d6a4f;
+      --green-700: #40916c;
+      --green-500: #52b788;
+      --green-300: #95d5b2;
+      --green-100: #d8f3dc;
+      --green-50:  #f0faf4;
+      --amber-600: #d97706;
+      --amber-100: #fef3c7;
+      --red-600:   #dc2626;
+      --red-100:   #fee2e2;
+      --blue-600:  #2563eb;
+      --blue-100:  #dbeafe;
+      --text-primary:   #111827;
+      --text-secondary: #4b5563;
+      --text-muted:     #9ca3af;
+      --bg-page:    #f9fafb;
+      --bg-card:    #ffffff;
+      --border:     #e5e7eb;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.08);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.10);
+      --radius-sm:  6px;
+      --radius-md:  10px;
+      --radius-lg:  16px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    [data-theme="dark"] {
+      --text-primary:   #f9fafb;
+      --text-secondary: #d1d5db;
+      --text-muted:     #6b7280;
+      --bg-page:    #0f172a;
+      --bg-card:    #1e293b;
+      --border:     #334155;
+      --green-50:   #0f2318;
+      --green-100:  #1a3a28;
+      --amber-100:  #2d1f06;
+      --red-100:    #2d0f0f;
+      --blue-100:   #0f1f3d;
+    }
+
+    /* ─── Base ──────────────────────────────────────────────── */
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.65;
+      transition: background .25s, color .25s;
+    }
+
+    a { color: var(--green-700); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    img { max-width: 100%; display: block; }
+
+    /* ─── Top Bar ───────────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--green-900);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      height: 56px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .topbar-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-logo svg { width: 28px; height: 28px; }
+
+    .topbar-spacer { flex: 1; }
+
+    .topbar-controls { display: flex; align-items: center; gap: 8px; }
+
+    .btn-pill {
+      border: none;
+      border-radius: 999px;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      cursor: pointer;
+      transition: background .2s, opacity .2s;
+    }
+
+    .btn-lang {
+      background: rgba(255,255,255,.15);
+      color: #fff;
+    }
+
+    .btn-lang.active {
+      background: var(--green-500);
+      color: #fff;
+    }
+
+    .btn-lang:hover { opacity: .85; }
+
+    .btn-theme {
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 1rem;
+      padding: 0;
+    }
+
+    .btn-theme:hover { opacity: .85; }
+
+    /* ─── Layout ────────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+      gap: 32px;
+    }
+
+    /* ─── Sidebar ───────────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 72px;
+      height: calc(100vh - 80px);
+      overflow-y: auto;
+      padding: 24px 0;
+    }
+
+    .sidebar-section { margin-bottom: 8px; }
+
+    .sidebar-heading {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      padding: 8px 12px 4px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: .875rem;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: var(--green-100);
+      color: var(--green-800);
+    }
+
+    .sidebar-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ─── Main Content ──────────────────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 40px 0 80px;
+    }
+
+    /* ─── Hero ──────────────────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
+      color: #fff;
+      padding: 64px 40px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 280px;
+      height: 280px;
+      background: rgba(255,255,255,.06);
+      border-radius: 50%;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: 60px;
+      bottom: -80px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,.04);
+      border-radius: 50%;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.15);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: .8rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      opacity: .85;
+      max-width: 560px;
+      margin-bottom: 28px;
+    }
+
+    .hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .hero-chip {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: .8rem;
+      font-weight: 500;
+    }
+
+    /* ─── Section ───────────────────────────────────────────── */
+    .section {
+      margin-bottom: 56px;
+      scroll-margin-top: 80px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--green-300);
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--green-100);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--green-900);
+    }
+
+    [data-theme="dark"] .section-header h2 { color: var(--green-300); }
+
+    /* ─── Cards ─────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card-small {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-small h4 {
+      font-size: .9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-small p {
+      font-size: .82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ─── Steps ─────────────────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      position: relative;
+      padding-bottom: 24px;
+    }
+
+    .step:last-child { padding-bottom: 0; }
+
+    .step-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 36px;
+      flex-shrink: 0;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      background: var(--green-800);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .step-line {
+      flex: 1;
+      width: 2px;
+      background: var(--green-300);
+      margin-top: 4px;
+    }
+
+    .step:last-child .step-line { display: none; }
+
+    .step-body { flex: 1; padding-top: 6px; }
+
+    .step-body h4 { font-weight: 600; font-size: .95rem; margin-bottom: 4px; }
+
+    .step-body p { font-size: .875rem; color: var(--text-secondary); }
+
+    /* ─── Alerts ────────────────────────────────────────────── */
+    .alert {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      font-size: .875rem;
+    }
+
+    .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    .alert-info  { background: var(--blue-100); border-left: 3px solid var(--blue-600); }
+    .alert-warn  { background: var(--amber-100); border-left: 3px solid var(--amber-600); }
+    .alert-tip   { background: var(--green-50); border-left: 3px solid var(--green-700); }
+    .alert-danger{ background: var(--red-100); border-left: 3px solid var(--red-600); }
+
+    .alert strong { display: block; font-weight: 600; margin-bottom: 2px; }
+
+    /* ─── Table ─────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+
+    th {
+      background: var(--green-900);
+      color: #fff;
+      padding: 10px 16px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:nth-child(even) td { background: var(--bg-page); }
+
+    /* ─── Badge ─────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: .72rem;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+
+    .badge-green  { background: var(--green-100); color: var(--green-900); }
+    .badge-amber  { background: var(--amber-100); color: #92400e; }
+    .badge-red    { background: var(--red-100);   color: #991b1b; }
+    .badge-blue   { background: var(--blue-100);  color: #1e40af; }
+
+    /* ─── Feature List ──────────────────────────────────────── */
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: .9rem;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      width: 22px;
+      height: 22px;
+      background: var(--green-500);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ─── Permission Grid ───────────────────────────────────── */
+    .perm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .perm-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .perm-icon { font-size: 2rem; margin-bottom: 8px; }
+
+    .perm-card h4 { font-size: .9rem; font-weight: 600; margin-bottom: 4px; }
+
+    .perm-card p { font-size: .8rem; color: var(--text-secondary); }
+
+    /* ─── Model Table ───────────────────────────────────────── */
+    .model-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+
+    .model-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 16px;
+      text-align: center;
+      position: relative;
+      transition: box-shadow .2s;
+    }
+
+    .model-card:hover { box-shadow: var(--shadow-md); }
+
+    .model-card.recommended {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 2px rgba(82,183,136,.3);
+    }
+
+    .model-recommend-label {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-700);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .model-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+
+    .model-size { font-size: .8rem; color: var(--text-muted); margin-bottom: 12px; }
+
+    .model-specs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+
+    .model-spec { font-size: .8rem; color: var(--text-secondary); }
+
+    /* ─── Lang toggle logic ─────────────────────────────────── */
+    .lang-es, .lang-en { }
+
+    body.lang-en .lang-es { display: none !important; }
+    body.lang-es .lang-en { display: none !important; }
+
+    /* default show es */
+    body:not(.lang-en) .lang-en { display: none !important; }
+    body:not(.lang-es) .lang-es { display: none !important; }
+
+    /* ─── Footer ────────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--text-muted);
+      margin-top: 48px;
+    }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .layout { padding: 0 12px; }
+      .hero { padding: 40px 24px; }
+      .card { padding: 16px; }
+      .model-cards { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 0 12px; }
+      .model-cards { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: 1fr; }
+      .perm-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body class="lang-es">
+
+<!-- ═══════════════════ TOP BAR ═══════════════════ -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#40916c"/>
+      <path d="M8 22 C8 22 10 10 16 8 C22 10 24 22 24 22" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <line x1="16" y1="8" x2="16" y2="26" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      <path d="M16 14 C16 14 12 16 11 20" stroke="#95d5b2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M16 17 C16 17 19 18 20 21" stroke="#95d5b2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    AgroAI
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-controls">
+    <button class="btn-pill btn-lang active" id="btn-es" onclick="setLang('es')">ES</button>
+    <button class="btn-pill btn-lang" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="btn-theme btn-pill" id="btn-theme" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<!-- ═══════════════════ LAYOUT ═══════════════════ -->
+<div class="layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading lang-es">Inicio</div>
+      <div class="sidebar-heading lang-en">Start</div>
+      <a class="sidebar-link" href="#overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        <span class="lang-es">Descripción general</span>
+        <span class="lang-en">Overview</span>
+      </a>
+      <a class="sidebar-link" href="#requirements">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="lang-es">Requisitos</span>
+        <span class="lang-en">Requirements</span>
+      </a>
+      <a class="sidebar-link" href="#first-steps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <span class="lang-es">Primeros pasos</span>
+        <span class="lang-en">First steps</span>
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading lang-es">Funcionalidades</div>
+      <div class="sidebar-heading lang-en">Features</div>
+      <a class="sidebar-link" href="#plantations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>
+        <span class="lang-es">Plantaciones</span>
+        <span class="lang-en">Plantations</span>
+      </a>
+      <a class="sidebar-link" href="#ai-models">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10H12z"/><circle cx="12" cy="12" r="3"/><path d="M12 22a10 10 0 0 1 0-20"/></svg>
+        <span class="lang-es">Modelos de IA</span>
+        <span class="lang-en">AI Models</span>
+      </a>
+      <a class="sidebar-link" href="#analysis">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span class="lang-es">Análisis por foto</span>
+        <span class="lang-en">Photo Analysis</span>
+      </a>
+      <a class="sidebar-link" href="#weather">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+        <span class="lang-es">Meteorología</span>
+        <span class="lang-en">Weather</span>
+      </a>
+      <a class="sidebar-link" href="#calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="lang-es">Calendario</span>
+        <span class="lang-en">Calendar</span>
+      </a>
+      <a class="sidebar-link" href="#settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="lang-es">Ajustes</span>
+        <span class="lang-en">Settings</span>
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading lang-es">Referencia</div>
+      <div class="sidebar-heading lang-en">Reference</div>
+      <a class="sidebar-link" href="#plantation-types">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span class="lang-es">Tipos de plantación</span>
+        <span class="lang-en">Plantation types</span>
+      </a>
+      <a class="sidebar-link" href="#permissions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span class="lang-es">Permisos</span>
+        <span class="lang-en">Permissions</span>
+      </a>
+      <a class="sidebar-link" href="#privacy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span class="lang-es">Privacidad</span>
+        <span class="lang-en">Privacy</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <main class="main">
+
+    <!-- ─── HERO ─────────────────────────────────── -->
+    <div class="hero">
+      <div class="hero-badge">📱 Android 8.0+</div>
+
+      <h1 class="lang-es">Guía de Usuario<br>AgroAI</h1>
+      <h1 class="lang-en">User Guide<br>AgroAI</h1>
+
+      <p class="lang-es">Tu asistente agrícola inteligente con IA local. Gestiona plantaciones, analiza fotos con Gemma y planifica tratamientos — sin enviar datos a ningún servidor.</p>
+      <p class="lang-en">Your intelligent agricultural assistant with on-device AI. Manage plantations, analyze photos with Gemma, and plan treatments — no data ever leaves your device.</p>
+
+      <div class="hero-chips">
+        <span class="hero-chip">🌿 Gemma 3 / 4</span>
+        <span class="hero-chip">📡 IA 100% local</span>
+        <span class="hero-chip">🗺️ OpenStreetMap</span>
+        <span class="hero-chip">☁️ AEMET</span>
+        <span class="hero-chip">📅 Google Calendar</span>
+        <span class="hero-chip">🔒 Sin servidor propio</span>
+      </div>
+    </div>
+
+    <!-- ─── OVERVIEW ──────────────────────────────── -->
+    <section class="section" id="overview">
+      <div class="section-header">
+        <div class="section-icon">🌾</div>
+        <h2 class="lang-es">Descripción general</h2>
+        <h2 class="lang-en">Overview</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>AgroAI es una app Android nativa para la gestión agrícola inteligente. Descarga el modelo Gemma directamente en tu dispositivo y úsalo para analizar el estado de tus cultivos mediante fotografías. No hay backend propio: toda la inteligencia artificial corre localmente, garantizando que tus datos nunca salgan de tu teléfono.</p>
+      </div>
+      <div class="card lang-en">
+        <p>AgroAI is a native Android app for smart agricultural management. Download the Gemma model directly to your device and use it to analyze the condition of your crops through photos. There is no proprietary backend: all artificial intelligence runs locally, ensuring your data never leaves your phone.</p>
+      </div>
+
+      <div class="card-grid">
+        <div class="card-small">
+          <h4>🌿 <span class="lang-es">Gestión de Plantaciones</span><span class="lang-en">Plantation Management</span></h4>
+          <p class="lang-es">Registra, organiza y consulta todas tus parcelas con geolocalización y tipos de cultivo.</p>
+          <p class="lang-en">Register, organize, and view all your plots with geolocation and crop type classification.</p>
+        </div>
+        <div class="card-small">
+          <h4>🤖 <span class="lang-es">IA en el dispositivo</span><span class="lang-en">On-device AI</span></h4>
+          <p class="lang-es">Gemma 3 analiza tus fotos y sugiere tratamientos sin conexión a internet.</p>
+          <p class="lang-en">Gemma 3 analyzes your photos and suggests treatments without an internet connection.</p>
+        </div>
+        <div class="card-small">
+          <h4>📸 <span class="lang-es">Análisis visual</span><span class="lang-en">Visual analysis</span></h4>
+          <p class="lang-es">Toma una foto o selecciona una de la galería y recibe diagnósticos instantáneos.</p>
+          <p class="lang-en">Take a photo or pick one from the gallery and receive instant diagnoses.</p>
+        </div>
+        <div class="card-small">
+          <h4>📅 <span class="lang-es">Planificación</span><span class="lang-en">Planning</span></h4>
+          <p class="lang-es">Agenda los tratamientos recomendados directamente en tu Google Calendar.</p>
+          <p class="lang-en">Schedule recommended treatments directly to your Google Calendar.</p>
+        </div>
+        <div class="card-small">
+          <h4>⛅ <span class="lang-es">Meteorología</span><span class="lang-en">Weather</span></h4>
+          <p class="lang-es">Integración con AEMET para alertas que pueden afectar a tus tratamientos.</p>
+          <p class="lang-en">Integration with AEMET for weather alerts that may affect your scheduled treatments.</p>
+        </div>
+        <div class="card-small">
+          <h4>🗺️ <span class="lang-es">Mapas offline</span><span class="lang-en">Offline maps</span></h4>
+          <p class="lang-es">OpenStreetMap con tiles en caché para geolocalizar tus plantaciones sin datos.</p>
+          <p class="lang-en">OpenStreetMap with cached tiles to geolocate your plantations without mobile data.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── REQUIREMENTS ──────────────────────────── -->
+    <section class="section" id="requirements">
+      <div class="section-header">
+        <div class="section-icon">📱</div>
+        <h2 class="lang-es">Requisitos</h2>
+        <h2 class="lang-en">Requirements</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="lang-es">Requisito</th>
+              <th class="lang-en">Requirement</th>
+              <th class="lang-es">Mínimo</th>
+              <th class="lang-en">Minimum</th>
+              <th class="lang-es">Recomendado</th>
+              <th class="lang-en">Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lang-es">Sistema operativo</td>
+              <td class="lang-en">Operating system</td>
+              <td>Android 8.0 (API 26)</td>
+              <td>Android 12+ (API 31)</td>
+            </tr>
+            <tr>
+              <td class="lang-es">RAM</td>
+              <td class="lang-en">RAM</td>
+              <td>4 GB</td>
+              <td class="lang-es">8 GB o más</td>
+              <td class="lang-en">8 GB or more</td>
+            </tr>
+            <tr>
+              <td class="lang-es">Almacenamiento libre</td>
+              <td class="lang-en">Free storage</td>
+              <td class="lang-es">3 GB (modelo 1B)</td>
+              <td class="lang-en">3 GB (1B model)</td>
+              <td class="lang-es">6 GB o más (modelo 4B)</td>
+              <td class="lang-en">6 GB or more (4B model)</td>
+            </tr>
+            <tr>
+              <td class="lang-es">Conexión a internet</td>
+              <td class="lang-en">Internet connection</td>
+              <td colspan="2" class="lang-es">Solo para descargar el modelo, AEMET y Google Calendar</td>
+              <td colspan="2" class="lang-en">Only for model download, AEMET and Google Calendar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-tip" style="margin-top:16px;">
+        <span class="alert-icon">💡</span>
+        <div>
+          <strong class="lang-es">Material You</strong>
+          <strong class="lang-en">Material You</strong>
+          <span class="lang-es">En Android 12 (API 31) o superior, la app adopta automáticamente los colores dinámicos de tu fondo de pantalla.</span>
+          <span class="lang-en">On Android 12 (API 31) or higher, the app automatically adopts the dynamic colors from your wallpaper.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FIRST STEPS ───────────────────────────── -->
+    <section class="section" id="first-steps">
+      <div class="section-header">
+        <div class="section-icon">🚀</div>
+        <h2 class="lang-es">Primeros pasos</h2>
+        <h2 class="lang-en">First steps</h2>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Obtén un token de HuggingFace</h4>
+            <h4 class="lang-en">Get a HuggingFace token</h4>
+            <p class="lang-es">Crea una cuenta gratuita en <strong>huggingface.co</strong> y genera un token de acceso en <em>Settings → Access Tokens</em>. Este token es necesario para descargar los modelos Gemma.</p>
+            <p class="lang-en">Create a free account on <strong>huggingface.co</strong> and generate an access token at <em>Settings → Access Tokens</em>. This token is required to download Gemma models.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Descarga un modelo Gemma</h4>
+            <h4 class="lang-en">Download a Gemma model</h4>
+            <p class="lang-es">Ve a <strong>Ajustes → Modelos de IA</strong> (o sigue el banner de bienvenida). Introduce tu token, selecciona Gemma 3 1B para empezar y pulsa <em>Descargar</em>. La descarga se realiza en segundo plano.</p>
+            <p class="lang-en">Go to <strong>Settings → AI Models</strong> (or follow the welcome banner). Enter your token, select Gemma 3 1B to get started, and tap <em>Download</em>. The download runs in the background.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Activa el modelo</h4>
+            <h4 class="lang-en">Activate the model</h4>
+            <p class="lang-es">Una vez descargado, pulsa <em>Activar</em> en la tarjeta del modelo. El banner de la pantalla de inicio desaparecerá y el análisis estará disponible.</p>
+            <p class="lang-en">Once downloaded, tap <em>Set as active</em> on the model card. The home screen banner will disappear and analysis will be available.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Añade tu primera plantación</h4>
+            <h4 class="lang-en">Add your first plantation</h4>
+            <p class="lang-es">Pulsa el botón <em>Añadir Plantación</em> en la pantalla de inicio. El asistente de 4 pasos te guiará para registrar nombre, tipo, ubicación y plantas.</p>
+            <p class="lang-en">Tap <em>Add Plantation</em> on the home screen. The 4-step wizard will guide you to register the name, type, location, and plants.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">5</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Analiza una foto</h4>
+            <h4 class="lang-en">Analyze a photo</h4>
+            <p class="lang-es">Ve a la pestaña <strong>Análisis</strong>, toma una foto o selecciona una de la galería. Gemma analizará el estado de tus plantas y te ofrecerá sugerencias de tratamiento.</p>
+            <p class="lang-en">Go to the <strong>Analysis</strong> tab, take a photo or choose one from the gallery. Gemma will analyze the condition of your plants and provide treatment suggestions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PLANTATIONS ───────────────────────────── -->
+    <section class="section" id="plantations">
+      <div class="section-header">
+        <div class="section-icon">🌱</div>
+        <h2 class="lang-es">Gestión de Plantaciones</h2>
+        <h2 class="lang-en">Plantation Management</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>La pantalla <strong>Plantaciones</strong> es el núcleo de la app. Desde aquí puedes ver todas tus parcelas y acceder a su detalle. El asistente de creación te lleva paso a paso en 4 etapas:</p>
+      </div>
+      <div class="card lang-en">
+        <p>The <strong>Plantations</strong> screen is the core of the app. From here you can view all your plots and access their details. The creation wizard takes you step by step through 4 stages:</p>
+      </div>
+
+      <div class="steps" style="margin-bottom:24px;">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Información básica</h4>
+            <h4 class="lang-en">Basic information</h4>
+            <p class="lang-es">Nombre de la plantación, tipo (ver tabla completa más abajo), superficie en m² y notas opcionales.</p>
+            <p class="lang-en">Plantation name, type (see full table below), area in m², and optional notes.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Ubicación</h4>
+            <h4 class="lang-en">Location</h4>
+            <p class="lang-es">Introduce la dirección manualmente o pulsa <em>"Seleccionar en mapa"</em> para marcar el punto exacto en OpenStreetMap. El GPS detecta automáticamente tu posición. La búsqueda de lugares usa Nominatim (OSM).</p>
+            <p class="lang-en">Enter the address manually or tap <em>"Pick on map"</em> to mark the exact point on OpenStreetMap. GPS automatically detects your position. Place search uses Nominatim (OSM).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Plantas</h4>
+            <h4 class="lang-en">Plants</h4>
+            <p class="lang-es">Añade uno o varios tipos de planta indicando nombre, variedad, número de ejemplares y distancias de siembra (entre filas y entre plantas, en metros).</p>
+            <p class="lang-en">Add one or more plant types specifying name, variety, number of specimens, and planting distances (between rows and between plants, in meters).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Resumen y confirmación</h4>
+            <h4 class="lang-en">Summary and confirmation</h4>
+            <p class="lang-es">Revisa todos los datos antes de guardar. Puedes navegar hacia atrás en cualquier paso para corregir información.</p>
+            <p class="lang-en">Review all the data before saving. You can navigate back at any step to correct information.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">🗺️</span>
+        <div>
+          <strong class="lang-es">Mapa sin conexión</strong>
+          <strong class="lang-en">Offline map</strong>
+          <span class="lang-es">Los tiles del mapa se descargan y guardan automáticamente en la caché del dispositivo. Una vez visitadas las zonas de interés con conexión, el mapa funciona sin datos móviles.</span>
+          <span class="lang-en">Map tiles are automatically downloaded and cached on the device. Once you've visited the areas of interest with a connection, the map works without mobile data.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── AI MODELS ─────────────────────────────── -->
+    <section class="section" id="ai-models">
+      <div class="section-header">
+        <div class="section-icon">🤖</div>
+        <h2 class="lang-es">Modelos de IA (Gemma)</h2>
+        <h2 class="lang-en">AI Models (Gemma)</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>AgroAI usa <strong>Gemma 3</strong> de Google, un modelo de lenguaje grande de código abierto que se ejecuta completamente en tu dispositivo mediante <strong>MediaPipe Tasks GenAI</strong>. Los modelos se descargan desde HuggingFace y se guardan en el almacenamiento externo de la app.</p>
+      </div>
+      <div class="card lang-en">
+        <p>AgroAI uses Google's <strong>Gemma 3</strong>, an open-source large language model that runs entirely on your device via <strong>MediaPipe Tasks GenAI</strong>. Models are downloaded from HuggingFace and stored in the app's external storage.</p>
+      </div>
+
+      <div class="model-cards" style="margin-bottom:24px;">
+        <div class="model-card recommended">
+          <div class="model-recommend-label lang-es">Recomendado</div>
+          <div class="model-recommend-label lang-en">Recommended</div>
+          <div class="model-name">Gemma 3 1B</div>
+          <div class="model-size lang-es">~2 GB de descarga</div>
+          <div class="model-size lang-en">~2 GB download</div>
+          <div class="model-specs">
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 2 GB</span><span class="lang-en">Storage: 2 GB</span></div>
+            <div class="model-spec">🧠 RAM: 4 GB</div>
+          </div>
+          <span class="badge badge-green lang-es">Gama media</span>
+          <span class="badge badge-green lang-en">Mid-range</span>
+        </div>
+        <div class="model-card">
+          <div class="model-name">Gemma 3 4B</div>
+          <div class="model-size lang-es">~5 GB de descarga</div>
+          <div class="model-size lang-en">~5 GB download</div>
+          <div class="model-specs">
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 5 GB</span><span class="lang-en">Storage: 5 GB</span></div>
+            <div class="model-spec">🧠 RAM: 6 GB</div>
+          </div>
+          <span class="badge badge-amber lang-es">Gama alta</span>
+          <span class="badge badge-amber lang-en">High-end</span>
+        </div>
+        <div class="model-card">
+          <div class="model-name">Gemma 3 12B</div>
+          <div class="model-size lang-es">~14 GB de descarga</div>
+          <div class="model-size lang-en">~14 GB download</div>
+          <div class="model-specs">
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 14 GB</span><span class="lang-en">Storage: 14 GB</span></div>
+            <div class="model-spec">🧠 RAM: 16 GB</div>
+          </div>
+          <span class="badge badge-red lang-es">Premium</span>
+          <span class="badge badge-red lang-en">Premium</span>
+        </div>
+        <div class="model-card">
+          <div class="model-name">Gemma 4</div>
+          <div class="model-size lang-es">Próximamente</div>
+          <div class="model-size lang-en">Coming soon</div>
+          <div class="model-specs">
+            <div class="model-spec" style="color:var(--text-muted)">—</div>
+          </div>
+          <span class="badge" style="background:var(--border);color:var(--text-muted)">Soon</span>
+        </div>
+      </div>
+
+      <h3 style="font-size:1rem;font-weight:600;margin-bottom:12px;" class="lang-es">Cómo descargar un modelo</h3>
+      <h3 style="font-size:1rem;font-weight:600;margin-bottom:12px;" class="lang-en">How to download a model</h3>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left"><div class="step-number">1</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Ajustes → Modelos de IA</h4>
+            <h4 class="lang-en">Settings → AI Models</h4>
+            <p class="lang-es">Accede también desde el banner de bienvenida en la pantalla de inicio.</p>
+            <p class="lang-en">Also accessible from the welcome banner on the home screen.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">2</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Introduce tu token de HuggingFace</h4>
+            <h4 class="lang-en">Enter your HuggingFace token</h4>
+            <p class="lang-es">Si no ves el campo de token, pulsa el banner amarillo "Token de HuggingFace requerido".</p>
+            <p class="lang-en">If you don't see the token field, tap the yellow "HuggingFace token required" banner.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">3</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Pulsa Descargar en la tarjeta del modelo</h4>
+            <h4 class="lang-en">Tap Download on the model card</h4>
+            <p class="lang-es">Para modelos grandes (12B), la app te pedirá confirmación indicando el espacio en disco y la RAM necesaria.</p>
+            <p class="lang-en">For large models (12B), the app will ask for confirmation indicating the disk space and RAM required.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">4</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Espera a que termine y activa el modelo</h4>
+            <h4 class="lang-en">Wait for it to finish and activate the model</h4>
+            <p class="lang-es">La descarga continúa en segundo plano. Cuando termine, pulsa <em>Activar</em>. Solo puede haber un modelo activo a la vez.</p>
+            <p class="lang-en">The download continues in the background. When done, tap <em>Set as active</em>. Only one model can be active at a time.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warn" style="margin-top:16px;">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <strong class="lang-es">Advertencia para modelos grandes</strong>
+          <strong class="lang-en">Warning for large models</strong>
+          <span class="lang-es">Gemma 3 12B requiere ~14 GB de espacio libre y al menos 16 GB de RAM. Comprueba el espacio disponible antes de descargar.</span>
+          <span class="lang-en">Gemma 3 12B requires ~14 GB of free space and at least 16 GB of RAM. Check available space before downloading.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ANALYSIS ──────────────────────────────── -->
+    <section class="section" id="analysis">
+      <div class="section-header">
+        <div class="section-icon">📸</div>
+        <h2 class="lang-es">Análisis por Foto</h2>
+        <h2 class="lang-en">Photo Analysis</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>La pestaña <strong>Análisis</strong> permite fotografiar tus plantas o seleccionar una imagen de la galería. Gemma procesa la imagen localmente y devuelve sugerencias de tratamiento en segundos.</p>
+      </div>
+      <div class="card lang-en">
+        <p>The <strong>Analysis</strong> tab lets you photograph your plants or select an image from the gallery. Gemma processes the image locally and returns treatment suggestions in seconds.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left"><div class="step-number">1</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Selecciona la fuente de imagen</h4>
+            <h4 class="lang-en">Select the image source</h4>
+            <p class="lang-es">Pulsa <strong>Tomar Foto</strong> para usar la cámara o <strong>Elegir de Galería</strong> para seleccionar una imagen existente.</p>
+            <p class="lang-en">Tap <strong>Take Photo</strong> to use the camera or <strong>Choose from Gallery</strong> to select an existing image.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">2</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Espera el análisis</h4>
+            <h4 class="lang-en">Wait for the analysis</h4>
+            <p class="lang-es">Aparecerá el indicador <em>"Analizando con Gemma…"</em>. El tiempo varía según el modelo activo (1B es el más rápido).</p>
+            <p class="lang-en">The <em>"Analyzing with Gemma…"</em> indicator will appear. Time varies by active model (1B is fastest).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">3</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Revisa las sugerencias</h4>
+            <h4 class="lang-en">Review the suggestions</h4>
+            <p class="lang-es">Gemma devuelve un diagnóstico y una lista de tratamientos recomendados: riego, poda, fertilización, fumigación, cosecha, injerto o trasplante.</p>
+            <p class="lang-en">Gemma returns a diagnosis and a list of recommended treatments: irrigation, pruning, fertilization, fumigation, harvest, grafting, or transplanting.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">4</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Agenda en Google Calendar</h4>
+            <h4 class="lang-en">Schedule in Google Calendar</h4>
+            <p class="lang-es">Pulsa <em>Agendar en Calendario</em> en cualquier sugerencia para crear un evento directamente en tu Google Calendar con la fecha y descripción del tratamiento.</p>
+            <p class="lang-en">Tap <em>Schedule in Calendar</em> on any suggestion to create an event directly in your Google Calendar with the treatment date and description.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" style="margin-top:16px;">
+        <span class="alert-icon">🚫</span>
+        <div>
+          <strong class="lang-es">Sin modelo activo</strong>
+          <strong class="lang-en">No active model</strong>
+          <span class="lang-es">Si no hay ningún modelo Gemma descargado y activo, la pantalla de análisis mostrará un aviso. Ve a <strong>Ajustes → Modelos de IA</strong> para descargar uno.</span>
+          <span class="lang-en">If no Gemma model is downloaded and active, the analysis screen will show a warning. Go to <strong>Settings → AI Models</strong> to download one.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── WEATHER ───────────────────────────────── -->
+    <section class="section" id="weather">
+      <div class="section-header">
+        <div class="section-icon">⛅</div>
+        <h2 class="lang-es">Meteorología (AEMET)</h2>
+        <h2 class="lang-en">Weather (AEMET)</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>AgroAI se integra con la API abierta de <strong>AEMET</strong> (Agencia Estatal de Meteorología de España) para consultar predicciones meteorológicas por municipio y emitir alertas cuando el tiempo puede afectar a los tratamientos programados.</p>
+      </div>
+      <div class="card lang-en">
+        <p>AgroAI integrates with the open API of <strong>AEMET</strong> (Spain's State Meteorological Agency) to query weather forecasts by municipality and issue alerts when weather may affect scheduled treatments.</p>
+      </div>
+
+      <ul class="feature-list" style="margin-bottom:16px;">
+        <li class="lang-es">Predicción diaria por municipio</li>
+        <li class="lang-en">Daily forecast by municipality</li>
+        <li class="lang-es">Predicción horaria</li>
+        <li class="lang-en">Hourly forecast</li>
+        <li class="lang-es">Alertas de lluvia o helada que afectan a eventos de Google Calendar</li>
+        <li class="lang-en">Rain or frost alerts that affect Google Calendar events</li>
+        <li class="lang-es">Actualización automática cada 6 horas</li>
+        <li class="lang-en">Automatic refresh every 6 hours</li>
+      </ul>
+
+      <div class="alert alert-warn">
+        <span class="alert-icon">🔑</span>
+        <div>
+          <strong class="lang-es">API key de AEMET requerida</strong>
+          <strong class="lang-en">AEMET API key required</strong>
+          <span class="lang-es">La meteorología solo está disponible en España. Obtén tu clave gratuita en <strong>opendata.aemet.es</strong> e introdúcela en <strong>Ajustes → AEMET</strong>.</span>
+          <span class="lang-en">Weather data is only available for Spain. Get your free key at <strong>opendata.aemet.es</strong> and enter it in <strong>Settings → AEMET</strong>.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CALENDAR ──────────────────────────────── -->
+    <section class="section" id="calendar">
+      <div class="section-header">
+        <div class="section-icon">📅</div>
+        <h2 class="lang-es">Integración con Google Calendar</h2>
+        <h2 class="lang-en">Google Calendar Integration</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>AgroAI puede crear y gestionar eventos en tu Google Calendar para que no olvides ningún tratamiento agrícola. Soporta múltiples cuentas Google y calendarios.</p>
+      </div>
+      <div class="card lang-en">
+        <p>AgroAI can create and manage events in your Google Calendar so you don't miss any agricultural treatment. It supports multiple Google accounts and calendars.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="lang-es">Tipo de evento</th>
+              <th class="lang-en">Event type</th>
+              <th class="lang-es">Descripción</th>
+              <th class="lang-en">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>💧 <span class="lang-es">Riego</span><span class="lang-en">Irrigation</span></td>
+              <td class="lang-es">Recordatorio de riego con cantidad y horario</td>
+              <td class="lang-en">Irrigation reminder with quantity and schedule</td>
+            </tr>
+            <tr>
+              <td>✂️ <span class="lang-es">Poda</span><span class="lang-en">Pruning</span></td>
+              <td class="lang-es">Fecha y técnica de poda recomendada</td>
+              <td class="lang-en">Date and recommended pruning technique</td>
+            </tr>
+            <tr>
+              <td>🌾 <span class="lang-es">Cosecha</span><span class="lang-en">Harvest</span></td>
+              <td class="lang-es">Ventana óptima de recogida</td>
+              <td class="lang-en">Optimal harvest window</td>
+            </tr>
+            <tr>
+              <td>🧪 <span class="lang-es">Fertilización</span><span class="lang-en">Fertilization</span></td>
+              <td class="lang-es">Tipo y cantidad de fertilizante</td>
+              <td class="lang-en">Type and quantity of fertilizer</td>
+            </tr>
+            <tr>
+              <td>🌫️ <span class="lang-es">Fumigación</span><span class="lang-en">Fumigation</span></td>
+              <td class="lang-es">Producto y dosis de tratamiento fitosanitario</td>
+              <td class="lang-en">Phytosanitary treatment product and dosage</td>
+            </tr>
+            <tr>
+              <td>🌿 <span class="lang-es">Injerto</span><span class="lang-en">Grafting</span></td>
+              <td class="lang-es">Fecha ideal para injerto según temporada</td>
+              <td class="lang-en">Ideal grafting date by season</td>
+            </tr>
+            <tr>
+              <td>🪴 <span class="lang-es">Trasplante</span><span class="lang-en">Transplanting</span></td>
+              <td class="lang-es">Ventana de trasplante y condiciones óptimas</td>
+              <td class="lang-en">Transplanting window and optimal conditions</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-info" style="margin-top:16px;">
+        <span class="alert-icon">ℹ️</span>
+        <div>
+          <strong class="lang-es">Configuración de cuenta</strong>
+          <strong class="lang-en">Account setup</strong>
+          <span class="lang-es">Ve a <strong>Ajustes → Cuentas Google</strong> para seleccionar qué cuenta y calendario usará AgroAI. Se requiere el permiso de escritura en calendario.</span>
+          <span class="lang-en">Go to <strong>Settings → Google Accounts</strong> to select which account and calendar AgroAI will use. Calendar write permission is required.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── SETTINGS ──────────────────────────────── -->
+    <section class="section" id="settings">
+      <div class="section-header">
+        <div class="section-icon">⚙️</div>
+        <h2 class="lang-es">Ajustes</h2>
+        <h2 class="lang-en">Settings</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="lang-es">Opción</th>
+              <th class="lang-en">Option</th>
+              <th class="lang-es">Descripción</th>
+              <th class="lang-en">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🎨 <span class="lang-es">Tema</span><span class="lang-en">Theme</span></td>
+              <td class="lang-es">Claro / Oscuro / Seguir el sistema</td>
+              <td class="lang-en">Light / Dark / Follow system</td>
+            </tr>
+            <tr>
+              <td>🌐 <span class="lang-es">Idioma</span><span class="lang-en">Language</span></td>
+              <td class="lang-es">Español / Inglés / Seguir el sistema</td>
+              <td class="lang-en">Spanish / English / Follow system</td>
+            </tr>
+            <tr>
+              <td>🤖 <span class="lang-es">Modelo de IA</span><span class="lang-en">AI Model</span></td>
+              <td class="lang-es">Acceso rápido a la pantalla de descarga y gestión de modelos Gemma</td>
+              <td class="lang-en">Quick access to Gemma model download and management screen</td>
+            </tr>
+            <tr>
+              <td>⛅ AEMET</td>
+              <td class="lang-es">Clave API para datos meteorológicos de España</td>
+              <td class="lang-en">API key for Spain weather data</td>
+            </tr>
+            <tr>
+              <td>🔑 HuggingFace</td>
+              <td class="lang-es">Token de acceso para descargar modelos Gemma</td>
+              <td class="lang-en">Access token to download Gemma models</td>
+            </tr>
+            <tr>
+              <td>✏️ <span class="lang-es">Editor de prompts</span><span class="lang-en">Prompt editor</span></td>
+              <td class="lang-es">Personaliza las instrucciones que recibe Gemma para el análisis. Se muestra advertencia según el nivel de riesgo del cambio.</td>
+              <td class="lang-en">Customize the instructions Gemma receives for analysis. A warning is shown according to the risk level of the change.</td>
+            </tr>
+            <tr>
+              <td>📱 <span class="lang-es">Cuentas Google</span><span class="lang-en">Google Accounts</span></td>
+              <td class="lang-es">Selecciona la cuenta y el calendario para agendar tratamientos</td>
+              <td class="lang-en">Select the account and calendar for scheduling treatments</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-tip" style="margin-top:16px;">
+        <span class="alert-icon">✏️</span>
+        <div>
+          <strong class="lang-es">Editor de prompts avanzado</strong>
+          <strong class="lang-en">Advanced prompt editor</strong>
+          <span class="lang-es">Modifica cómo Gemma analiza tus fotos. Los prompts con nivel de riesgo <span class="badge badge-amber">Medio</span> o <span class="badge badge-red">Alto</span> muestran un diálogo de confirmación. Siempre puedes restaurar el valor por defecto.</span>
+          <span class="lang-en">Modify how Gemma analyzes your photos. Prompts with <span class="badge badge-amber">Medium</span> or <span class="badge badge-red">High</span> risk level show a confirmation dialog. You can always restore the default value.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PLANTATION TYPES ───────────────────────── -->
+    <section class="section" id="plantation-types">
+      <div class="section-header">
+        <div class="section-icon">📋</div>
+        <h2 class="lang-es">Tipos de Plantación</h2>
+        <h2 class="lang-en">Plantation Types</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Español</th>
+              <th>English</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Huerta</td><td>Vegetable Garden</td></tr>
+            <tr><td>Secano</td><td>Dry Farming</td></tr>
+            <tr><td>Regadío</td><td>Irrigated</td></tr>
+            <tr><td>Viñedo</td><td>Vineyard</td></tr>
+            <tr><td>Olivar</td><td>Olive Grove</td></tr>
+            <tr><td>Frutal</td><td>Fruit Orchard</td></tr>
+            <tr><td>Cítricos</td><td>Citrus Orchard</td></tr>
+            <tr><td>Invernadero</td><td>Greenhouse</td></tr>
+            <tr><td>Aromáticas</td><td>Herb Garden</td></tr>
+            <tr><td>Medicinales</td><td>Medicinal Plants</td></tr>
+            <tr><td>Cereal</td><td>Grain Crops</td></tr>
+            <tr><td>Leguminosas</td><td>Legumes</td></tr>
+            <tr><td>Tubérculos</td><td>Root Vegetables</td></tr>
+            <tr><td>Floricultura</td><td>Floriculture</td></tr>
+            <tr><td>Vivero</td><td>Plant Nursery</td></tr>
+            <tr><td>Bosque / Silvicultura</td><td>Commercial Forestry</td></tr>
+            <tr><td>Pradera / Prado</td><td>Pasture / Meadow</td></tr>
+            <tr><td>Montaña / Terraza</td><td>Mountain / Terraced</td></tr>
+            <tr><td>Aguacate</td><td>Avocado</td></tr>
+            <tr><td>Arrozal</td><td>Rice Paddy</td></tr>
+            <tr><td>Platanera</td><td>Banana Plantation</td></tr>
+            <tr><td>Otro</td><td>Other</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─── PERMISSIONS ───────────────────────────── -->
+    <section class="section" id="permissions">
+      <div class="section-header">
+        <div class="section-icon">🔒</div>
+        <h2 class="lang-es">Permisos de la aplicación</h2>
+        <h2 class="lang-en">App permissions</h2>
+      </div>
+
+      <div class="card lang-es" style="margin-bottom:20px;">
+        <p>AgroAI solicita los permisos en el momento que los necesita (en tiempo de ejecución), no al instalarse. Si denegas un permiso, puedes concederlo más tarde desde <strong>Ajustes del sistema → Aplicaciones → AgroAI → Permisos</strong>.</p>
+      </div>
+      <div class="card lang-en" style="margin-bottom:20px;">
+        <p>AgroAI requests permissions at the moment they are needed (at runtime), not at install time. If you deny a permission, you can grant it later from <strong>System Settings → Apps → AgroAI → Permissions</strong>.</p>
+      </div>
+
+      <div class="perm-grid">
+        <div class="perm-card">
+          <div class="perm-icon">📷</div>
+          <h4 class="lang-es">Cámara</h4>
+          <h4 class="lang-en">Camera</h4>
+          <p class="lang-es">Para tomar fotos de tus plantas directamente desde la app.</p>
+          <p class="lang-en">To take photos of your plants directly from the app.</p>
+        </div>
+        <div class="perm-card">
+          <div class="perm-icon">📍</div>
+          <h4 class="lang-es">Ubicación</h4>
+          <h4 class="lang-en">Location</h4>
+          <p class="lang-es">Para geolocalizar tus plantaciones con GPS. Se usa una sola vez por plantación.</p>
+          <p class="lang-en">To geolocate your plantations with GPS. Used once per plantation.</p>
+        </div>
+        <div class="perm-card">
+          <div class="perm-icon">📅</div>
+          <h4 class="lang-es">Calendario</h4>
+          <h4 class="lang-en">Calendar</h4>
+          <p class="lang-es">Para leer y escribir eventos en Google Calendar (lectura y escritura).</p>
+          <p class="lang-en">To read and write events in Google Calendar (read and write).</p>
+        </div>
+        <div class="perm-card">
+          <div class="perm-icon">🌐</div>
+          <h4 class="lang-es">Internet</h4>
+          <h4 class="lang-en">Internet</h4>
+          <p class="lang-es">Para descargar el modelo, tiles del mapa, datos de AEMET y sincronizar el calendario.</p>
+          <p class="lang-en">To download the model, map tiles, AEMET data, and sync the calendar.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PRIVACY ───────────────────────────────── -->
+    <section class="section" id="privacy">
+      <div class="section-header">
+        <div class="section-icon">🛡️</div>
+        <h2 class="lang-es">Privacidad y datos</h2>
+        <h2 class="lang-en">Privacy and data</h2>
+      </div>
+
+      <div class="card lang-es">
+        <ul class="feature-list">
+          <li>Las fotos que analizas <strong>nunca salen de tu dispositivo</strong>. Gemma corre localmente.</li>
+          <li>Los datos de tus plantaciones se guardan <strong>solo en la base de datos local</strong> (SQLite via Room).</li>
+          <li>No hay servidores propios de AgroAI. Solo se conecta a: HuggingFace (descarga del modelo), AEMET (meteorología), Nominatim/OSM (búsqueda de lugares y tiles de mapa) y Google Calendar (si lo configuras).</li>
+          <li>Tu token de HuggingFace y la clave de AEMET se guardan cifrados en <strong>DataStore</strong> del dispositivo.</li>
+          <li>La app funciona completamente <strong>sin conexión</strong> una vez descargado el modelo y cacheados los tiles del mapa.</li>
+        </ul>
+      </div>
+      <div class="card lang-en">
+        <ul class="feature-list">
+          <li>The photos you analyze <strong>never leave your device</strong>. Gemma runs locally.</li>
+          <li>Your plantation data is stored <strong>only in the local database</strong> (SQLite via Room).</li>
+          <li>There are no AgroAI proprietary servers. It only connects to: HuggingFace (model download), AEMET (weather), Nominatim/OSM (place search and map tiles) and Google Calendar (if you configure it).</li>
+          <li>Your HuggingFace token and AEMET key are stored encrypted in the device's <strong>DataStore</strong>.</li>
+          <li>The app works completely <strong>offline</strong> once the model is downloaded and map tiles are cached.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── FOOTER ────────────────────────────────── -->
+    <footer class="footer">
+      <div class="lang-es">
+        <p>AgroAI — Gestión agrícola inteligente con IA local</p>
+        <p style="margin-top:6px;">Desarrollado con ❤️ · Android 8.0+ · Kotlin · Jetpack Compose · Gemma · MediaPipe</p>
+        <p style="margin-top:6px;">Mapa: © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a></p>
+      </div>
+      <div class="lang-en">
+        <p>AgroAI — Smart agricultural management with on-device AI</p>
+        <p style="margin-top:6px;">Built with ❤️ · Android 8.0+ · Kotlin · Jetpack Compose · Gemma · MediaPipe</p>
+        <p style="margin-top:6px;">Map: © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a></p>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  /* ─── Language toggle ─── */
+  function setLang(lang) {
+    document.body.classList.remove('lang-es', 'lang-en');
+    document.body.classList.add('lang-' + lang);
+    document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.documentElement.lang = lang;
+    localStorage.setItem('agroai-lang', lang);
+  }
+
+  /* ─── Dark mode toggle ─── */
+  function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    document.getElementById('btn-theme').textContent = next === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('agroai-theme', next);
+  }
+
+  /* ─── Active sidebar link ─── */
+  function updateActiveSidebarLink() {
+    const sections = document.querySelectorAll('.section');
+    const links = document.querySelectorAll('.sidebar-link');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    links.forEach(l => {
+      const href = l.getAttribute('href');
+      l.classList.toggle('active', href === '#' + current);
+    });
+  }
+
+  /* ─── Init ─── */
+  (function init() {
+    const savedLang = localStorage.getItem('agroai-lang') || 'es';
+    setLang(savedLang);
+
+    const savedTheme = localStorage.getItem('agroai-theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.getElementById('btn-theme').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('btn-theme').textContent = '☀️';
+    }
+
+    window.addEventListener('scroll', updateActiveSidebarLink, { passive: true });
+    updateActiveSidebarLink();
+  })();
+</script>
+</body>
+</html>

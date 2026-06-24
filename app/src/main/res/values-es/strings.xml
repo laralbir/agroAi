@@ -98,6 +98,8 @@
     <string name="settings_apis">APIs Externas</string>
     <string name="settings_aemet">AEMET (Meteorología España)</string>
     <string name="settings_aemet_key">Clave API de AEMET</string>
+    <string name="settings_hf_token">Token de HuggingFace</string>
+    <string name="settings_hf_token_hint">Necesario para descargar modelos Gemma</string>
     <string name="settings_accounts">Cuentas Google</string>
     <string name="settings_prompt_editor">Editor de Prompts</string>
 

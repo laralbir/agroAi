@@ -147,16 +147,26 @@ private fun ModelVariantCard(
 
             if (row.downloadState == DownloadState.DOWNLOADING) {
                 Spacer(Modifier.height(10.dp))
-                LinearProgressIndicator(
-                    progress = { row.downloadProgress / 100f },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    text = "${row.downloadProgress}%",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
+                if (row.downloadProgress > 0) {
+                    LinearProgressIndicator(
+                        progress = { row.downloadProgress / 100f },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = "${row.downloadProgress}%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                } else {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Text(
+                        text = stringResource(R.string.model_downloading),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
 
             Spacer(Modifier.height(12.dp))
@@ -185,7 +195,9 @@ private fun ModelVariantCard(
                     }
 
                     row.downloadState == DownloadState.DOWNLOADING -> {
-                        // No action while downloading
+                        OutlinedButton(onClick = onDelete) {
+                            Text(stringResource(R.string.btn_cancel))
+                        }
                     }
 
                     row.downloadState == DownloadState.DOWNLOADED && !row.isActive -> {

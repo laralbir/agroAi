@@ -47,7 +47,7 @@ class DownloadModelHandlerTest {
 
         handler.handle(command)
 
-        verify { downloader.enqueue(any(), ModelVariant.GEMMA3_1B) }
+        coVerify { downloader.enqueue(any(), ModelVariant.GEMMA3_1B) }
     }
 
     @Test
@@ -68,7 +68,7 @@ class DownloadModelHandlerTest {
 
         assertEquals("existing-id", result.getOrThrow())
         coVerify(exactly = 0) { repository.save(any()) }
-        verify(exactly = 0) { downloader.enqueue(any(), any()) }
+        coVerify(exactly = 0) { downloader.enqueue(any(), any()) }
     }
 
     @Test

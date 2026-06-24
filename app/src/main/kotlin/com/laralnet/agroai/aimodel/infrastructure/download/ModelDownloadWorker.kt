@@ -32,6 +32,8 @@ class ModelDownloadWorker @AssistedInject constructor(
         const val KEY_MODEL_ID = "model_id"
         const val KEY_PROGRESS = "progress"
         const val KEY_FILE_PATH = "file_path"
+        const val KEY_ERROR = "error"
+        const val KEY_HF_TOKEN = "hf_token"
         const val NOTIFICATION_ID = 1001
     }
 
@@ -49,44 +51,44 @@ class ModelDownloadWorker @AssistedInject constructor(
         runCatching {
             setProgress(workDataOf(KEY_PROGRESS to 0))
 
-            val request = Request.Builder().url(variant.downloadUrl).build()
+            val hfToken = inputData.getString(KEY_HF_TOKEN).orEmpty()
+            val request = Request.Builder()
+                .url(variant.downloadUrl)
+                .apply { if (hfToken.isNotBlank()) header("Authorization", "Bearer $hfToken") }
+                .build()
             okHttpClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) error("Download failed: ${response.code}")
+                if (!response.isSuccessful) error("HTTP ${response.code} — check your HuggingFace token in Settings")
 
                 val body = response.body ?: error("Empty response body")
                 val contentLength = body.contentLength()
                 var bytesRead = 0L
+                var lastReportedProgress = -1
 
                 destFile.outputStream().use { output ->
                     body.byteStream().use { input ->
-                        val buffer = ByteArray(8 * 1024)
+                        val buffer = ByteArray(64 * 1024)
                         var read: Int
                         while (input.read(buffer).also { read = it } != -1) {
                             output.write(buffer, 0, read)
                             bytesRead += read
                             if (contentLength > 0) {
                                 val progress = (bytesRead * 100 / contentLength).toInt()
-                                setProgress(workDataOf(KEY_PROGRESS to progress))
-                                repository.save(
-                                    AIModel(
-                                        id = modelId,
-                                        variant = variant,
-                                        version = variant.gemmaVersion,
-                                        downloadState = DownloadState.DOWNLOADING,
-                                        downloadProgressPercent = progress
-                                    )
-                                )
+                                // Only report when progress changes by at least 1% to avoid flooding Room
+                                if (progress > lastReportedProgress) {
+                                    lastReportedProgress = progress
+                                    setProgress(workDataOf(KEY_PROGRESS to progress))
+                                    updateProgress(modelId, variant, progress)
+                                }
                             }
                         }
                     }
                 }
             }
 
+            // Read existing record to preserve isActive and other fields
+            val existing = repository.findById(modelId)
             repository.save(
-                AIModel(
-                    id = modelId,
-                    variant = variant,
-                    version = variant.gemmaVersion,
+                (existing ?: AIModel(id = modelId, variant = variant, version = variant.gemmaVersion)).copy(
                     filePath = destFile.absolutePath,
                     downloadState = DownloadState.DOWNLOADED,
                     downloadProgressPercent = 100
@@ -96,16 +98,21 @@ class ModelDownloadWorker @AssistedInject constructor(
             Result.success(workDataOf(KEY_FILE_PATH to destFile.absolutePath))
         }.getOrElse { e ->
             destFile.delete()
+            val existing = repository.findById(modelId)
             repository.save(
-                AIModel(
-                    id = modelId,
-                    variant = variant,
-                    version = variant.gemmaVersion,
-                    downloadState = DownloadState.FAILED
+                (existing ?: AIModel(id = modelId, variant = variant, version = variant.gemmaVersion)).copy(
+                    filePath = null,
+                    downloadState = DownloadState.FAILED,
+                    downloadProgressPercent = 0
                 )
             )
-            Result.failure()
+            Result.failure(workDataOf(KEY_ERROR to (e.message ?: "Unknown error")))
         }
+    }
+
+    private suspend fun updateProgress(modelId: String, variant: ModelVariant, progress: Int) {
+        val existing = repository.findById(modelId) ?: return
+        repository.save(existing.copy(downloadProgressPercent = progress))
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
