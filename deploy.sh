@@ -76,6 +76,27 @@ for serial in $SELECTED_SERIALS; do
     model=$("$ADB" -s "$serial" shell getprop ro.product.model 2>/dev/null | tr -d '\r')
     echo "▶ $model — instalando..."
     "$ADB" -s "$serial" install -r "$APK"
+    "$ADB" -s "$serial" logcat -c
     "$ADB" -s "$serial" shell am start -n "$APP_PACKAGE/$MAIN_ACTIVITY" >/dev/null
     echo "  ✓ Lanzada v$VERSION"
 done
+
+# ── Logcat ────────────────────────────────────────────────────────────────────
+echo ""
+echo "Mostrando logcat (Ctrl+C para salir)..."
+echo ""
+
+LOGCAT_PIDS=""
+for serial in $SELECTED_SERIALS; do
+    model=$("$ADB" -s "$serial" shell getprop ro.product.model 2>/dev/null | tr -d '\r')
+    APP_PID=$("$ADB" -s "$serial" shell pidof "$APP_PACKAGE" 2>/dev/null | tr -d '\r\n ')
+    if [ -n "$APP_PID" ]; then
+        "$ADB" -s "$serial" logcat --pid="$APP_PID" | sed "s/^/[$model] /" &
+    else
+        "$ADB" -s "$serial" logcat | sed "s/^/[$model] /" &
+    fi
+    LOGCAT_PIDS="$LOGCAT_PIDS $!"
+done
+
+# shellcheck disable=SC2086
+wait $LOGCAT_PIDS

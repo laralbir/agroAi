@@ -10,7 +10,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
-## [0.4.0-canary01] - 2026-06-24
+## [0.4.0-alpha01] - 2026-06-24
 
 ### Añadido
 - `ModelManagementScreen` — pantalla de gestión de modelos Gemma con lista de variantes, estado por variante, y botones Descargar / Activar / Eliminar
@@ -26,7 +26,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
-## [0.3.0-canary01] - 2026-06-24
+## [0.3.0-alpha01] - 2026-06-24
 
 ### Añadido
 - Bounded context AIModel completamente implementado: handlers CQRS, queries, eventos de dominio y port `ModelDownloader`
@@ -99,8 +99,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
-[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.4.0-canary01...HEAD
-[0.4.0-canary01]: https://github.com/laralbir/agroAi/compare/v0.3.0-canary01...v0.4.0-canary01
-[0.3.0-canary01]: https://github.com/laralbir/agroAi/compare/v0.2.0...v0.3.0-canary01
+[Unreleased]: https://github.com/laralbir/agroAi/compare/v0.4.0-alpha01...HEAD
+[0.4.0-alpha01]: https://github.com/laralbir/agroAi/compare/v0.3.0-alpha01...v0.4.0-alpha01
+[0.3.0-alpha01]: https://github.com/laralbir/agroAi/compare/v0.2.0...v0.3.0-alpha01
 [0.2.0]: https://github.com/laralbir/agroAi/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/laralbir/agroAi/releases/tag/v0.1.0
