@@ -28,11 +28,34 @@ if [ -z "$DEVICES" ]; then
     exit 1
 fi
 
-echo "Dispositivos detectados:"
+# ── Selector de dispositivo ──────────────────────────────────────────────────
+i=1
 for serial in $DEVICES; do
     model=$("$ADB" -s "$serial" shell getprop ro.product.model 2>/dev/null | tr -d '\r')
-    echo "  • $model ($serial)"
+    echo "  [$i] $model ($serial)"
+    eval "SERIAL_$i=$serial"
+    i=$((i + 1))
 done
+DEVICE_COUNT=$((i - 1))
+
+if [ "$DEVICE_COUNT" -eq 1 ]; then
+    # Un solo dispositivo — selección automática
+    SELECTED_SERIALS="$DEVICES"
+    model=$("$ADB" -s "$SELECTED_SERIALS" shell getprop ro.product.model 2>/dev/null | tr -d '\r')
+    echo "  → Único dispositivo detectado: $model"
+else
+    echo "  [*] Todos los dispositivos"
+    printf "\nSelecciona un dispositivo [1-%d / *]: " "$DEVICE_COUNT"
+    read -r CHOICE
+    if [ "$CHOICE" = "*" ] || [ -z "$CHOICE" ]; then
+        SELECTED_SERIALS="$DEVICES"
+    elif [ "$CHOICE" -ge 1 ] 2>/dev/null && [ "$CHOICE" -le "$DEVICE_COUNT" ]; then
+        eval "SELECTED_SERIALS=\$SERIAL_$CHOICE"
+    else
+        echo "ERROR: Selección inválida."
+        exit 1
+    fi
+fi
 echo ""
 
 # ── Build ────────────────────────────────────────────────────────────────────
@@ -49,7 +72,7 @@ VERSION=$(grep 'versionName' app/build.gradle.kts | grep -o '"[^"]*"' | tr -d '"
 
 # ── Instalar y lanzar ────────────────────────────────────────────────────────
 echo ""
-for serial in $DEVICES; do
+for serial in $SELECTED_SERIALS; do
     model=$("$ADB" -s "$serial" shell getprop ro.product.model 2>/dev/null | tr -d '\r')
     echo "▶ $model — instalando..."
     "$ADB" -s "$serial" install -r "$APK"
