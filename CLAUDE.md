@@ -280,8 +280,30 @@ AppDatabase (SQLite vía Room)
 
 - **Semver**: `MAJOR.MINOR.PATCH`
 - **Git tags**: `v1.0.0`, `v1.1.0`, etc.
-- **versionCode**: incrementar manualmente en cada release
+- **versionCode**: incrementar manualmente en cada release en `app/build.gradle.kts`
 - **CHANGELOG.md**: mantener actualizado con cada tag
+
+### Checklist OBLIGATORIO antes de cada push con cambio de versión
+
+Antes de ejecutar `git push`, verificar y actualizar en este orden:
+
+1. **`CHANGELOG.md`** — añadir sección con la nueva versión, fecha y lista de cambios:
+   ```markdown
+   ## [X.Y.Z] - YYYY-MM-DD
+   ### Añadido / Cambiado / Corregido
+   - ...
+   ```
+
+2. **`README.md`** — revisar que la documentación refleja las nuevas funcionalidades, requisitos o cambios de configuración introducidos en esta versión.
+
+3. **Tag de git** — crear el tag anotado **siempre** que cambie `versionName` en `app/build.gradle.kts`:
+   ```bash
+   git tag -a vX.Y.Z -m "Release vX.Y.Z — descripción breve"
+   git push origin main
+   git push origin vX.Y.Z
+   ```
+
+> **Regla**: si `versionName` cambia → tag obligatorio. Sin tag no hay release.
 
 ---
 
