@@ -10,6 +10,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.7.0] - 2026-06-25
+
+### Cambiado
+- **Meteorología**: sustituida la integración con AEMET por **Open-Meteo** (API pública y gratuita, sin clave API, basada en coordenadas GPS, válida en cualquier país del mundo)
+- `WeatherRepository` y `WeatherData` ahora usan latitud/longitud en lugar de código de municipio INE
+- Eliminados `AemetApiService`, `AemetWeatherRepository` y toda la configuración de clave API de AEMET en Settings y en el wizard de plantaciones
+
+### Añadido
+- Nueva sección **Ayuda y soporte** en Ajustes → enlace a la guía de usuario ([laralbir.github.io/agroAi](https://laralbir.github.io/agroAi/)) que se abre en Chrome Custom Tab
+
+### Documentación
+- `docs/index.html` (guía de usuario): sección Meteorología completamente reescrita para reflejar Open-Meteo; eliminadas todas las referencias a AEMET
+- `README.md`: actualizado para reflejar Open-Meteo; eliminada la sección de configuración de AEMET
+
+---
+
 ## [0.6.0] - 2026-06-25
 
 ### Añadido

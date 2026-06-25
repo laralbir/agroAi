@@ -687,7 +687,7 @@
         <span class="hero-chip">🌿 Gemma 3 / 4</span>
         <span class="hero-chip">📡 IA 100% local</span>
         <span class="hero-chip">🗺️ OpenStreetMap</span>
-        <span class="hero-chip">☁️ AEMET</span>
+        <span class="hero-chip">☁️ Open-Meteo</span>
         <span class="hero-chip">📅 Google Calendar</span>
         <span class="hero-chip">🔒 Sin servidor propio</span>
       </div>
@@ -731,8 +731,8 @@
         </div>
         <div class="card-small">
           <h4>⛅ <span class="lang-es">Meteorología</span><span class="lang-en">Weather</span></h4>
-          <p class="lang-es">Integración con AEMET para alertas que pueden afectar a tus tratamientos.</p>
-          <p class="lang-en">Integration with AEMET for weather alerts that may affect your scheduled treatments.</p>
+          <p class="lang-es">Predicción automática vía Open-Meteo a partir de las coordenadas de tu plantación. Sin clave API.</p>
+          <p class="lang-en">Automatic forecast via Open-Meteo based on your plantation's coordinates. No API key needed.</p>
         </div>
         <div class="card-small">
           <h4>🗺️ <span class="lang-es">Mapas offline</span><span class="lang-en">Offline maps</span></h4>
@@ -787,8 +787,8 @@
             <tr>
               <td class="lang-es">Conexión a internet</td>
               <td class="lang-en">Internet connection</td>
-              <td colspan="2" class="lang-es">Solo para descargar el modelo, AEMET y Google Calendar</td>
-              <td colspan="2" class="lang-en">Only for model download, AEMET and Google Calendar</td>
+              <td colspan="2" class="lang-es">Solo para descargar el modelo, tiles del mapa, Open-Meteo y Google Calendar</td>
+              <td colspan="2" class="lang-en">Only for model download, map tiles, Open-Meteo and Google Calendar</td>
             </tr>
           </tbody>
         </table>
@@ -1172,35 +1172,37 @@
     <section class="section" id="weather">
       <div class="section-header">
         <div class="section-icon">⛅</div>
-        <h2 class="lang-es">Meteorología (AEMET)</h2>
-        <h2 class="lang-en">Weather (AEMET)</h2>
+        <h2 class="lang-es">Meteorología (Open-Meteo)</h2>
+        <h2 class="lang-en">Weather (Open-Meteo)</h2>
       </div>
 
       <div class="card lang-es">
-        <p>AgroAI se integra con la API abierta de <strong>AEMET</strong> (Agencia Estatal de Meteorología de España) para consultar predicciones meteorológicas por municipio y emitir alertas cuando el tiempo puede afectar a los tratamientos programados.</p>
+        <p>AgroAI obtiene predicciones meteorológicas de <strong>Open-Meteo</strong>, una API pública y gratuita que no requiere ninguna clave. El tiempo se consulta automáticamente usando las coordenadas GPS de cada plantación, por lo que funciona en cualquier lugar del mundo.</p>
       </div>
       <div class="card lang-en">
-        <p>AgroAI integrates with the open API of <strong>AEMET</strong> (Spain's State Meteorological Agency) to query weather forecasts by municipality and issue alerts when weather may affect scheduled treatments.</p>
+        <p>AgroAI fetches weather forecasts from <strong>Open-Meteo</strong>, a free public API that requires no key. Weather is queried automatically using each plantation's GPS coordinates, so it works anywhere in the world.</p>
       </div>
 
       <ul class="feature-list" style="margin-bottom:16px;">
-        <li class="lang-es">Predicción diaria por municipio</li>
-        <li class="lang-en">Daily forecast by municipality</li>
-        <li class="lang-es">Predicción horaria</li>
-        <li class="lang-en">Hourly forecast</li>
-        <li class="lang-es">Alertas de lluvia o helada que afectan a eventos de Google Calendar</li>
-        <li class="lang-en">Rain or frost alerts that affect Google Calendar events</li>
+        <li class="lang-es">Predicción diaria para los próximos 7 días</li>
+        <li class="lang-en">Daily forecast for the next 7 days</li>
+        <li class="lang-es">Temperatura actual, humedad, viento y precipitación</li>
+        <li class="lang-en">Current temperature, humidity, wind and precipitation</li>
+        <li class="lang-es">Alertas de lluvia, helada o tormenta que afectan a eventos de Google Calendar</li>
+        <li class="lang-en">Rain, frost or storm alerts that affect Google Calendar events</li>
         <li class="lang-es">Actualización automática cada 6 horas</li>
         <li class="lang-en">Automatic refresh every 6 hours</li>
+        <li class="lang-es">Sin clave API — funciona desde el primer uso</li>
+        <li class="lang-en">No API key — works from first use</li>
       </ul>
 
-      <div class="alert alert-warn">
-        <span class="alert-icon">🔑</span>
+      <div class="alert alert-tip">
+        <span class="alert-icon">📍</span>
         <div>
-          <strong class="lang-es">API key de AEMET requerida</strong>
-          <strong class="lang-en">AEMET API key required</strong>
-          <span class="lang-es">La meteorología solo está disponible en España. Obtén tu clave gratuita en <strong>opendata.aemet.es</strong> e introdúcela en <strong>Ajustes → AEMET</strong>.</span>
-          <span class="lang-en">Weather data is only available for Spain. Get your free key at <strong>opendata.aemet.es</strong> and enter it in <strong>Settings → AEMET</strong>.</span>
+          <strong class="lang-es">Basado en coordenadas GPS</strong>
+          <strong class="lang-en">Based on GPS coordinates</strong>
+          <span class="lang-es">El tiempo se descarga automáticamente para las plantaciones que tengan ubicación definida (latitud y longitud). No es necesario introducir ningún código de municipio.</span>
+          <span class="lang-en">Weather is automatically fetched for plantations that have a location defined (latitude and longitude). No municipality code is needed.</span>
         </div>
       </div>
     </section>
@@ -1314,11 +1316,6 @@
               <td>🤖 <span class="lang-es">Modelo de IA</span><span class="lang-en">AI Model</span></td>
               <td class="lang-es">Acceso rápido a la pantalla de descarga y gestión de modelos Gemma</td>
               <td class="lang-en">Quick access to Gemma model download and management screen</td>
-            </tr>
-            <tr>
-              <td>⛅ AEMET</td>
-              <td class="lang-es">Clave API para datos meteorológicos de España</td>
-              <td class="lang-en">API key for Spain weather data</td>
             </tr>
             <tr>
               <td>🔑 HuggingFace</td>
@@ -1435,8 +1432,8 @@
           <div class="perm-icon">🌐</div>
           <h4 class="lang-es">Internet</h4>
           <h4 class="lang-en">Internet</h4>
-          <p class="lang-es">Para descargar el modelo, tiles del mapa, datos de AEMET y sincronizar el calendario.</p>
-          <p class="lang-en">To download the model, map tiles, AEMET data, and sync the calendar.</p>
+          <p class="lang-es">Para descargar el modelo, tiles del mapa, datos de Open-Meteo y sincronizar el calendario.</p>
+          <p class="lang-en">To download the model, map tiles, Open-Meteo data, and sync the calendar.</p>
         </div>
       </div>
     </section>
@@ -1453,8 +1450,8 @@
         <ul class="feature-list">
           <li>Las fotos que analizas <strong>nunca salen de tu dispositivo</strong>. Gemma corre localmente.</li>
           <li>Los datos de tus plantaciones se guardan <strong>solo en la base de datos local</strong> (SQLite via Room).</li>
-          <li>No hay servidores propios de AgroAI. Solo se conecta a: HuggingFace (descarga del modelo), AEMET (meteorología), Nominatim/OSM (búsqueda de lugares y tiles de mapa) y Google Calendar (si lo configuras).</li>
-          <li>Las credenciales OAuth de HuggingFace (token de acceso y de refresco) y la clave de AEMET se guardan en <strong>DataStore</strong> del dispositivo. Nunca se envían a servidores de AgroAI.</li>
+          <li>No hay servidores propios de AgroAI. Solo se conecta a: HuggingFace (descarga del modelo), Open-Meteo (meteorología), Nominatim/OSM (búsqueda de lugares y tiles de mapa) y Google Calendar (si lo configuras).</li>
+          <li>Las credenciales OAuth de HuggingFace (token de acceso y de refresco) se guardan en <strong>DataStore</strong> del dispositivo. Nunca se envían a servidores de AgroAI.</li>
           <li>La app funciona completamente <strong>sin conexión</strong> una vez descargado el modelo y cacheados los tiles del mapa.</li>
         </ul>
       </div>
@@ -1462,8 +1459,8 @@
         <ul class="feature-list">
           <li>The photos you analyze <strong>never leave your device</strong>. Gemma runs locally.</li>
           <li>Your plantation data is stored <strong>only in the local database</strong> (SQLite via Room).</li>
-          <li>There are no AgroAI proprietary servers. It only connects to: HuggingFace (model download), AEMET (weather), Nominatim/OSM (place search and map tiles) and Google Calendar (if you configure it).</li>
-          <li>HuggingFace OAuth credentials (access and refresh tokens) and the AEMET key are stored in the device's <strong>DataStore</strong>. They are never sent to AgroAI servers.</li>
+          <li>There are no AgroAI proprietary servers. It only connects to: HuggingFace (model download), Open-Meteo (weather), Nominatim/OSM (place search and map tiles) and Google Calendar (if you configure it).</li>
+          <li>HuggingFace OAuth credentials (access and refresh tokens) are stored in the device's <strong>DataStore</strong>. They are never sent to AgroAI servers.</li>
           <li>The app works completely <strong>offline</strong> once the model is downloaded and map tiles are cached.</li>
         </ul>
       </div>

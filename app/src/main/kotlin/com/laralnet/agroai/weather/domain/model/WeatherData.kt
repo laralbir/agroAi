@@ -3,8 +3,8 @@ package com.laralnet.agroai.weather.domain.model
 import java.time.Instant
 
 data class WeatherData(
-    val municipalityCode: String,
-    val municipalityName: String,
+    val latitude: Double,
+    val longitude: Double,
     val fetchedAt: Instant = Instant.now(),
     val current: CurrentWeather?,
     val forecast: List<DailyForecast>

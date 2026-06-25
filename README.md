@@ -39,9 +39,9 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Notificaciones y recordatorios
 - Verificación de conflictos meteorológicos en eventos agendados
 
-### Meteorología (AEMET)
-- Integración con la API de AEMET (OpenData)
-- Consulta de predicción por municipio
+### Meteorología (Open-Meteo)
+- Integración con [Open-Meteo](https://open-meteo.com/) — API pública y gratuita, sin clave API
+- Predicción basada en coordenadas GPS de cada plantación (funciona en cualquier país)
 - Alertas meteorológicas que pueden afectar a tratamientos agendados
 - Actualización automática cada 6 horas
 
@@ -49,7 +49,6 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Temas: claro, oscuro o seguir el sistema
 - Idiomas: español e inglés (configurable o automático según el sistema)
 - Material You (Dynamic Color) en Android 12+
-- APIs externas configurables (AEMET pre-incluida)
 
 ---
 
@@ -75,7 +74,7 @@ La aplicación sigue los principios de **Arquitectura Hexagonal (Ports & Adapter
                │
 ┌──────────────▼──────────────────────┐
 │        Infrastructure Layer         │  Adapters
-│  (Room, Gemma, Calendar, AEMET)     │
+│  (Room, Gemma, Calendar, Open-Meteo)│
 └─────────────────────────────────────┘
 ```
 
@@ -89,7 +88,6 @@ La aplicación sigue los principios de **Arquitectura Hexagonal (Ports & Adapter
 - RAM: mínimo 2 GB disponibles para inferencia
 - Cuenta gratuita de HuggingFace (para descargar modelos Gemma, autenticación vía OAuth)
 - Cuenta Google para integración con Calendar (opcional)
-- API key de AEMET para datos meteorológicos (opcional)
 
 ### Dispositivos de Desarrollo y Prueba
 - Google Pixel 9 Pro XL (7)
@@ -122,11 +120,6 @@ cd agroai
    - **Gemma 4 E2B** (`gemma-4-E2B-it.litertlm`, ~2.5 GB) — Gemma 4 en formato LiteRT-LM, mejor calidad
 5. El modelo se almacena en el almacenamiento externo de la app y se activa automáticamente al completarse (si no había ninguno activo)
 6. Opcional: usa el botón *Probar* en la tarjeta del modelo para verificar que funciona; el prompt es editable antes de ejecutar
-
-### Configurar API de AEMET (opcional)
-1. Registrarse en [OpenData AEMET](https://opendata.aemet.es/)
-2. Obtener API key
-3. En la app: Settings → APIs externas → AEMET → Introducir API key
 
 ---
 

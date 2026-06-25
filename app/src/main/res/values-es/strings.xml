@@ -97,8 +97,7 @@
     <string name="settings_model_none">Sin modelo descargado — toca para descargar</string>
     <string name="settings_model_delete">Eliminar Modelo</string>
     <string name="settings_apis">APIs Externas</string>
-    <string name="settings_aemet">AEMET (Meteorología España)</string>
-    <string name="settings_aemet_key">Clave API de AEMET</string>
+    <string name="settings_weather">Open-Meteo (meteorología)</string>
     <string name="settings_hf_token">Token de HuggingFace</string>
     <string name="settings_hf_token_hint">Necesario para descargar modelos Gemma</string>
     <string name="settings_accounts">Cuentas Google</string>
@@ -187,7 +186,7 @@
 
     <!-- Weather -->
     <string name="weather_loading">Cargando datos meteorológicos…</string>
-    <string name="weather_no_key">Añade tu clave API de AEMET en Ajustes para ver los datos meteorológicos</string>
+    <string name="weather_no_location">Define una ubicación para tu plantación para ver los datos meteorológicos</string>
     <string name="weather_today">Hoy</string>
     <string name="weather_forecast">Previsión</string>
 
@@ -214,8 +213,6 @@
     <string name="wizard_or_enter_manually">O introduce manualmente:</string>
     <string name="wizard_municipality">Municipio</string>
     <string name="wizard_province">Provincia</string>
-    <string name="wizard_aemet_code">Código de municipio AEMET (INE)</string>
-    <string name="wizard_required_weather">Necesario para datos meteorológicos</string>
     <string name="wizard_plant_title">Planta</string>
     <string name="wizard_summary_name">Nombre</string>
     <string name="wizard_summary_type">Tipo</string>
@@ -235,10 +232,11 @@
     <string name="model_download_log_error">Error — registro completo</string>
 
     <!-- Settings -->
-    <string name="settings_aemet_not_configured">Clave API no configurada</string>
-    <string name="settings_aemet_configured">Configurada</string>
     <string name="settings_ai_prompts">Prompts de IA</string>
     <string name="settings_prompt_editor_subtitle">Personaliza los prompts de análisis de Gemma</string>
+    <string name="settings_help">Ayuda y soporte</string>
+    <string name="settings_user_guide">Guía de usuario</string>
+    <string name="settings_user_guide_subtitle">Documentación completa en español e inglés</string>
 
     <!-- Common -->
     <string name="btn_next">Siguiente</string>

@@ -215,14 +215,15 @@ OsmConfiguration.getInstance().apply {
 
 ---
 
-## Integración AEMET
+## Integración Open-Meteo
 
-- **API Base URL**: `https://opendata.aemet.es/openapi/api/`
-- **Auth**: Header `api_key` (configurada por el usuario en Settings)
-- **Endpoints usados**:
-  - `/prediccion/especifica/municipio/diaria/{codMunicipio}` — predicción diaria
-  - `/observacion/convencional/datos/estacion/{idema}` — datos observación
-  - `/prediccion/especifica/municipio/horaria/{codMunicipio}` — predicción horaria
+- **API Base URL**: `https://api.open-meteo.com/v1/`
+- **Auth**: Ninguna — API pública y gratuita, sin API key
+- **Endpoint**: `GET /forecast?latitude={lat}&longitude={lon}&current=...&daily=...&timezone=auto`
+- **Variables current**: `temperature_2m`, `relative_humidity_2m`, `precipitation`, `wind_speed_10m`, `wind_direction_10m`, `apparent_temperature`, `weather_code`
+- **Variables daily**: `temperature_2m_max/min`, `precipitation_probability_max`, `precipitation_sum`, `weather_code`, `wind_speed_10m_max`, `uv_index_max`
+- **Codes**: WMO weather codes (0=clear, 3=overcast, 61/63/65=rain, 71-77=snow, 95=storm…) mapeados a `WeatherCondition`
+- **Coordenadas**: usa lat/lon de la `Location` de la plantación (sin código municipal INE)
 - **Frecuencia**: Refresh automático cada 6h via WorkManager
 - **Uso**: Al sugerir tratamientos, consultar forecast. Al revisar calendario, alertar si lluvia/helada afecta lo agendado.
 
@@ -394,7 +395,7 @@ MockK-Android            → mocking en contexto Android
 
 - **GemmaInferenceEngine**: no testear con el modelo real; usar una interfaz `AIEngine` y mockearla en tests
 - **GPS / LocationManager**: inyectar `GpsLocationProvider` como interfaz y mockearlo en unit tests
-- **AEMET / Nominatim**: mockear `NominatimApiService` y `AemetApiService` (son interfaces Retrofit)
+- **Open-Meteo / Nominatim**: mockear `NominatimApiService` y `OpenMeteoApiService` (son interfaces Retrofit)
 - **WorkManager**: usar `TestListenableWorkerBuilder` para tests de Workers
 
 ---
@@ -442,7 +443,7 @@ El fichero [`TODO.md`](TODO.md) contiene el roadmap completo con las fases orden
 | **2** | Treatment handlers CQRS + UI de programación de tratamientos | ⬜ Pendiente |
 | **3** | Calendar handlers + tab Calendar en bottom nav | ⬜ Pendiente |
 | **4** | Fix `parseSuggestions` en `PhotoAnalysisViewModel` (JSON real de Gemma) | ⬜ Pendiente |
-| **5** | Weather AEMET: parseo real, caché Room, `WeatherRefreshWorker` | ⬜ Pendiente |
+| **5** | Weather Open-Meteo: parseo real, caché Room, `WeatherRefreshWorker` | ⬜ Pendiente |
 | **6** | Deuda técnica: iconos reales, onboarding, capa domain de Location | ⬜ Pendiente |
 
 > Actualiza el estado en `TODO.md` a medida que se completen las fases. Marca ✅ cuando todos los tests de esa fase pasen.
@@ -453,6 +454,6 @@ El fichero [`TODO.md`](TODO.md) contiene el roadmap completo con las fases orden
 
 1. **El modelo Gemma DEBE descargarse antes de usar cualquier función de IA**. La app muestra un onboarding de descarga si no hay modelo disponible.
 2. **Las fotos analizadas NO se envían a ningún servidor** — todo el análisis es local.
-3. **AEMET requiere API key** — la app funciona sin ella pero muestra aviso en Settings.
+3. **Open-Meteo no requiere API key** — el tiempo se obtiene automáticamente a partir de las coordenadas de la plantación.
 4. **Permisos de calendario**: solicitar en runtime antes de mostrar la integración con Google Calendar.
 5. **Modelos grandes (12B, 27B)**: mostrar advertencia de espacio en disco y RAM requerida antes de descargar.

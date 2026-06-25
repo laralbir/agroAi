@@ -1,7 +1,7 @@
 package com.laralnet.agroai.core.infrastructure.di
 
 import com.laralnet.agroai.location.infrastructure.nominatim.NominatimApiService
-import com.laralnet.agroai.weather.infrastructure.api.AemetApiService
+import com.laralnet.agroai.weather.infrastructure.api.OpenMeteoApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,25 +31,21 @@ object NetworkModule {
         )
         .build()
 
-    // --- AEMET ---
+    // --- Open-Meteo (no API key required) ---
 
     @Provides
     @Singleton
-    @Named("aemet")
-    fun provideAemetRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
-        .baseUrl("https://opendata.aemet.es/openapi/api/")
+    @Named("openmeteo")
+    fun provideOpenMeteoRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .baseUrl("https://api.open-meteo.com/v1/")
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     @Provides
     @Singleton
-    fun provideAemetApi(@Named("aemet") retrofit: Retrofit): AemetApiService =
-        retrofit.create(AemetApiService::class.java)
-
-    @Provides
-    @Named("aemet_api_key")
-    fun provideAemetApiKey(): String = ""
+    fun provideOpenMeteoApi(@Named("openmeteo") retrofit: Retrofit): OpenMeteoApiService =
+        retrofit.create(OpenMeteoApiService::class.java)
 
     // --- Nominatim (OpenStreetMap geocoding — no API key needed) ---
     // Usage policy: User-Agent required, max 1 req/s (debounce handled in VM)

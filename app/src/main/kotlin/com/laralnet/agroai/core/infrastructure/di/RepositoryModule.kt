@@ -7,7 +7,7 @@ import com.laralnet.agroai.plantation.infrastructure.repository.RoomPlantationRe
 import com.laralnet.agroai.treatment.domain.repository.TreatmentRepository
 import com.laralnet.agroai.treatment.infrastructure.repository.RoomTreatmentRepository
 import com.laralnet.agroai.weather.domain.repository.WeatherRepository
-import com.laralnet.agroai.weather.infrastructure.api.AemetWeatherRepository
+import com.laralnet.agroai.weather.infrastructure.api.OpenMeteoWeatherRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -32,5 +32,5 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindWeatherRepository(impl: AemetWeatherRepository): WeatherRepository
+    abstract fun bindWeatherRepository(impl: OpenMeteoWeatherRepository): WeatherRepository
 }

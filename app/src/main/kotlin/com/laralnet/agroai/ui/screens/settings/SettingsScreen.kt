@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,13 +28,10 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
-    val aemetApiKey by viewModel.aemetApiKey.collectAsState()
     val hfCredential by viewModel.hfCredential.collectAsState()
     val activeModel by viewModel.activeModel.collectAsState()
     val context = LocalContext.current
-    var showAemetDialog by remember { mutableStateOf(false) }
     var showHfDisconnectDialog by remember { mutableStateOf(false) }
-    var aemetKeyInput by remember(aemetApiKey) { mutableStateOf(aemetApiKey) }
 
     // Launch Chrome Custom Tab when the ViewModel requests it
     LaunchedEffect(Unit) {
@@ -88,12 +86,6 @@ fun SettingsScreen(
 
             // External APIs
             SettingsSectionTitle(text = stringResource(R.string.settings_apis))
-            SettingsItem(
-                icon = Icons.Default.Cloud,
-                title = stringResource(R.string.settings_aemet),
-                subtitle = if (aemetApiKey.isBlank()) stringResource(R.string.settings_aemet_not_configured) else stringResource(R.string.settings_aemet_configured),
-                onClick = { showAemetDialog = true }
-            )
 
             // HuggingFace OAuth item
             HuggingFaceConnectionItem(
@@ -111,6 +103,23 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_prompt_editor),
                 subtitle = stringResource(R.string.settings_prompt_editor_subtitle),
                 onClick = { /* navigate to prompt editor */ }
+            )
+
+            Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+            // Help & Support
+            SettingsSectionTitle(text = stringResource(R.string.settings_help))
+            SettingsItem(
+                icon = Icons.AutoMirrored.Filled.MenuBook,
+                title = stringResource(R.string.settings_user_guide),
+                subtitle = stringResource(R.string.settings_user_guide_subtitle),
+                onClick = {
+                    CustomTabsIntent.Builder()
+                        .setShowTitle(true)
+                        .setUrlBarHidingEnabled(true)
+                        .build()
+                        .launchUrl(context, android.net.Uri.parse("https://laralbir.github.io/agroAi/"))
+                }
             )
 
             Spacer(Modifier.height(16.dp))
@@ -137,32 +146,6 @@ fun SettingsScreen(
         )
     }
 
-    if (showAemetDialog) {
-        AlertDialog(
-            onDismissRequest = { showAemetDialog = false },
-            title = { Text(stringResource(R.string.settings_aemet_key)) },
-            text = {
-                OutlinedTextField(
-                    value = aemetKeyInput,
-                    onValueChange = { aemetKeyInput = it },
-                    label = { Text(stringResource(R.string.settings_aemet_key)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.setAemetApiKey(aemetKeyInput)
-                    showAemetDialog = false
-                }) { Text(stringResource(R.string.btn_save)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAemetDialog = false }) {
-                    Text(stringResource(R.string.btn_cancel))
-                }
-            }
-        )
-    }
 }
 
 @Composable

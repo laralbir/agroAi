@@ -259,14 +259,6 @@ private fun Step2Location(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
-        OutlinedTextField(
-            value = state.municipalityCode,
-            onValueChange = viewModel::setMunicipalityCode,
-            label = { Text(stringResource(R.string.wizard_aemet_code)) },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            supportingText = { Text(stringResource(R.string.wizard_required_weather)) }
-        )
     }
 }
 
