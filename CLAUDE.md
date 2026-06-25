@@ -378,6 +378,7 @@ MockK-Android            → mocking en contexto Android
 5. [ ] Instrumented Compose test para cada nueva pantalla
 6. [ ] `./gradlew test` pasa sin errores
 7. [ ] `./gradlew connectedAndroidTest` pasa sin errores (cuando hay emulador disponible)
+8. [ ] Guía de usuario (`docs/index.html`) revisada y actualizada si hay cambios visibles en la UI o en el flujo de usuario
 
 ### TestContainers y casos especiales
 
