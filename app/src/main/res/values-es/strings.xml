@@ -162,7 +162,9 @@
     <string name="model_test_load_time">Carga del modelo</string>
     <string name="model_test_inference_time">Tiempo de inferencia</string>
     <string name="model_test_total_time">Tiempo total</string>
-    <string name="model_test_prompt">Prompt enviado</string>
+    <string name="model_test_prompt">Prompt</string>
+    <string name="model_test_prompt_hint">Edita el prompt que se enviará al modelo</string>
+    <string name="model_test_execute">Ejecutar prueba</string>
     <string name="model_test_response">Respuesta del modelo</string>
     <string name="model_test_error">Error</string>
     <string name="model_test_copy_error">Copiar error</string>

@@ -15,8 +15,8 @@ android {
         applicationId = "com.laralnet.agroai"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.5.0"
+        versionCode = 6
+        versionName = "0.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -56,7 +56,8 @@ android {
         jvmTarget = "17"
         freeCompilerArgs += listOf(
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-Xskip-metadata-version-check"
         )
     }
 
@@ -124,8 +125,10 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
-    // MediaPipe Tasks GenAI (Gemma on-device)
+    // MediaPipe Tasks GenAI (Gemma 3 .task format)
     implementation(libs.mediapipe.tasks.genai)
+    // LiteRT-LM (Gemma 4 .litertlm format)
+    implementation(libs.litertlm.android)
 
     // Retrofit + OkHttp
     implementation(libs.retrofit)

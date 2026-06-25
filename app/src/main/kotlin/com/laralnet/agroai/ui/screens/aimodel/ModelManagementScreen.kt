@@ -137,7 +137,7 @@ fun ModelManagementScreen(
                     onActivate = { row.model?.id?.let { viewModel.onActivate(it) } },
                     onDelete = { row.model?.id?.let { viewModel.onDelete(it) } },
                     onTest = { row.model?.filePath?.let { path ->
-                        viewModel.onTestModel(path, row.variant.displayName)
+                        viewModel.openTestSheet(path, row.variant.displayName)
                     }}
                 )
             }
@@ -151,7 +151,11 @@ fun ModelManagementScreen(
             onDismissRequest = viewModel::dismissTestResult,
             sheetState = sheetState
         ) {
-            ModelTestSheet(result = result, onRetry = viewModel::retryTest)
+            ModelTestSheet(
+                result = result,
+                onRun = viewModel::runTest,
+                onUpdatePrompt = viewModel::updateTestPrompt
+            )
         }
     }
 
@@ -501,8 +505,16 @@ private fun DownloadLogPanel(log: String, isFailed: Boolean, modelInfoUrl: Strin
 @Composable
 private fun ModelTestSheet(
     result: ModelManagementViewModel.ModelTestResult,
-    onRetry: () -> Unit
+    onRun: () -> Unit,
+    onUpdatePrompt: (String) -> Unit
 ) {
+    val hasResult = result.response != null || result.error != null
+    val clipboardManager = LocalClipboardManager.current
+    var copied by remember { mutableStateOf(false) }
+    LaunchedEffect(copied) {
+        if (copied) { delay(1500); copied = false }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -511,7 +523,7 @@ private fun ModelTestSheet(
             .padding(bottom = 40.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header row: model name + status
+        // Header: model name + status badge
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -534,199 +546,107 @@ private fun ModelTestSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        stringResource(R.string.model_test_passed),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                    Text(stringResource(R.string.model_test_passed), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                 }
-                else -> Row(
+                result.error != null -> Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        Icons.Default.ErrorOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        stringResource(R.string.model_test_failed_label),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                    Text(stringResource(R.string.model_test_failed_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.error)
                 }
             }
         }
 
         HorizontalDivider()
 
-        // Model details section
-        Text(
-            stringResource(R.string.model_test_details),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        // Details: file size, path, timings (only when available)
+        Text(stringResource(R.string.model_test_details), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            TestDetailRow(
-                label = stringResource(R.string.model_test_disk_size),
-                value = "%.1f MB".format(result.fileSizeBytes / 1_048_576.0)
-            )
-            TestDetailRow(
-                label = stringResource(R.string.model_test_file_path),
-                value = result.filePath,
-                monospace = true
-            )
-            if (!result.isRunning || result.loadTimeMs > 0) {
-                TestDetailRow(
-                    label = stringResource(R.string.model_test_load_time),
-                    value = formatDuration(result.loadTimeMs)
-                )
-            }
+            TestDetailRow(stringResource(R.string.model_test_disk_size), "%.1f MB".format(result.fileSizeBytes / 1_048_576.0))
+            TestDetailRow(stringResource(R.string.model_test_file_path), result.filePath, monospace = true)
+            if (result.loadTimeMs > 0) TestDetailRow(stringResource(R.string.model_test_load_time), formatDuration(result.loadTimeMs))
             if (result.inferenceTimeMs > 0) {
-                TestDetailRow(
-                    label = stringResource(R.string.model_test_inference_time),
-                    value = formatDuration(result.inferenceTimeMs)
-                )
-                TestDetailRow(
-                    label = stringResource(R.string.model_test_total_time),
-                    value = formatDuration(result.totalTimeMs)
-                )
+                TestDetailRow(stringResource(R.string.model_test_inference_time), formatDuration(result.inferenceTimeMs))
+                TestDetailRow(stringResource(R.string.model_test_total_time), formatDuration(result.totalTimeMs))
             }
         }
 
         HorizontalDivider()
 
-        // Prompt section
-        Text(
-            stringResource(R.string.model_test_prompt),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        // Editable prompt + run button
+        Text(stringResource(R.string.model_test_prompt), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        androidx.compose.material3.OutlinedTextField(
+            value = result.prompt,
+            onValueChange = onUpdatePrompt,
+            enabled = !result.isRunning,
+            textStyle = MaterialTheme.typography.bodySmall.copy(
+                fontFamily = FontFamily.Monospace,
+                fontSize = TextUnit(10f, TextUnitType.Sp)
+            ),
+            label = { Text(stringResource(R.string.model_test_prompt_hint), style = MaterialTheme.typography.labelSmall) },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 5,
+            shape = MaterialTheme.shapes.small
         )
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = MaterialTheme.shapes.small,
+        Button(
+            onClick = onRun,
+            enabled = !result.isRunning && result.prompt.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = result.prompt,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = TextUnit(10f, TextUnitType.Sp)
-                ),
-                modifier = Modifier.padding(10.dp)
-            )
+            if (result.isRunning) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                Spacer(Modifier.size(8.dp))
+                Text(stringResource(R.string.model_test_running))
+            } else {
+                Icon(Icons.Default.Science, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.size(6.dp))
+                Text(if (hasResult) stringResource(R.string.btn_retry) else stringResource(R.string.model_test_execute))
+            }
         }
 
-        HorizontalDivider()
+        // Result section (only shown after running)
+        if (hasResult) {
+            HorizontalDivider()
 
-        // Response / loading / error section
-        when {
-            result.isRunning -> Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 24.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        stringResource(R.string.model_test_running),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            result.error != null -> {
-                val clipboardManager = LocalClipboardManager.current
-                var copied by remember { mutableStateOf(false) }
-                LaunchedEffect(copied) {
-                    if (copied) {
-                        delay(1500)
-                        copied = false
+            when {
+                result.error != null -> {
+                    Text(stringResource(R.string.model_test_error), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = result.error,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                            modifier = Modifier.padding(12.dp)
+                        )
                     }
-                }
-
-                Text(
-                    stringResource(R.string.model_test_error),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.error
-                )
-                Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = result.error,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
                     OutlinedButton(
-                        onClick = {
-                            clipboardManager.setText(AnnotatedString(result.error))
-                            copied = true
-                        },
-                        modifier = Modifier.weight(1f)
+                        onClick = { clipboardManager.setText(AnnotatedString(result.error)); copied = true },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(
                             if (copied) Icons.Default.CheckCircle else Icons.Default.ContentCopy,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            null, modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.size(6.dp))
-                        Text(
-                            if (copied) stringResource(R.string.model_test_copied)
-                            else stringResource(R.string.model_test_copy_error)
-                        )
-                    }
-                    Button(
-                        onClick = onRetry,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.size(6.dp))
-                        Text(stringResource(R.string.btn_retry))
+                        Text(if (copied) stringResource(R.string.model_test_copied) else stringResource(R.string.model_test_copy_error))
                     }
                 }
-            }
 
-            result.response != null -> {
-                Text(
-                    stringResource(R.string.model_test_response),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = result.response,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(12.dp)
-                    )
+                result.response != null -> {
+                    Text(stringResource(R.string.model_test_response), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(result.response, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(12.dp))
+                    }
                 }
             }
         }

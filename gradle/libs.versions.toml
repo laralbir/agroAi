@@ -13,12 +13,13 @@ room = "2.6.1"
 datastore = "1.1.1"
 workManager = "2.10.0"
 mediapipeTasksGenai = "0.10.22"
+litertlmAndroid = "0.13.1"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 coil = "2.7.0"
 cameraX = "1.4.1"
 accompanist = "0.36.0"
-kotlinxCoroutines = "1.9.0"
+kotlinxCoroutines = "1.11.0"
 kotlinxSerializationJson = "1.7.3"
 osmdroid = "6.1.18"
 browser = "1.8.0"
@@ -74,6 +75,7 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 
 # MediaPipe GenAI (Gemma on-device)
 mediapipe-tasks-genai = { group = "com.google.mediapipe", name = "tasks-genai", version.ref = "mediapipeTasksGenai" }
+litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertlmAndroid" }
 
 # Retrofit + OkHttp
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

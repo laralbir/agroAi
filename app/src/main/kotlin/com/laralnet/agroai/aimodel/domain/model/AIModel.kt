@@ -10,19 +10,32 @@ enum class ModelVariant(
     val requiredRamGb: Double,
     val downloadUrl: String,
     val gemmaVersion: GemmaVersion,
-    // Page the user visits to accept Gemma terms and get a token
-    val infoUrl: String = ""
+    val infoUrl: String = "",
+    // Local filename to use on disk. Needed because .litertlm and .task have different extensions.
+    val localFileName: String = ""
 ) {
     // litert-community/Gemma3-1B-IT — gemma3-1b-it-int4.task (555 MB, Android-compatible)
     GEMMA3_1B(
-        "Gemma 3 1B", 0.6, 2.0,
-        "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
-        GemmaVersion.GEMMA_3,
-        "https://huggingface.co/litert-community/Gemma3-1B-IT"
+        displayName = "Gemma 3 1B",
+        approximateSizeGb = 0.6,
+        requiredRamGb = 2.0,
+        downloadUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
+        gemmaVersion = GemmaVersion.GEMMA_3,
+        infoUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
+        localFileName = "gemma3_1b.task"
+    ),
+
+    // litert-community/gemma-4-E2B-it-litert-lm — gemma-4-E2B-it.litertlm (~2.5 GB, LiteRT LM format)
+    // Requires Backend.CPU or Backend.GPU (new LiteRT path); incompatible with Backend.DEFAULT.
+    GEMMA4_E2B(
+        displayName = "Gemma 4 E2B",
+        approximateSizeGb = 2.5,
+        requiredRamGb = 4.0,
+        downloadUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",
+        gemmaVersion = GemmaVersion.GEMMA_4,
+        infoUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm",
+        localFileName = "gemma4_e2b.litertlm"
     )
-    // Gemma 4 variants: litert-community only publishes .web.task (WebAssembly) files,
-    // which are not compatible with the Android MediaPipe Tasks GenAI SDK.
-    // Re-add entries here once Android-compatible .task files are available.
 }
 
 enum class DownloadState { NOT_DOWNLOADED, DOWNLOADING, DOWNLOADED, FAILED }

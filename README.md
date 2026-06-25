@@ -22,9 +22,12 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Análisis de fotos de plantas, árboles, frutos y plantaciones
 - Identificación de enfermedades, plagas y necesidades de mantenimiento
 - Sugerencias de tratamientos con opción de agendarlos en Google Calendar
-- Modelos disponibles vía MediaPipe Tasks GenAI (`.task`):
-  - **Gemma 3 1B** — ~0.6 GB · único modelo Android disponible actualmente ([litert-community/Gemma3-1B-IT](https://huggingface.co/litert-community/Gemma3-1B-IT))
-  - Gemma 3 4B / 12B y Gemma 4 — pendientes de publicación en formato `.task` Android (solo existen variantes `.web.task` para WebAssembly, incompatibles con el SDK Android)
+- Dos SDKs de inferencia en local según el formato del modelo:
+  - **MediaPipe Tasks GenAI** (`.task`) — Gemma 3
+  - **LiteRT-LM** (`.litertlm`) — Gemma 4 (nuevo formato nativo de Google AI Edge)
+- Modelos disponibles:
+  - **Gemma 3 1B** — ~0.6 GB, ~2 GB RAM ([litert-community/Gemma3-1B-IT](https://huggingface.co/litert-community/Gemma3-1B-IT))
+  - **Gemma 4 E2B** — ~2.5 GB, ~4 GB RAM ([litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm))
 - Conexión con cuenta HuggingFace vía **OAuth 2.0** (sin copiar tokens manualmente)
 - **Prueba de modelo integrada** — verifica que el modelo descargado funciona con una pregunta agrícola de muestra; muestra tiempos de carga e inferencia
 - El primer modelo descargado se activa automáticamente
@@ -82,7 +85,7 @@ La aplicación sigue los principios de **Arquitectura Hexagonal (Ports & Adapter
 
 - Android 8.0 (API 26) o superior
 - **Recomendado**: Android 12+ para Material You
-- Espacio libre: ~0.6 GB para Gemma 3 1B (único modelo disponible para Android actualmente)
+- Espacio libre: ~0.6 GB para Gemma 3 1B o ~2.5 GB para Gemma 4 E2B
 - RAM: mínimo 2 GB disponibles para inferencia
 - Cuenta gratuita de HuggingFace (para descargar modelos Gemma, autenticación vía OAuth)
 - Cuenta Google para integración con Calendar (opcional)
@@ -114,12 +117,11 @@ cd agroai
 1. Crea una cuenta gratuita en [huggingface.co](https://huggingface.co) (no hace falta generar un token manualmente)
 2. En la app: **Ajustes → Cuenta HuggingFace** → pulsa *Conectar* → la app abre un navegador seguro (Chrome Custom Tab) con la pantalla de autorización de HuggingFace
 3. Aprueba el acceso en el navegador → la app recibe el token automáticamente vía OAuth
-4. Ve a **Ajustes → Modelos de IA** → pulsa *Descargar* en Gemma 3 1B
-5. El modelo (`gemma3-1b-it-int4.task`, 555 MB) se descarga desde [litert-community/Gemma3-1B-IT](https://huggingface.co/litert-community/Gemma3-1B-IT) y se almacena en el almacenamiento externo de la app
-6. El modelo se activa automáticamente al completarse la descarga (si no había ninguno activo)
-7. Opcional: usa el botón *Probar* en la tarjeta del modelo para verificar que funciona correctamente
-
-> Los modelos 4B y 12B de Gemma 3 y Gemma 4 no tienen aún ficheros `.task` compatibles con el SDK Android. Solo existen variantes `.web.task` (WebAssembly) que no funcionan con la API Android.
+4. Ve a **Ajustes → Modelos de IA** → pulsa *Descargar* en el modelo deseado:
+   - **Gemma 3 1B** (`gemma3-1b-it-int4.task`, ~555 MB) — recomendado para gama media
+   - **Gemma 4 E2B** (`gemma-4-E2B-it.litertlm`, ~2.5 GB) — Gemma 4 en formato LiteRT-LM, mejor calidad
+5. El modelo se almacena en el almacenamiento externo de la app y se activa automáticamente al completarse (si no había ninguno activo)
+6. Opcional: usa el botón *Probar* en la tarjeta del modelo para verificar que funciona; el prompt es editable antes de ejecutar
 
 ### Configurar API de AEMET (opcional)
 1. Registrarse en [OpenData AEMET](https://opendata.aemet.es/)
@@ -134,7 +136,8 @@ cd agroai
 |-----------|-----------|
 | Lenguaje | Kotlin 2.x |
 | UI | Jetpack Compose + Material Design 3 |
-| IA en local | MediaPipe Tasks GenAI |
+| IA en local (Gemma 3) | MediaPipe Tasks GenAI (`.task`) |
+| IA en local (Gemma 4) | LiteRT-LM (`litertlm-android`) |
 | Base de datos | Room (SQLite) |
 | Inyección de dependencias | Hilt |
 | Programación async | Coroutines + Flow |
@@ -188,7 +191,8 @@ Las dependencias de terceros tienen sus propias licencias:
 |---------|---------|
 | Jetpack Compose, Room, Hilt, WorkManager, CameraX | Apache 2.0 |
 | Kotlin, Kotlinx Coroutines | Apache 2.0 |
-| MediaPipe Tasks GenAI (Gemma) | Apache 2.0 |
+| MediaPipe Tasks GenAI (Gemma 3) | Apache 2.0 |
+| LiteRT-LM (Gemma 4) | Apache 2.0 |
 | Retrofit, OkHttp | Apache 2.0 |
 | Coil | Apache 2.0 |
 | Gemma model weights | [Gemma Terms of Use](https://ai.google.dev/gemma/terms) |

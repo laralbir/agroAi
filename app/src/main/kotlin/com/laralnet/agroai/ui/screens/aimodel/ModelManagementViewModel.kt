@@ -222,47 +222,46 @@ class ModelManagementViewModel @Inject constructor(
             .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
     }
 
-    fun onTestModel(filePath: String, variantDisplayName: String) {
+    fun openTestSheet(filePath: String, variantDisplayName: String) {
         viewModelScope.launch {
-            val langPref = dataStore.data.map { it[KEY_LANGUAGE] ?: "SYSTEM" }.first()
-            val useSpanish = when (langPref) {
-                "SPANISH" -> true
-                "ENGLISH" -> false
-                else -> Locale.getDefault().language == "es"
-            }
-            val prompt = if (useSpanish) buildString {
-                append("<start_of_turn>user\n")
-                append("Eres AgroAI, un asistente agrícola experto. ")
-                append("Esto es una prueba de diagnóstico del sistema. ")
-                append("Lista exactamente 3 señales comunes de estrés hídrico en cultivos. ")
-                append("Para cada señal, describe el síntoma visual en una oración y un remedio sencillo. ")
-                append("Formato: lista numerada.\n")
-                append("<end_of_turn>\n")
-                append("<start_of_turn>model\n")
-            } else buildString {
-                append("<start_of_turn>user\n")
-                append("You are AgroAI, an expert agricultural assistant. ")
-                append("This is a system diagnostics test. ")
-                append("List exactly 3 common signs of water stress in crops. ")
-                append("For each sign, give the visual symptom in one sentence and one simple remedy. ")
-                append("Format as a numbered list.\n")
-                append("<end_of_turn>\n")
-                append("<start_of_turn>model\n")
-            }
+            val isLiteRtFormat = filePath.endsWith(".litertlm")
+            val defaultPrompt = buildDefaultTestPrompt(usePlainText = isLiteRtFormat)
             _uiState.update {
                 it.copy(
                     testResult = ModelTestResult(
                         variantDisplayName = variantDisplayName,
                         filePath = filePath,
                         fileSizeBytes = File(filePath).length(),
-                        prompt = prompt,
+                        prompt = defaultPrompt
+                    )
+                )
+            }
+        }
+    }
+
+    fun updateTestPrompt(prompt: String) {
+        _uiState.update { state ->
+            state.copy(testResult = state.testResult?.copy(prompt = prompt))
+        }
+    }
+
+    fun runTest() {
+        val current = _uiState.value.testResult ?: return
+        viewModelScope.launch {
+            _uiState.update { state ->
+                state.copy(
+                    testResult = state.testResult?.copy(
+                        response = null,
+                        error = null,
+                        loadTimeMs = 0L,
+                        inferenceTimeMs = 0L,
                         isRunning = true
                     )
                 )
             }
 
             val loadStart = System.currentTimeMillis()
-            val loadResult = runCatching { gemmaEngine.loadModel(filePath) }
+            val loadResult = runCatching { gemmaEngine.loadModel(current.filePath) }
             val loadTimeMs = System.currentTimeMillis() - loadStart
 
             if (loadResult.isFailure) {
@@ -278,6 +277,7 @@ class ModelManagementViewModel @Inject constructor(
                 return@launch
             }
 
+            val prompt = _uiState.value.testResult?.prompt ?: current.prompt
             val inferStart = System.currentTimeMillis()
             val response = gemmaEngine.generateText(prompt)
             val inferTimeMs = System.currentTimeMillis() - inferStart
@@ -296,9 +296,47 @@ class ModelManagementViewModel @Inject constructor(
         }
     }
 
-    fun retryTest() {
-        val current = _uiState.value.testResult ?: return
-        onTestModel(current.filePath, current.variantDisplayName)
+    fun retryTest() = runTest()
+
+    private suspend fun buildDefaultTestPrompt(usePlainText: Boolean = false): String {
+        val langPref = dataStore.data.map { it[KEY_LANGUAGE] ?: "SYSTEM" }.first()
+        val useSpanish = when (langPref) {
+            "SPANISH" -> true
+            "ENGLISH" -> false
+            else -> Locale.getDefault().language == "es"
+        }
+        // LiteRT-LM (Gemma 4) handles the chat template internally — send plain text.
+        // MediaPipe (Gemma 3) requires the <start_of_turn> template manually.
+        return if (usePlainText) {
+            if (useSpanish)
+                "Eres AgroAI, un asistente agrícola experto. Esto es una prueba de diagnóstico del sistema. " +
+                "Lista exactamente 3 señales comunes de estrés hídrico en cultivos. " +
+                "Para cada señal, describe el síntoma visual en una oración y un remedio sencillo. " +
+                "Formato: lista numerada."
+            else
+                "You are AgroAI, an expert agricultural assistant. This is a system diagnostics test. " +
+                "List exactly 3 common signs of water stress in crops. " +
+                "For each sign, give the visual symptom in one sentence and one simple remedy. " +
+                "Format as a numbered list."
+        } else if (useSpanish) buildString {
+            append("<start_of_turn>user\n")
+            append("Eres AgroAI, un asistente agrícola experto. ")
+            append("Esto es una prueba de diagnóstico del sistema. ")
+            append("Lista exactamente 3 señales comunes de estrés hídrico en cultivos. ")
+            append("Para cada señal, describe el síntoma visual en una oración y un remedio sencillo. ")
+            append("Formato: lista numerada.\n")
+            append("<end_of_turn>\n")
+            append("<start_of_turn>model\n")
+        } else buildString {
+            append("<start_of_turn>user\n")
+            append("You are AgroAI, an expert agricultural assistant. ")
+            append("This is a system diagnostics test. ")
+            append("List exactly 3 common signs of water stress in crops. ")
+            append("For each sign, give the visual symptom in one sentence and one simple remedy. ")
+            append("Format as a numbered list.\n")
+            append("<end_of_turn>\n")
+            append("<start_of_turn>model\n")
+        }
     }
 
     fun dismissTestResult() = _uiState.update { it.copy(testResult = null) }

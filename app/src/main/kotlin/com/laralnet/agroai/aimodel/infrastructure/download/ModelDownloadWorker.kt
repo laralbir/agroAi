@@ -56,7 +56,7 @@ class ModelDownloadWorker @AssistedInject constructor(
 
         val modelsDir = applicationContext.getExternalFilesDir("models")
             ?: applicationContext.filesDir.resolve("models").also { it.mkdirs() }
-        val destFile = File(modelsDir, "${variant.name.lowercase()}.task")
+        val destFile = File(modelsDir, variant.localFileName.ifBlank { "${variant.name.lowercase()}.task" })
 
         Log.d(TAG, "variant=$variantName modelId=$modelId")
         runCatching {

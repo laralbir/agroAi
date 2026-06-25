@@ -10,6 +10,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.6.0] - 2026-06-25
+
+### Añadido
+- **Gemma 4 E2B** (`GEMMA4_E2B`) — nuevo modelo disponible para descarga desde `litert-community/gemma-4-E2B-it-litert-lm` (~2.5 GB, requiere ~4 GB RAM)
+- Integración del SDK **LiteRT-LM** (`com.google.ai.edge.litertlm:litertlm-android:0.13.1`) — motor de inferencia para el nuevo formato `.litertlm` de Gemma 4
+- `GemmaInferenceEngine` ahora detecta automáticamente el formato del modelo por extensión (`.task` → MediaPipe, `.litertlm` → LiteRT-LM) y selecciona el motor correcto
+- Campo `localFileName` en `ModelVariant` para gestionar extensiones de archivo distintas sin romper descargas existentes
+- Prompt de prueba adaptado al formato de cada modelo: texto plano para LiteRT-LM (el engine gestiona el template) y `<start_of_turn>` manual para MediaPipe
+
+### Añadido (continuación v0.5.0)
+- Prompt de prueba de modelo **editable** antes de ejecutar — `OutlinedTextField` en el sheet; botón unificado "Ejecutar prueba" / "Reintentar"
+
+### Técnico
+- Compiler flag `-Xskip-metadata-version-check` añadido para compatibilidad con el SDK LiteRT-LM 0.13.1 (compilado con Kotlin 2.3.x, proyecto en Kotlin 2.1.0)
+
+---
+
 ## [0.5.0] - 2026-06-24
 
 ### Añadido
