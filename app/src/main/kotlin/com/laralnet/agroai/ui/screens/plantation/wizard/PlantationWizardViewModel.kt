@@ -3,6 +3,7 @@ package com.laralnet.agroai.ui.screens.plantation.wizard
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.laralnet.agroai.location.infrastructure.nominatim.NominatimApiService
 import com.laralnet.agroai.plantation.application.command.CreatePlantationCommand
 import com.laralnet.agroai.plantation.application.command.UpdatePlantationCommand
 import com.laralnet.agroai.plantation.application.handler.CreatePlantationHandler
@@ -12,6 +13,8 @@ import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.plantation.domain.model.PlantationType
 import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +41,7 @@ data class PlantationWizardState(
     val province: String = "",
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val locationFromMap: Boolean = false,
     val plantForms: List<PlantForm> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -51,10 +55,12 @@ class PlantationWizardViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val createPlantationHandler: CreatePlantationHandler,
     private val updatePlantationHandler: UpdatePlantationHandler,
-    private val plantationRepository: PlantationRepository
+    private val plantationRepository: PlantationRepository,
+    private val nominatim: NominatimApiService
 ) : ViewModel() {
 
     private val editingId: String? = savedStateHandle["id"]
+    private var geocodeJob: Job? = null
 
     private val _uiState = MutableStateFlow(PlantationWizardState())
     val uiState: StateFlow<PlantationWizardState> = _uiState.asStateFlow()
@@ -104,17 +110,52 @@ class PlantationWizardViewModel @Inject constructor(
     fun setNotes(value: String) = _uiState.update { it.copy(notes = value) }
     fun setType(type: PlantationType) = _uiState.update { it.copy(type = type) }
     fun setAddress(value: String) = _uiState.update { it.copy(address = value) }
-    fun setMunicipality(value: String) = _uiState.update { it.copy(municipality = value) }
-    fun setProvince(value: String) = _uiState.update { it.copy(province = value) }
+    fun setMunicipality(value: String) {
+        _uiState.update { it.copy(municipality = value) }
+        scheduleGeocode()
+    }
 
-    fun setLocationFromMap(location: Location) = _uiState.update {
-        it.copy(
-            latitude = location.latitude,
-            longitude = location.longitude,
-            address = location.address,
-            municipality = location.municipality,
-            province = location.province
-        )
+    fun setProvince(value: String) {
+        _uiState.update { it.copy(province = value) }
+        scheduleGeocode()
+    }
+
+    private fun scheduleGeocode() {
+        if (_uiState.value.locationFromMap) return
+        geocodeJob?.cancel()
+        geocodeJob = viewModelScope.launch {
+            delay(700)
+            val state = _uiState.value
+            val query = buildString {
+                if (state.municipality.isNotBlank()) append(state.municipality)
+                if (state.province.isNotBlank()) {
+                    if (isNotEmpty()) append(", ")
+                    append(state.province)
+                }
+            }
+            if (query.length < 3) return@launch
+            nominatim.runCatching { search(query, limit = 1) }
+                .onSuccess { results ->
+                    val place = results.firstOrNull() ?: return@onSuccess
+                    if (!_uiState.value.locationFromMap) {
+                        _uiState.update { it.copy(latitude = place.latitude, longitude = place.longitude) }
+                    }
+                }
+        }
+    }
+
+    fun setLocationFromMap(location: Location) {
+        geocodeJob?.cancel()
+        _uiState.update {
+            it.copy(
+                latitude = location.latitude,
+                longitude = location.longitude,
+                address = location.address,
+                municipality = location.municipality,
+                province = location.province,
+                locationFromMap = true
+            )
+        }
     }
 
     fun addPlant() = _uiState.update { it.copy(plantForms = listOf(PlantForm()) + it.plantForms) }
