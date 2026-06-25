@@ -10,6 +10,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.7.1] - 2026-06-25
+
+### Añadido
+- **Editar plantación**: botón "Editar" (✏️) en la pantalla de detalle abre el wizard precargado con los datos existentes; guardar actualiza la plantación y vuelve al detalle con los datos nuevos
+- Soporte de modo edición en `PlantationWizardScreen` y `PlantationWizardViewModel` (reutilización del wizard para crear y editar)
+
+### Corregido
+- Las plantas creadas en el wizard ahora se guardan correctamente en Room: `Plantation.create()` y `Plantation.update()` asignan el `plantationId` correcto a cada `PlantType` antes de persistirlo (antes se guardaban con `plantationId=""` y nunca se mostraban en el detalle)
+
+---
+
 ## [0.7.0] - 2026-06-25
 
 ### Cambiado

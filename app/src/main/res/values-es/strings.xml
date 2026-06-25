@@ -18,6 +18,7 @@
     <!-- Plantation -->
     <string name="plantation_title">Plantaciones</string>
     <string name="plantation_add">Nueva Plantación</string>
+    <string name="plantation_edit">Editar plantación</string>
     <string name="plantation_name">Nombre de la plantación</string>
     <string name="plantation_type">Tipo de plantación</string>
     <string name="plantation_area">Superficie (m²)</string>

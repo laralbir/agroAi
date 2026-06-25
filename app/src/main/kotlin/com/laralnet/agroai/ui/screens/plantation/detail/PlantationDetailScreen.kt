@@ -24,6 +24,7 @@ fun PlantationDetailScreen(
     plantationId: String,
     onNavigateBack: () -> Unit,
     onNavigateToAnalysis: () -> Unit,
+    onNavigateToEdit: () -> Unit,
     viewModel: PlantationDetailViewModel = hiltViewModel()
 ) {
     LaunchedEffect(plantationId) { viewModel.load(plantationId) }
@@ -41,8 +42,8 @@ fun PlantationDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* edit */ }) {
-                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.btn_save))
+                    IconButton(onClick = onNavigateToEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.plantation_edit))
                     }
                 }
             )

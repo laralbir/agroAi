@@ -158,6 +158,9 @@ fun AgroAINavGraph(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAnalysis = {
                         navController.navigate(Screen.PhotoAnalysis.route)
+                    },
+                    onNavigateToEdit = {
+                        navController.navigate(Screen.PlantationEdit.route(id))
                     }
                 )
             }
@@ -183,12 +186,46 @@ fun AgroAINavGraph(
 
                 PlantationWizardScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onPlantationCreated = { id ->
+                    onPlantationSaved = { id ->
                         navController.popBackStack()
                         navController.navigate(Screen.PlantationDetail.route(id))
                     },
                     onOpenMapPicker = { navController.navigate(Screen.LocationPicker.route) },
                     viewModel = wizardViewModel
+                )
+            }
+            composable(
+                route = Screen.PlantationEdit.route,
+                arguments = listOf(navArgument("id") { type = NavType.StringType })
+            ) { backStack ->
+                val editViewModel: PlantationWizardViewModel = hiltViewModel()
+
+                val savedStateHandle = backStack.savedStateHandle
+                LaunchedEffect(Unit) {
+                    savedStateHandle.getStateFlow<Double?>(KEY_PICKED_LAT, null).collect { lat ->
+                        if (lat == null) return@collect
+                        val location = Location(
+                            latitude = lat,
+                            longitude = savedStateHandle[KEY_PICKED_LON],
+                            address = savedStateHandle[KEY_PICKED_ADDRESS] ?: "",
+                            municipality = savedStateHandle[KEY_PICKED_MUNICIPALITY] ?: "",
+                            province = savedStateHandle[KEY_PICKED_PROVINCE] ?: ""
+                        )
+                        editViewModel.setLocationFromMap(location)
+                        savedStateHandle.remove<Double>(KEY_PICKED_LAT)
+                    }
+                }
+
+                val id = backStack.arguments?.getString("id") ?: return@composable
+                PlantationWizardScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onPlantationSaved = {
+                        navController.navigate(Screen.PlantationDetail.route(id)) {
+                            popUpTo(Screen.PlantationDetail.route) { inclusive = true }
+                        }
+                    },
+                    onOpenMapPicker = { navController.navigate(Screen.LocationPicker.route) },
+                    viewModel = editViewModel
                 )
             }
             composable(Screen.LocationPicker.route) {

@@ -18,6 +18,7 @@
     <!-- Plantation -->
     <string name="plantation_title">Plantations</string>
     <string name="plantation_add">New Plantation</string>
+    <string name="plantation_edit">Edit Plantation</string>
     <string name="plantation_name">Plantation name</string>
     <string name="plantation_type">Type of plantation</string>
     <string name="plantation_area">Area (m²)</string>

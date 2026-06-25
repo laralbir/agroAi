@@ -1,5 +1,6 @@
 package com.laralnet.agroai.ui.screens.plantation.wizard
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,17 +11,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 import com.laralnet.agroai.plantation.domain.model.PlantationType
 
+private fun PlantationType.resolveLabel(context: Context): String {
+    val resId = context.resources.getIdentifier(labelResKey, "string", context.packageName)
+    return if (resId != 0) context.getString(resId) else name
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlantationWizardScreen(
     onNavigateBack: () -> Unit,
-    onPlantationCreated: (String) -> Unit,
+    onPlantationSaved: (String) -> Unit,
     onOpenMapPicker: () -> Unit,
     viewModel: PlantationWizardViewModel = hiltViewModel()
 ) {
@@ -34,14 +41,19 @@ fun PlantationWizardScreen(
         stringResource(R.string.plantation_wizard_step4)
     )
 
-    LaunchedEffect(uiState.createdId) {
-        uiState.createdId?.let { onPlantationCreated(it) }
+    LaunchedEffect(uiState.savedId) {
+        uiState.savedId?.let { onPlantationSaved(it) }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.plantation_add)) },
+                title = {
+                    Text(
+                        if (uiState.isEditMode) stringResource(R.string.plantation_edit)
+                        else stringResource(R.string.plantation_add)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = {
                         if (currentStep == 0) onNavigateBack()
@@ -90,7 +102,7 @@ fun PlantationWizardScreen(
                 Button(
                     onClick = {
                         if (currentStep < steps.size - 1) viewModel.nextStep()
-                        else viewModel.createPlantation()
+                        else viewModel.save()
                     },
                     enabled = !uiState.isLoading
                 ) {
@@ -167,6 +179,7 @@ private fun PlantationTypeGrid(
     selected: PlantationType?,
     onSelected: (PlantationType) -> Unit
 ) {
+    val context = LocalContext.current
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -175,7 +188,7 @@ private fun PlantationTypeGrid(
             FilterChip(
                 selected = selected == type,
                 onClick = { onSelected(type) },
-                label = { Text("${type.defaultIconEmoji} ${type.labelResKey}") }
+                label = { Text("${type.defaultIconEmoji} ${type.resolveLabel(context)}") }
             )
         }
     }
@@ -265,18 +278,18 @@ private fun Step2Location(
 @Composable
 private fun Step3Plants(state: PlantationWizardState, viewModel: PlantationWizardViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        OutlinedButton(
+            onClick = viewModel::addPlant,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.plantation_add_plant))
+        }
         state.plantForms.forEachIndexed { index, plant ->
             PlantFormCard(
                 plant = plant,
                 onUpdate = { updated -> viewModel.updatePlant(index, updated) },
                 onRemove = { viewModel.removePlant(index) }
             )
-        }
-        OutlinedButton(
-            onClick = viewModel::addPlant,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.plantation_add_plant))
         }
     }
 }
@@ -320,10 +333,12 @@ private fun PlantFormCard(
 
 @Composable
 private fun Step4Summary(state: PlantationWizardState) {
+    val context = LocalContext.current
+    val typeLabel = state.type?.resolveLabel(context) ?: "-"
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.plantation_wizard_step4), style = MaterialTheme.typography.titleLarge)
         SummaryRow(stringResource(R.string.wizard_summary_name), state.name)
-        SummaryRow(stringResource(R.string.wizard_summary_type), state.type?.name ?: "-")
+        SummaryRow(stringResource(R.string.wizard_summary_type), typeLabel)
         SummaryRow(stringResource(R.string.wizard_summary_area), "${state.areaSqMeters} m²")
         SummaryRow(stringResource(R.string.plantation_location), state.address.ifBlank { state.municipality })
         SummaryRow(stringResource(R.string.plantation_plants), stringResource(R.string.wizard_plants_count, state.plantForms.size))
