@@ -255,12 +255,6 @@ private fun Step2Location(
         )
 
         OutlinedTextField(
-            value = state.address,
-            onValueChange = viewModel::setAddress,
-            label = { Text(stringResource(R.string.plantation_location)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
             value = state.municipality,
             onValueChange = viewModel::setMunicipality,
             label = { Text(stringResource(R.string.wizard_municipality)) },
