@@ -163,7 +163,7 @@ private fun PhotoPlaceholder(modifier: Modifier = Modifier) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Take or select a photo",
+                stringResource(R.string.analysis_select_photo),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

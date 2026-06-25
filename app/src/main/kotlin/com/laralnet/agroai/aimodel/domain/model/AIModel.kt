@@ -11,10 +11,11 @@ enum class ModelVariant(
     val downloadUrl: String,
     val gemmaVersion: GemmaVersion,
     val infoUrl: String = "",
-    // Local filename to use on disk. Needed because .litertlm and .task have different extensions.
-    val localFileName: String = ""
+    val localFileName: String = "",
+    val descriptionEs: String = "",
+    val descriptionEn: String = "",
+    val isRecommended: Boolean = false
 ) {
-    // litert-community/Gemma3-1B-IT — gemma3-1b-it-int4.task (555 MB, Android-compatible)
     GEMMA3_1B(
         displayName = "Gemma 3 1B",
         approximateSizeGb = 0.6,
@@ -22,11 +23,12 @@ enum class ModelVariant(
         downloadUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
         gemmaVersion = GemmaVersion.GEMMA_3,
         infoUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
-        localFileName = "gemma3_1b.task"
+        localFileName = "gemma3_1b.task",
+        descriptionEs = "Modelo compacto, ideal para dispositivos de gama media. Respuestas rápidas con menor consumo de RAM.",
+        descriptionEn = "Compact model, ideal for mid-range devices. Fast responses with lower RAM usage.",
+        isRecommended = false
     ),
 
-    // litert-community/gemma-4-E2B-it-litert-lm — gemma-4-E2B-it.litertlm (~2.5 GB, LiteRT LM format)
-    // Requires Backend.CPU or Backend.GPU (new LiteRT path); incompatible with Backend.DEFAULT.
     GEMMA4_E2B(
         displayName = "Gemma 4 E2B",
         approximateSizeGb = 2.5,
@@ -34,7 +36,10 @@ enum class ModelVariant(
         downloadUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",
         gemmaVersion = GemmaVersion.GEMMA_4,
         infoUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm",
-        localFileName = "gemma4_e2b.litertlm"
+        localFileName = "gemma4_e2b.litertlm",
+        descriptionEs = "Última generación de Gemma. Mayor precisión en diagnósticos agrícolas y mejor comprensión del contexto.",
+        descriptionEn = "Latest Gemma generation. Higher accuracy for agricultural diagnostics and better context understanding.",
+        isRecommended = true
     )
 }
 

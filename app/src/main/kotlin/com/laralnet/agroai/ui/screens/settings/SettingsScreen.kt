@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.laralnet.agroai.R
 import com.laralnet.agroai.aimodel.domain.model.HuggingFaceCredential
+import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +29,7 @@ fun SettingsScreen(
     val themeMode by viewModel.themeMode.collectAsState()
     val aemetApiKey by viewModel.aemetApiKey.collectAsState()
     val hfCredential by viewModel.hfCredential.collectAsState()
+    val activeModel by viewModel.activeModel.collectAsState()
     val context = LocalContext.current
     var showAemetDialog by remember { mutableStateOf(false) }
     var showHfDisconnectDialog by remember { mutableStateOf(false) }
@@ -77,7 +79,8 @@ fun SettingsScreen(
             SettingsItem(
                 icon = Icons.Default.SmartToy,
                 title = stringResource(R.string.settings_model_change),
-                subtitle = "Gemma 3 — select and download",
+                subtitle = activeModel?.displayName
+                    ?: stringResource(R.string.settings_model_none),
                 onClick = onNavigateToModels
             )
 
@@ -88,7 +91,7 @@ fun SettingsScreen(
             SettingsItem(
                 icon = Icons.Default.Cloud,
                 title = stringResource(R.string.settings_aemet),
-                subtitle = if (aemetApiKey.isBlank()) "API key not configured" else "Configured",
+                subtitle = if (aemetApiKey.isBlank()) stringResource(R.string.settings_aemet_not_configured) else stringResource(R.string.settings_aemet_configured),
                 onClick = { showAemetDialog = true }
             )
 
@@ -102,11 +105,11 @@ fun SettingsScreen(
             Divider(modifier = Modifier.padding(vertical = 12.dp))
 
             // Prompt editor
-            SettingsSectionTitle(text = "AI Prompts")
+            SettingsSectionTitle(text = stringResource(R.string.settings_ai_prompts))
             SettingsItem(
                 icon = Icons.Default.Edit,
                 title = stringResource(R.string.settings_prompt_editor),
-                subtitle = "Customize Gemma analysis prompts",
+                subtitle = stringResource(R.string.settings_prompt_editor_subtitle),
                 onClick = { /* navigate to prompt editor */ }
             )
 

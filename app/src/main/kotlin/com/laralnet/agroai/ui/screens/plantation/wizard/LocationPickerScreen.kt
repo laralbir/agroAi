@@ -67,7 +67,7 @@ fun LocationPickerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pick location") },
+                title = { Text(stringResource(R.string.location_picker_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -188,7 +188,7 @@ fun LocationPickerScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = loc.municipality.ifBlank { loc.address }.ifBlank { "Selected location" },
+                                text = loc.municipality.ifBlank { loc.address }.ifBlank { stringResource(R.string.location_selected) },
                                 style = MaterialTheme.typography.titleSmall
                             )
                             if (loc.province.isNotBlank()) {
@@ -264,7 +264,7 @@ private fun SearchBar(
             TextField(
                 value = query,
                 onValueChange = onQueryChange,
-                placeholder = { Text("Search location…") },
+                placeholder = { Text(stringResource(R.string.location_search_hint)) },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -283,7 +283,7 @@ private fun SearchBar(
                 } else {
                     Icon(
                         Icons.Default.GpsFixed,
-                        contentDescription = "Use my location",
+                        contentDescription = stringResource(R.string.location_use_my_location),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }

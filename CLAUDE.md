@@ -248,6 +248,16 @@ OsmConfiguration.getInstance().apply {
 - **Medidas**: Sistema Internacional (m², km, litros, kg, °C)
 - **Recursos**: `res/values/strings.xml` (en), `res/values-es/strings.xml` (es)
 
+### Regla OBLIGATORIA de i18n
+
+**Todo texto visible en la UI DEBE estar en ambos idiomas.** No se permite texto hardcodeado en inglés o español directamente en el código Kotlin/Compose.
+
+- Usar siempre `stringResource(R.string.xxx)` en Compose
+- Definir cada string en `res/values/strings.xml` (EN) **y** en `res/values-es/strings.xml` (ES)
+- Las descripciones en `ModelVariant` (y cualquier otro dato de dominio con texto visible) deben tener campos `descriptionEn` y `descriptionEs`
+- Para detectar el idioma activo en código Kotlin, usar el contexto local (`LocalContext.current.resources.configuration.locales[0].language`), **nunca** `Locale.getDefault()` directamente en UI
+- El checklist del PR incluye verificar que no hay strings nuevos sin su traducción correspondiente
+
 ---
 
 ## Temas

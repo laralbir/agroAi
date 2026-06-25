@@ -66,7 +66,7 @@ fun PlantationDetailScreen(
                 item { PlantationInfoSection(plantation = p) }
                 item {
                     Text(
-                        "Treatments",
+                        stringResource(R.string.plantation_detail_treatments),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(top = 8.dp)
                     )
@@ -74,7 +74,7 @@ fun PlantationDetailScreen(
                 if (treatments.isEmpty()) {
                     item {
                         Text(
-                            "No treatments scheduled",
+                            stringResource(R.string.plantation_detail_no_treatments),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -115,11 +115,15 @@ private fun PlantationInfoSection(plantation: Plantation) {
             }
             if (plantation.plants.isNotEmpty()) {
                 HorizontalDivider()
-                Text("Plants", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.plantation_plants), style = MaterialTheme.typography.labelLarge)
+                val unitsLabel = stringResource(R.string.plantation_units)
                 plantation.plants.forEach { plant ->
                     Text(
-                        "• ${plant.name}${if (plant.variety.isNotBlank()) " (${plant.variety})" else ""}" +
-                                if (plant.count > 0) " — ${plant.count} units" else "",
+                        text = buildString {
+                            append("• ${plant.name}")
+                            if (plant.variety.isNotBlank()) append(" (${plant.variety})")
+                            if (plant.count > 0) append(" — ${plant.count} $unitsLabel")
+                        },
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

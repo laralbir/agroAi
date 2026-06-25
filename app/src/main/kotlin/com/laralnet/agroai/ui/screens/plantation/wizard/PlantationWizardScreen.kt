@@ -196,7 +196,7 @@ private fun Step2Location(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text("Selected location", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.location_selected), style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.height(4.dp))
                     if (state.municipality.isNotBlank()) {
                         Text(
@@ -229,12 +229,12 @@ private fun Step2Location(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(Modifier.width(8.dp))
-            Text(if (hasLocation) "Change on map" else "Pick on map")
+            Text(if (hasLocation) stringResource(R.string.wizard_change_map) else stringResource(R.string.wizard_pick_map))
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
         Text(
-            "Or enter manually:",
+            stringResource(R.string.wizard_or_enter_manually),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -248,24 +248,24 @@ private fun Step2Location(
         OutlinedTextField(
             value = state.municipality,
             onValueChange = viewModel::setMunicipality,
-            label = { Text("Municipality") },
+            label = { Text(stringResource(R.string.wizard_municipality)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
         OutlinedTextField(
             value = state.province,
             onValueChange = viewModel::setProvince,
-            label = { Text("Province") },
+            label = { Text(stringResource(R.string.wizard_province)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
         OutlinedTextField(
             value = state.municipalityCode,
             onValueChange = viewModel::setMunicipalityCode,
-            label = { Text("AEMET municipality code (INE)") },
+            label = { Text(stringResource(R.string.wizard_aemet_code)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            supportingText = { Text("Required for weather data") }
+            supportingText = { Text(stringResource(R.string.wizard_required_weather)) }
         )
     }
 }
@@ -298,7 +298,7 @@ private fun PlantFormCard(
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Plant", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.wizard_plant_title), style = MaterialTheme.typography.titleSmall)
                 TextButton(onClick = onRemove) { Text(stringResource(R.string.btn_delete)) }
             }
             OutlinedTextField(
@@ -329,12 +329,12 @@ private fun PlantFormCard(
 @Composable
 private fun Step4Summary(state: PlantationWizardState) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Summary", style = MaterialTheme.typography.titleLarge)
-        SummaryRow("Name", state.name)
-        SummaryRow("Type", state.type?.name ?: "-")
-        SummaryRow("Area", "${state.areaSqMeters} m²")
-        SummaryRow("Location", state.address.ifBlank { state.municipality })
-        SummaryRow("Plants", "${state.plantForms.size} types")
+        Text(stringResource(R.string.plantation_wizard_step4), style = MaterialTheme.typography.titleLarge)
+        SummaryRow(stringResource(R.string.wizard_summary_name), state.name)
+        SummaryRow(stringResource(R.string.wizard_summary_type), state.type?.name ?: "-")
+        SummaryRow(stringResource(R.string.wizard_summary_area), "${state.areaSqMeters} m²")
+        SummaryRow(stringResource(R.string.plantation_location), state.address.ifBlank { state.municipality })
+        SummaryRow(stringResource(R.string.plantation_plants), stringResource(R.string.wizard_plants_count, state.plantForms.size))
     }
 }
 

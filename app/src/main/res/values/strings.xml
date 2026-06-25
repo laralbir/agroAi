@@ -93,7 +93,8 @@
     <string name="settings_language_system">System default</string>
     <string name="settings_ai_model">AI Model</string>
     <string name="settings_model_download">Download Model</string>
-    <string name="settings_model_change">Change Model</string>
+    <string name="settings_model_change">AI Model</string>
+    <string name="settings_model_none">No model downloaded — tap to download</string>
     <string name="settings_model_delete">Delete Model</string>
     <string name="settings_apis">External APIs</string>
     <string name="settings_aemet">AEMET (Spain weather)</string>
@@ -114,6 +115,7 @@
     <string name="model_download_failed">Download failed</string>
     <string name="model_not_downloaded">Not downloaded</string>
     <string name="model_active">Active</string>
+    <string name="model_recommended">Recommended</string>
     <string name="model_coming_soon">Coming soon</string>
     <string name="model_download">Download</string>
     <string name="model_activate">Set as active</string>
@@ -199,6 +201,44 @@
     <string name="permission_calendar">Calendar permission is required to schedule treatments</string>
     <string name="permission_denied">Permission denied. Some features may not work correctly.</string>
     <string name="permission_open_settings">Open Settings</string>
+
+    <!-- Location picker -->
+    <string name="location_picker_title">Pick location</string>
+    <string name="location_selected">Selected location</string>
+    <string name="location_search_hint">Search location…</string>
+    <string name="location_use_my_location">Use my location</string>
+
+    <!-- Plantation wizard -->
+    <string name="wizard_change_map">Change on map</string>
+    <string name="wizard_pick_map">Pick on map</string>
+    <string name="wizard_or_enter_manually">Or enter manually:</string>
+    <string name="wizard_municipality">Municipality</string>
+    <string name="wizard_province">Province</string>
+    <string name="wizard_aemet_code">AEMET municipality code (INE)</string>
+    <string name="wizard_required_weather">Required for weather data</string>
+    <string name="wizard_plant_title">Plant</string>
+    <string name="wizard_summary_name">Name</string>
+    <string name="wizard_summary_type">Type</string>
+    <string name="wizard_summary_area">Area</string>
+    <string name="wizard_plants_count">%d types</string>
+
+    <!-- Plantation detail -->
+    <string name="plantation_detail_treatments">Treatments</string>
+    <string name="plantation_detail_no_treatments">No treatments scheduled</string>
+    <string name="plantation_units">units</string>
+
+    <!-- Analysis -->
+    <string name="analysis_select_photo">Take or select a photo</string>
+
+    <!-- Model download log -->
+    <string name="model_download_log">Download log</string>
+    <string name="model_download_log_error">Error — full log</string>
+
+    <!-- Settings -->
+    <string name="settings_aemet_not_configured">API key not configured</string>
+    <string name="settings_aemet_configured">Configured</string>
+    <string name="settings_ai_prompts">AI Prompts</string>
+    <string name="settings_prompt_editor_subtitle">Customize Gemma analysis prompts</string>
 
     <!-- Common -->
     <string name="btn_next">Next</string>

@@ -93,7 +93,8 @@
     <string name="settings_language_system">Seguir el sistema</string>
     <string name="settings_ai_model">Modelo de IA</string>
     <string name="settings_model_download">Descargar Modelo</string>
-    <string name="settings_model_change">Cambiar Modelo</string>
+    <string name="settings_model_change">Modelo de IA</string>
+    <string name="settings_model_none">Sin modelo descargado — toca para descargar</string>
     <string name="settings_model_delete">Eliminar Modelo</string>
     <string name="settings_apis">APIs Externas</string>
     <string name="settings_aemet">AEMET (Meteorología España)</string>
@@ -114,6 +115,7 @@
     <string name="model_download_failed">Error al descargar</string>
     <string name="model_not_downloaded">No descargado</string>
     <string name="model_active">Activo</string>
+    <string name="model_recommended">Recomendado</string>
     <string name="model_coming_soon">Próximamente</string>
     <string name="model_download">Descargar</string>
     <string name="model_activate">Activar</string>
@@ -199,6 +201,44 @@
     <string name="permission_calendar">Se necesita permiso de calendario para agendar tratamientos</string>
     <string name="permission_denied">Permiso denegado. Algunas funciones pueden no estar disponibles.</string>
     <string name="permission_open_settings">Abrir Ajustes</string>
+
+    <!-- Location picker -->
+    <string name="location_picker_title">Elegir ubicación</string>
+    <string name="location_selected">Ubicación seleccionada</string>
+    <string name="location_search_hint">Buscar ubicación…</string>
+    <string name="location_use_my_location">Usar mi ubicación</string>
+
+    <!-- Plantation wizard -->
+    <string name="wizard_change_map">Cambiar en mapa</string>
+    <string name="wizard_pick_map">Elegir en mapa</string>
+    <string name="wizard_or_enter_manually">O introduce manualmente:</string>
+    <string name="wizard_municipality">Municipio</string>
+    <string name="wizard_province">Provincia</string>
+    <string name="wizard_aemet_code">Código de municipio AEMET (INE)</string>
+    <string name="wizard_required_weather">Necesario para datos meteorológicos</string>
+    <string name="wizard_plant_title">Planta</string>
+    <string name="wizard_summary_name">Nombre</string>
+    <string name="wizard_summary_type">Tipo</string>
+    <string name="wizard_summary_area">Superficie</string>
+    <string name="wizard_plants_count">%d tipos</string>
+
+    <!-- Plantation detail -->
+    <string name="plantation_detail_treatments">Tratamientos</string>
+    <string name="plantation_detail_no_treatments">Sin tratamientos programados</string>
+    <string name="plantation_units">unidades</string>
+
+    <!-- Analysis -->
+    <string name="analysis_select_photo">Toma o selecciona una foto</string>
+
+    <!-- Model download log -->
+    <string name="model_download_log">Registro de descarga</string>
+    <string name="model_download_log_error">Error — registro completo</string>
+
+    <!-- Settings -->
+    <string name="settings_aemet_not_configured">Clave API no configurada</string>
+    <string name="settings_aemet_configured">Configurada</string>
+    <string name="settings_ai_prompts">Prompts de IA</string>
+    <string name="settings_prompt_editor_subtitle">Personaliza los prompts de análisis de Gemma</string>
 
     <!-- Common -->
     <string name="btn_next">Siguiente</string>

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -297,8 +298,38 @@ private fun ModelVariantCard(
     onDelete: () -> Unit,
     onTest: () -> Unit
 ) {
+    val locale = androidx.compose.ui.platform.LocalContext.current.resources.configuration.locales[0]
+    val description = if (locale.language == "es") row.variant.descriptionEs else row.variant.descriptionEn
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Recommended badge
+            if (row.variant.isRecommended) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = MaterialTheme.shapes.extraSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = stringResource(R.string.model_recommended),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -310,12 +341,21 @@ private fun ModelVariantCard(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "${row.variant.approximateSizeGb} GB disk · ${row.variant.requiredRamGb} GB RAM",
+                        text = "${row.variant.approximateSizeGb} GB · ${row.variant.requiredRamGb} GB RAM",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 ModelStatusChip(row)
+            }
+
+            if (description.isNotBlank()) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             if (row.downloadState == DownloadState.DOWNLOADING) {
@@ -451,7 +491,7 @@ private fun DownloadLogPanel(log: String, isFailed: Boolean, modelInfoUrl: Strin
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = if (isFailed) "Error — log completo" else "Log de descarga",
+                    text = if (isFailed) stringResource(R.string.model_download_log_error) else stringResource(R.string.model_download_log),
                     style = MaterialTheme.typography.labelMedium,
                     color = contentColor
                 )

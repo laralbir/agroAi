@@ -24,7 +24,7 @@ DEVICES=$("$ADB" devices | awk 'NR>1 && $2=="device" && $1!~/^emulator/ {print $
 
 if [ -z "$DEVICES" ]; then
     echo "ERROR: No hay dispositivos físicos conectados en estado 'device'."
-    echo "Conecta el Pixel 9 por USB con depuración USB activada."
+    echo "Conecta el dispositivo por USB con depuración USB activada."
     exit 1
 fi
 
@@ -81,22 +81,42 @@ for serial in $SELECTED_SERIALS; do
     echo "  ✓ Lanzada v$VERSION"
 done
 
-# ── Logcat ────────────────────────────────────────────────────────────────────
+# ── Logcat con Gestión de Ctrl+C ──────────────────────────────────────────────
 echo ""
 echo "Mostrando logcat (Ctrl+C para salir)..."
 echo ""
 
 LOGCAT_PIDS=""
+
+# Función para matar los procesos background al salir
+cleanup() {
+    echo -e "\n\nDeteniendo logcat y limpiando procesos..."
+    # Desactivamos el trap para evitar bucles si se pulsa Ctrl+C repetidamente
+    trap - INT TERM
+    
+    if [ -n "$LOGCAT_PIDS" ]; then
+        # shellcheck disable=SC2086
+        kill $LOGCAT_PIDS 2>/dev/null
+    fi
+    exit 0
+}
+
+# Capturar Ctrl+C (SIGINT) y SIGTERM del sistema
+trap cleanup INT TERM
+
 for serial in $SELECTED_SERIALS; do
     model=$("$ADB" -s "$serial" shell getprop ro.product.model 2>/dev/null | tr -d '\r')
     APP_PID=$("$ADB" -s "$serial" shell pidof "$APP_PACKAGE" 2>/dev/null | tr -d '\r\n ')
+    
     if [ -n "$APP_PID" ]; then
         "$ADB" -s "$serial" logcat --pid="$APP_PID" | sed "s/^/[$model] /" &
     else
         "$ADB" -s "$serial" logcat | sed "s/^/[$model] /" &
     fi
+    # Almacenamos el PID del subproceso actual
     LOGCAT_PIDS="$LOGCAT_PIDS $!"
 done
 
+# Esperar de forma segura a que los subprocesos terminen o se reciba el trap
 # shellcheck disable=SC2086
-wait $LOGCAT_PIDS
+wait $LOGCAT_PIDS 2>/dev/null
