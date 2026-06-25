@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
@@ -322,8 +324,15 @@ private fun PlantFormCard(
             )
             OutlinedTextField(
                 value = plant.count,
-                onValueChange = { onUpdate(plant.copy(count = it)) },
+                onValueChange = { new ->
+                    val digits = new.filter { it.isDigit() }
+                    val cleaned = digits.trimStart('0').let { if (it.isEmpty() && digits.isNotEmpty()) "0" else it }
+                    if (cleaned.isEmpty() || (cleaned.toIntOrNull() ?: 0) > 0) {
+                        onUpdate(plant.copy(count = cleaned))
+                    }
+                },
                 label = { Text(stringResource(R.string.plant_count)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )

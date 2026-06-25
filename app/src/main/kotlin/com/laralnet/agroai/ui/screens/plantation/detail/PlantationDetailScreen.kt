@@ -7,15 +7,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.plantation.domain.model.Location
 import com.laralnet.agroai.plantation.domain.model.Plantation
+import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.treatment.domain.model.Treatment
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,12 +69,31 @@ fun PlantationDetailScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                item { PlantationInfoSection(plantation = p) }
+                item { PlantationHeaderCard(plantation = p) }
+
+                val loc = p.location
+                if (loc.displayAddress.isNotBlank() || loc.hasCoordinates) {
+                    item { PlantationLocationCard(location = loc) }
+                }
+
+                if (p.plants.isNotEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.plantation_plants),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                    items(p.plants, key = { it.id }) { plant ->
+                        PlantCard(plant = plant)
+                    }
+                }
+
                 item {
                     Text(
                         stringResource(R.string.plantation_detail_treatments),
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
                 if (treatments.isEmpty()) {
@@ -97,39 +121,84 @@ fun PlantationDetailScreen(
 }
 
 @Composable
-private fun PlantationInfoSection(plantation: Plantation) {
+private fun PlantationHeaderCard(plantation: Plantation) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row {
-                Text(plantation.type.defaultIconEmoji, style = MaterialTheme.typography.headlineMedium)
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(plantation.name, style = MaterialTheme.typography.titleLarge)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(plantation.type.defaultIconEmoji, style = MaterialTheme.typography.displaySmall)
+            Spacer(Modifier.width(16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(plantation.name, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    "${plantation.areaSqMeters.toInt()} m²",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (plantation.notes.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        "${plantation.areaSqMeters.toInt()} m²",
+                        plantation.notes,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
-            if (plantation.location.displayAddress.isNotBlank()) {
-                Text(plantation.location.displayAddress, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+private fun PlantationLocationCard(location: Location) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(stringResource(R.string.plantation_location), style = MaterialTheme.typography.labelLarge)
             }
-            if (plantation.plants.isNotEmpty()) {
-                HorizontalDivider()
-                Text(stringResource(R.string.plantation_plants), style = MaterialTheme.typography.labelLarge)
-                val unitsLabel = stringResource(R.string.plantation_units)
-                plantation.plants.forEach { plant ->
-                    Text(
-                        text = buildString {
-                            append("• ${plant.name}")
-                            if (plant.variety.isNotBlank()) append(" (${plant.variety})")
-                            if (plant.count > 0) append(" — ${plant.count} $unitsLabel")
-                        },
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+            if (location.displayAddress.isNotBlank()) {
+                Text(location.displayAddress, style = MaterialTheme.typography.bodyMedium)
+            }
+            if (location.hasCoordinates) {
+                Text(
+                    "%.5f, %.5f".format(location.latitude, location.longitude),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlantCard(plant: PlantType) {
+    val unitsLabel = stringResource(R.string.plantation_units)
+    Card(modifier = Modifier.fillMaxWidth()) {
+        ListItem(
+            leadingContent = {
+                Icon(
+                    Icons.Default.Eco,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            headlineContent = {
+                Text(
+                    if (plant.variety.isNotBlank()) "${plant.name} · ${plant.variety}"
+                    else plant.name
+                )
+            },
+            supportingContent = if (plant.count > 0) {
+                { Text("${plant.count} $unitsLabel") }
+            } else null
+        )
     }
 }
 
