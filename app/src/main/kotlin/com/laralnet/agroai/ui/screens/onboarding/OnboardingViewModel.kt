@@ -22,9 +22,9 @@ class OnboardingViewModel @Inject constructor(
         val KEY_ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
     }
 
-    /** null = still loading, false = needs onboarding, true = already done */
+    /** null = still loading DataStore; false = needs onboarding; true = already done */
     val onboardingDone = dataStore.data
-        .map { it[KEY_ONBOARDING_DONE] }
+        .map { it[KEY_ONBOARDING_DONE] ?: false }
         .stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = null)
 
     fun markDone() {

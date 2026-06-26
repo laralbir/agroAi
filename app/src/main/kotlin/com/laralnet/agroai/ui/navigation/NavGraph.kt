@@ -1,6 +1,10 @@
 package com.laralnet.agroai.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -174,6 +178,9 @@ fun AgroAINavGraph(
                     navController.navigate(target) {
                         popUpTo(Screen.Router.route) { inclusive = true }
                     }
+                }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
             composable(Screen.Onboarding.route) {

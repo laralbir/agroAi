@@ -8,6 +8,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-06-26
+
+### Corregido
+- **Pantalla blanca al arrancar**: el `Router` composable (destino inicial del NavGraph) no tenía UI mientras DataStore cargaba; se añade `CircularProgressIndicator` durante esa espera
+- **Spinner infinito en onboarding**: `OnboardingViewModel.onboardingDone` mapeaba la clave ausente en DataStore a `null` en lugar de `false`, haciendo que el router interpretara "primer arranque" como "todavía cargando" indefinidamente; corregido con `?: false`
+
 ## [0.11.0] - 2026-06-26
 
 ### Añadido
