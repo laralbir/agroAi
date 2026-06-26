@@ -23,6 +23,9 @@ interface TreatmentDao {
     @Query("SELECT * FROM treatments WHERE status = 'PENDING' ORDER BY scheduledAt ASC")
     fun observeUpcoming(): Flow<List<TreatmentEntity>>
 
+    @Query("SELECT * FROM treatments WHERE scheduledAt >= :startMs AND scheduledAt < :endMs ORDER BY scheduledAt ASC")
+    fun observeByDateRange(startMs: Long, endMs: Long): Flow<List<TreatmentEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(treatment: TreatmentEntity)
 

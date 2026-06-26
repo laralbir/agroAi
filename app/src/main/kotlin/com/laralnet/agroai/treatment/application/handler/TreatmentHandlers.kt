@@ -1,7 +1,9 @@
 package com.laralnet.agroai.treatment.application.handler
 
-import com.laralnet.agroai.calendar.domain.model.CalendarEvent
-import com.laralnet.agroai.calendar.domain.repository.CalendarRepository
+import com.laralnet.agroai.calendar.application.command.CreateCalendarEventCommand
+import com.laralnet.agroai.calendar.application.command.DeleteCalendarEventCommand
+import com.laralnet.agroai.calendar.application.handler.CreateCalendarEventHandler
+import com.laralnet.agroai.calendar.application.handler.DeleteCalendarEventHandler
 import com.laralnet.agroai.core.infrastructure.event.EventBus
 import com.laralnet.agroai.treatment.application.command.CompleteTreatmentCommand
 import com.laralnet.agroai.treatment.application.command.DeleteTreatmentCommand
@@ -18,7 +20,7 @@ import javax.inject.Inject
 
 class ScheduleTreatmentHandler @Inject constructor(
     private val repository: TreatmentRepository,
-    private val calendarRepository: CalendarRepository,
+    private val createCalendarEventHandler: CreateCalendarEventHandler,
     private val eventBus: EventBus
 ) {
     suspend fun handle(command: ScheduleTreatmentCommand): Result<Treatment> = runCatching {
@@ -26,22 +28,17 @@ class ScheduleTreatmentHandler @Inject constructor(
         var savedAccountEmail: String? = null
 
         if (command.addToCalendar && command.calendarAccountEmail != null) {
-            val calendars = calendarRepository.getCalendars(command.calendarAccountEmail)
-            val calendar = calendars.firstOrNull { it.isPrimary } ?: calendars.firstOrNull()
-            if (calendar != null) {
-                calendarRepository.createEvent(
-                    CalendarEvent(
-                        calendarId = calendar.id,
-                        accountEmail = command.calendarAccountEmail,
-                        title = command.title,
-                        description = command.description,
-                        startAt = command.scheduledAt,
-                        endAt = command.scheduledAt.plusSeconds(3600)
-                    )
-                ).onSuccess { created ->
-                    calendarEventId = created.eventId
-                    savedAccountEmail = created.accountEmail
-                }
+            createCalendarEventHandler.handle(
+                CreateCalendarEventCommand(
+                    accountEmail = command.calendarAccountEmail,
+                    title = command.title,
+                    description = command.description,
+                    startAt = command.scheduledAt,
+                    endAt = command.scheduledAt.plusSeconds(3600)
+                )
+            ).onSuccess { created ->
+                calendarEventId = created.eventId
+                savedAccountEmail = created.accountEmail
             }
         }
 
@@ -85,7 +82,7 @@ class CompleteTreatmentHandler @Inject constructor(
 
 class DeleteTreatmentHandler @Inject constructor(
     private val repository: TreatmentRepository,
-    private val calendarRepository: CalendarRepository,
+    private val deleteCalendarEventHandler: DeleteCalendarEventHandler,
     private val eventBus: EventBus
 ) {
     suspend fun handle(command: DeleteTreatmentCommand): Result<Unit> = runCatching {
@@ -93,8 +90,7 @@ class DeleteTreatmentHandler @Inject constructor(
             ?: error("Treatment ${command.treatmentId} not found")
         val calEventId = treatment.calendarEventId
         if (calEventId != null) {
-            // calendarId not stored in Treatment; the GoogleCalendarRepository impl only uses eventId
-            calendarRepository.deleteEvent(calendarId = 0L, eventId = calEventId)
+            deleteCalendarEventHandler.handle(DeleteCalendarEventCommand(eventId = calEventId))
         }
         repository.delete(command.treatmentId)
         eventBus.publish(TreatmentDeleted(treatmentId = command.treatmentId, plantationId = treatment.plantationId))

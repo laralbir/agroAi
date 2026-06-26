@@ -38,6 +38,7 @@ import com.laralnet.agroai.ui.screens.plantation.wizard.LocationPickerScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardViewModel
 import com.laralnet.agroai.ui.screens.settings.SettingsScreen
+import com.laralnet.agroai.ui.screens.calendar.CalendarScreen
 import com.laralnet.agroai.ui.screens.treatment.ScheduleTreatmentScreen
 import com.laralnet.agroai.ui.screens.treatment.TreatmentDetailScreen
 
@@ -89,6 +90,9 @@ fun AgroAINavGraph(
         },
         BottomNavItem(Screen.PhotoAnalysis, R.string.nav_analysis) {
             Icon(Icons.Default.CameraAlt, contentDescription = null)
+        },
+        BottomNavItem(Screen.Calendar, R.string.nav_calendar) {
+            Icon(Icons.Default.CalendarMonth, contentDescription = null)
         },
         BottomNavItem(Screen.Settings, R.string.nav_settings) {
             Icon(Icons.Default.Settings, contentDescription = null)
@@ -270,6 +274,13 @@ fun AgroAINavGraph(
                 SettingsScreen(
                     onNavigateToModels = {
                         navController.navigate(Screen.ModelManagement.route)
+                    }
+                )
+            }
+            composable(Screen.Calendar.route) {
+                CalendarScreen(
+                    onNavigateToTreatmentDetail = { id ->
+                        navController.navigate(Screen.TreatmentDetail.route(id))
                     }
                 )
             }

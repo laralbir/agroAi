@@ -276,4 +276,12 @@
     <string name="treatment_delete_confirm_body">This action cannot be undone.</string>
     <string name="treatment_in_calendar">Added to Google Calendar</string>
     <string name="home_upcoming_treatments">Upcoming treatments</string>
+    <string name="treatment_load_calendars">Load</string>
+    <string name="treatment_select_calendar">Select calendar</string>
+    <string name="treatment_no_calendars">No calendars found for this account</string>
+
+    <!-- Calendar screen -->
+    <string name="calendar_no_treatments_day">No treatments scheduled for this day</string>
+    <string name="calendar_permission_rationale">Calendar permission is needed to display scheduled treatments</string>
+    <string name="calendar_grant_permission">Grant Permission</string>
 </resources>

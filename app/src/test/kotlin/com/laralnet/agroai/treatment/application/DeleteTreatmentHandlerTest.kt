@@ -1,6 +1,6 @@
 package com.laralnet.agroai.treatment.application
 
-import com.laralnet.agroai.calendar.domain.repository.CalendarRepository
+import com.laralnet.agroai.calendar.application.handler.DeleteCalendarEventHandler
 import com.laralnet.agroai.core.infrastructure.event.EventBus
 import com.laralnet.agroai.treatment.application.command.DeleteTreatmentCommand
 import com.laralnet.agroai.treatment.application.handler.DeleteTreatmentHandler
@@ -25,9 +25,9 @@ class DeleteTreatmentHandlerTest {
     val mainRule = MainDispatcherRule()
 
     private val repository: TreatmentRepository = mockk(relaxed = true)
-    private val calendarRepository: CalendarRepository = mockk(relaxed = true)
+    private val deleteCalendarEventHandler: DeleteCalendarEventHandler = mockk(relaxed = true)
     private val eventBus: EventBus = mockk(relaxed = true)
-    private val handler = DeleteTreatmentHandler(repository, calendarRepository, eventBus)
+    private val handler = DeleteTreatmentHandler(repository, deleteCalendarEventHandler, eventBus)
 
     @Test
     fun `handle() deletes treatment from repository`() = runTest {
@@ -48,13 +48,12 @@ class DeleteTreatmentHandlerTest {
     }
 
     @Test
-    fun `handle() deletes calendar event when calendarEventId is set`() = runTest {
+    fun `handle() delegates to deleteCalendarEventHandler when calendarEventId is set`() = runTest {
         coEvery { repository.findById("t-1") } returns treatment("t-1", calendarEventId = 99L)
-        coEvery { calendarRepository.deleteEvent(any(), 99L) } returns Result.success(Unit)
 
         handler.handle(DeleteTreatmentCommand(treatmentId = "t-1"))
 
-        coVerify { calendarRepository.deleteEvent(any(), 99L) }
+        coVerify { deleteCalendarEventHandler.handle(match { it.eventId == 99L }) }
     }
 
     @Test
@@ -63,7 +62,7 @@ class DeleteTreatmentHandlerTest {
 
         handler.handle(DeleteTreatmentCommand(treatmentId = "t-1"))
 
-        coVerify(exactly = 0) { calendarRepository.deleteEvent(any(), any()) }
+        coVerify(exactly = 0) { deleteCalendarEventHandler.handle(any()) }
     }
 
     @Test

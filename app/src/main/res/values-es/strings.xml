@@ -276,4 +276,12 @@
     <string name="treatment_delete_confirm_body">Esta acción no se puede deshacer.</string>
     <string name="treatment_in_calendar">Añadido a Google Calendar</string>
     <string name="home_upcoming_treatments">Próximos tratamientos</string>
+    <string name="treatment_load_calendars">Cargar</string>
+    <string name="treatment_select_calendar">Seleccionar calendario</string>
+    <string name="treatment_no_calendars">No se encontraron calendarios para esta cuenta</string>
+
+    <!-- Calendar screen -->
+    <string name="calendar_no_treatments_day">Sin tratamientos programados para este día</string>
+    <string name="calendar_permission_rationale">Se necesita permiso de calendario para mostrar los tratamientos programados</string>
+    <string name="calendar_grant_permission">Conceder permiso</string>
 </resources>

@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
@@ -15,7 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,7 +30,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleTreatmentScreen(
     onNavigateBack: () -> Unit,
@@ -35,6 +39,7 @@ fun ScheduleTreatmentScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(state.savedId) {
         if (state.savedId != null) onTreatmentScheduled()
@@ -42,6 +47,7 @@ fun ScheduleTreatmentScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var calendarDropdownExpanded by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = state.selectedDateMillis)
     val timePickerState = rememberTimePickerState(
@@ -85,10 +91,7 @@ fun ScheduleTreatmentScreen(
                 }
             },
             text = {
-                TimePicker(
-                    state = timePickerState,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                TimePicker(state = timePickerState, modifier = Modifier.fillMaxWidth())
             }
         )
     }
@@ -128,7 +131,6 @@ fun ScheduleTreatmentScreen(
                 }
             }
 
-            // Title
             OutlinedTextField(
                 value = state.title,
                 onValueChange = viewModel::setTitle,
@@ -137,7 +139,6 @@ fun ScheduleTreatmentScreen(
                 singleLine = true
             )
 
-            // Description
             OutlinedTextField(
                 value = state.description,
                 onValueChange = viewModel::setDescription,
@@ -147,7 +148,6 @@ fun ScheduleTreatmentScreen(
                 maxLines = 4
             )
 
-            // Date
             OutlinedTextField(
                 value = formatEpochMillis(state.selectedDateMillis),
                 onValueChange = {},
@@ -163,7 +163,6 @@ fun ScheduleTreatmentScreen(
                     .clickable { showDatePicker = true }
             )
 
-            // Time
             OutlinedTextField(
                 value = "%02d:%02d".format(state.hour, state.minute),
                 onValueChange = {},
@@ -195,19 +194,89 @@ fun ScheduleTreatmentScreen(
             }
 
             if (state.addToCalendar) {
-                OutlinedTextField(
-                    value = state.calendarEmail,
-                    onValueChange = viewModel::setCalendarEmail,
-                    label = { Text(stringResource(R.string.treatment_calendar_email)) },
+                // Email input + load button
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    OutlinedTextField(
+                        value = state.calendarEmail,
+                        onValueChange = viewModel::setCalendarEmail,
+                        label = { Text(stringResource(R.string.treatment_calendar_email)) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            viewModel.loadCalendars()
+                        })
+                    )
+                    FilledTonalButton(
+                        onClick = {
+                            focusManager.clearFocus()
+                            viewModel.loadCalendars()
+                        },
+                        modifier = Modifier.padding(top = 8.dp),
+                        enabled = state.calendarEmail.isNotBlank() && !state.isLoadingCalendars
+                    ) {
+                        if (state.isLoadingCalendars) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text(stringResource(R.string.treatment_load_calendars))
+                        }
+                    }
+                }
+
+                // Calendar picker dropdown — visible once calendars are loaded
+                if (state.availableCalendars.isNotEmpty()) {
+                    val selectedCalendar = state.availableCalendars.firstOrNull { it.id == state.selectedCalendarId }
+                    ExposedDropdownMenuBox(
+                        expanded = calendarDropdownExpanded,
+                        onExpandedChange = { calendarDropdownExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedCalendar?.displayName ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.treatment_select_calendar)) },
+                            trailingIcon = {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = calendarDropdownExpanded,
+                            onDismissRequest = { calendarDropdownExpanded = false }
+                        ) {
+                            state.availableCalendars.forEach { cal ->
+                                DropdownMenuItem(
+                                    text = { Text(cal.displayName) },
+                                    onClick = {
+                                        viewModel.selectCalendar(cal.id)
+                                        calendarDropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } else if (state.error == "no_calendars") {
+                    Text(
+                        stringResource(R.string.treatment_no_calendars),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
 
-            state.error?.let {
+            if (state.error != null && state.error != "no_calendars") {
                 Text(
-                    it,
+                    state.error!!,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )

@@ -3,6 +3,8 @@ package com.laralnet.agroai.ui.screens.treatment
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.laralnet.agroai.calendar.application.query.GetCalendarsQuery
+import com.laralnet.agroai.calendar.domain.model.GoogleCalendar
 import com.laralnet.agroai.treatment.application.command.ScheduleTreatmentCommand
 import com.laralnet.agroai.treatment.application.handler.ScheduleTreatmentHandler
 import com.laralnet.agroai.treatment.domain.model.TreatmentType
@@ -13,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
@@ -28,6 +29,9 @@ data class ScheduleTreatmentState(
     val minute: Int = 0,
     val addToCalendar: Boolean = false,
     val calendarEmail: String = "",
+    val availableCalendars: List<GoogleCalendar> = emptyList(),
+    val selectedCalendarId: Long? = null,
+    val isLoadingCalendars: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val savedId: String? = null
@@ -36,7 +40,8 @@ data class ScheduleTreatmentState(
 @HiltViewModel
 class ScheduleTreatmentViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val scheduleTreatmentHandler: ScheduleTreatmentHandler
+    private val scheduleTreatmentHandler: ScheduleTreatmentHandler,
+    private val getCalendarsQuery: GetCalendarsQuery
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -52,8 +57,32 @@ class ScheduleTreatmentViewModel @Inject constructor(
     fun setDateMillis(millis: Long) = _state.update { it.copy(selectedDateMillis = millis) }
     fun setHour(h: Int) = _state.update { it.copy(hour = h.coerceIn(0, 23)) }
     fun setMinute(m: Int) = _state.update { it.copy(minute = m.coerceIn(0, 59)) }
-    fun setAddToCalendar(v: Boolean) = _state.update { it.copy(addToCalendar = v) }
-    fun setCalendarEmail(v: String) = _state.update { it.copy(calendarEmail = v) }
+    fun setAddToCalendar(v: Boolean) = _state.update { it.copy(addToCalendar = v, availableCalendars = emptyList(), selectedCalendarId = null) }
+    fun setCalendarEmail(v: String) = _state.update { it.copy(calendarEmail = v, availableCalendars = emptyList(), selectedCalendarId = null) }
+    fun selectCalendar(calendarId: Long) = _state.update { it.copy(selectedCalendarId = calendarId) }
+
+    fun loadCalendars() {
+        val email = _state.value.calendarEmail.trim()
+        if (email.isBlank()) return
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingCalendars = true, error = null) }
+            runCatching { getCalendarsQuery(email) }
+                .onSuccess { calendars ->
+                    val primary = calendars.firstOrNull { it.isPrimary } ?: calendars.firstOrNull()
+                    _state.update {
+                        it.copy(
+                            availableCalendars = calendars,
+                            selectedCalendarId = primary?.id,
+                            isLoadingCalendars = false,
+                            error = if (calendars.isEmpty()) "no_calendars" else null
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _state.update { it.copy(isLoadingCalendars = false, error = e.message) }
+                }
+        }
+    }
 
     fun schedule() = viewModelScope.launch {
         val s = _state.value

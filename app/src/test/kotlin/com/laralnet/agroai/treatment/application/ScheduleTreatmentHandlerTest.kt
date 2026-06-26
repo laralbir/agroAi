@@ -1,8 +1,7 @@
 package com.laralnet.agroai.treatment.application
 
+import com.laralnet.agroai.calendar.application.handler.CreateCalendarEventHandler
 import com.laralnet.agroai.calendar.domain.model.CreatedCalendarEvent
-import com.laralnet.agroai.calendar.domain.model.GoogleCalendar
-import com.laralnet.agroai.calendar.domain.repository.CalendarRepository
 import com.laralnet.agroai.core.infrastructure.event.EventBus
 import com.laralnet.agroai.treatment.application.command.ScheduleTreatmentCommand
 import com.laralnet.agroai.treatment.application.handler.ScheduleTreatmentHandler
@@ -15,6 +14,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -26,12 +26,12 @@ class ScheduleTreatmentHandlerTest {
     val mainRule = MainDispatcherRule()
 
     private val repository: TreatmentRepository = mockk(relaxed = true)
-    private val calendarRepository: CalendarRepository = mockk(relaxed = true)
+    private val createCalendarEventHandler: CreateCalendarEventHandler = mockk(relaxed = true)
     private val eventBus: EventBus = mockk(relaxed = true)
-    private val handler = ScheduleTreatmentHandler(repository, calendarRepository, eventBus)
+    private val handler = ScheduleTreatmentHandler(repository, createCalendarEventHandler, eventBus)
 
     @Test
-    fun `handle() saves treatment and publishes event`() = runTest {
+    fun `handle() saves treatment and publishes TreatmentScheduled`() = runTest {
         val result = handler.handle(command())
 
         assertTrue(result.isSuccess)
@@ -40,44 +40,40 @@ class ScheduleTreatmentHandlerTest {
     }
 
     @Test
-    fun `handle() returns treatment with id`() = runTest {
+    fun `handle() returns treatment with non-null id`() = runTest {
         val result = handler.handle(command())
 
         assertNotNull(result.getOrNull()?.id)
     }
 
     @Test
-    fun `handle() does not call calendarRepository when addToCalendar is false`() = runTest {
+    fun `handle() does not call createCalendarEventHandler when addToCalendar is false`() = runTest {
         handler.handle(command(addToCalendar = false))
 
-        coVerify(exactly = 0) { calendarRepository.getCalendars(any()) }
-        coVerify(exactly = 0) { calendarRepository.createEvent(any()) }
+        coVerify(exactly = 0) { createCalendarEventHandler.handle(any()) }
     }
 
     @Test
-    fun `handle() creates calendar event when addToCalendar is true`() = runTest {
-        val calendar = GoogleCalendar(id = 1L, accountEmail = "test@gmail.com", displayName = "Test", isPrimary = true)
-        val createdEvent = CreatedCalendarEvent(eventId = 42L, calendarId = 1L, accountEmail = "test@gmail.com")
-        coEvery { calendarRepository.getCalendars("test@gmail.com") } returns listOf(calendar)
-        coEvery { calendarRepository.createEvent(any()) } returns Result.success(createdEvent)
+    fun `handle() delegates to createCalendarEventHandler when addToCalendar is true`() = runTest {
+        val created = CreatedCalendarEvent(eventId = 42L, calendarId = 1L, accountEmail = "test@gmail.com")
+        coEvery { createCalendarEventHandler.handle(any()) } returns Result.success(created)
 
         val result = handler.handle(command(addToCalendar = true, calendarEmail = "test@gmail.com"))
 
         assertTrue(result.isSuccess)
-        coVerify { calendarRepository.createEvent(any()) }
+        coVerify { createCalendarEventHandler.handle(any()) }
         assertTrue(result.getOrNull()?.calendarEventId == 42L)
     }
 
     @Test
     fun `handle() saves treatment even when calendar event creation fails`() = runTest {
-        val calendar = GoogleCalendar(id = 1L, accountEmail = "test@gmail.com", displayName = "Test", isPrimary = true)
-        coEvery { calendarRepository.getCalendars("test@gmail.com") } returns listOf(calendar)
-        coEvery { calendarRepository.createEvent(any()) } returns Result.failure(Exception("Calendar error"))
+        coEvery { createCalendarEventHandler.handle(any()) } returns Result.failure(Exception("Calendar error"))
 
         val result = handler.handle(command(addToCalendar = true, calendarEmail = "test@gmail.com"))
 
         assertTrue(result.isSuccess)
         coVerify { repository.save(any()) }
+        assertNull(result.getOrNull()?.calendarEventId)
     }
 
     private fun command(

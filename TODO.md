@@ -92,29 +92,34 @@ Descarga modelo Gemma
 
 ---
 
-## FASE 3 — Calendar: handlers e integración con Treatment
+## ✅ FASE 3 — Calendar: handlers e integración con Treatment _(completada)_
 
-**Por qué tercero:** `ScheduleTreatmentHandler` ya llama directamente a `CalendarRepository` (Fase 2). Fase 3 introduce los handlers dedicados y la UI de calendario.
+**Por qué tercero:** `ScheduleTreatmentHandler` ya llamaba directamente a `CalendarRepository` (Fase 2). Fase 3 introduce handlers dedicados y la UI de calendario.
 
 ### Infraestructura _(ya completada)_
 - [x] `GoogleCalendarRepository` — ContentResolver implementation completa
 - [x] `CalendarRepository` port (interfaz de dominio)
 - [x] Binding en `RepositoryModule`
 
-### Application layer _(pendiente)_
-- [ ] `CalendarHandlers.kt` — `CreateCalendarEventHandler`, `UpdateCalendarEventHandler`, `DeleteCalendarEventHandler`
-- [ ] `CalendarEvents.kt` (domain events) — `CalendarEventCreated`, `CalendarEventDeleted`
-- [ ] `CalendarQueries.kt` — `GetCalendarsQuery` (lista cuentas Google disponibles)
-- [ ] Refactorizar `ScheduleTreatmentHandler` para delegar en `CreateCalendarEventHandler`
+### Application layer
+- [x] `CalendarHandlers.kt` — `CreateCalendarEventHandler`, `UpdateCalendarEventHandler`, `DeleteCalendarEventHandler`
+- [x] `CalendarEvents.kt` (domain events) — `CalendarEventCreated`, `CalendarEventUpdated`, `CalendarEventDeleted`
+- [x] `CalendarQueries.kt` — `GetCalendarsQuery`
+- [x] `ScheduleTreatmentHandler` refactorizado para delegar en `CreateCalendarEventHandler`
+- [x] `DeleteTreatmentHandler` refactorizado para delegar en `DeleteCalendarEventHandler`
+- [x] `ObserveTreatmentsByMonthQuery` — para CalendarScreen; `observeByDateRange` en repositorio y DAO
+- [x] `ScheduleTreatmentCommand` — selector de calendario (email + "Cargar" + dropdown `ExposedDropdownMenuBox`)
 
-### UI _(pendiente)_
-- [ ] `CalendarScreen` — vista de calendario mensual con tratamientos programados
-- [ ] Añadir tab **Calendar** al bottom nav (`Screen.Calendar` ya definido en `NavGraph`)
-- [ ] Selector de cuenta Google en `ScheduleTreatmentScreen` (usando `GetCalendarsQuery`)
-- [ ] Solicitar permisos `READ_CALENDAR` / `WRITE_CALENDAR` en runtime antes de mostrar la pantalla
+### UI
+- [x] `CalendarScreen` — cuadrícula mensual con navegación prev/next, dots en días con tratamientos, lista del día seleccionado
+- [x] Tab **Calendar** en el bottom nav (5 tabs: Home / Plantations / Análisis / Calendar / Settings)
+- [x] `ScheduleTreatmentScreen` — botón "Cargar" carga calendarios del email; dropdown para elegir calendario
+- [x] Permiso `READ_CALENDAR` solicitado en runtime al abrir `CalendarScreen`
 
 ### Tests
-- [ ] Unit tests de handlers con `CalendarRepository` mockeado
+- [x] `CreateCalendarEventHandlerTest` — 6 tests (primary, fallback, evento, sin calendarios, fallo, valor retornado)
+- [x] `DeleteCalendarEventHandlerTest` — 3 tests (delete, evento, fallo)
+- [x] `UpdateCalendarEventHandlerTest` — 4 tests (update, evento, éxito, fallo)
 
 ---
 
@@ -196,7 +201,7 @@ Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de
 | 1 — AIModel screen + modelos | Usar cualquier función de IA | M | ✅ Completada (v0.7.0) |
 | 1.5 — Edición de plantaciones | UX básica de gestión | S | ✅ Completada (v0.7.1) |
 | 2 — Treatment handlers + UI | Flujo principal de la app | L | ✅ Completada (v0.8.0) |
-| 3 — Calendar handlers + tab | Integración calendario | M | ⬜ Pendiente (infra ✅) |
+| 3 — Calendar handlers + tab | Integración calendario | M | ✅ Completada |
 | 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ⬜ Pendiente |
 | 5 — Weather Open-Meteo | Alertas y recomendaciones | M | 🔄 Parcial (API ✅, caché ⬜) |
 | 6 — Deuda técnica | Release pública | M | ⬜ Pendiente |

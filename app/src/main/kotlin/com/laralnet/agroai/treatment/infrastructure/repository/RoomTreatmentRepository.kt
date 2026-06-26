@@ -34,6 +34,9 @@ class RoomTreatmentRepository @Inject constructor(
     override fun observeUpcoming(): Flow<List<Treatment>> =
         dao.observeUpcoming().map { list -> list.map { it.toDomain() } }
 
+    override fun observeByDateRange(start: Instant, end: Instant): Flow<List<Treatment>> =
+        dao.observeByDateRange(start.toEpochMilli(), end.toEpochMilli()).map { list -> list.map { it.toDomain() } }
+
     private fun TreatmentEntity.toDomain() = Treatment(
         id = id, plantationId = plantationId,
         type = type, title = title, description = description,
