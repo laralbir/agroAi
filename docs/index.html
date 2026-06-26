@@ -453,9 +453,8 @@
     .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 
     .feature-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      position: relative;
+      padding-left: 32px;
       font-size: .9rem;
     }
 
@@ -471,8 +470,9 @@
       justify-content: center;
       font-size: .7rem;
       font-weight: 700;
-      flex-shrink: 0;
-      margin-top: 1px;
+      position: absolute;
+      left: 0;
+      top: 1px;
     }
 
     /* ─── Permission Grid ───────────────────────────────────── */
@@ -537,6 +537,34 @@
     .model-specs { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
 
     .model-spec { font-size: .8rem; color: var(--text-secondary); }
+
+    /* ─── Plantation Type Cards ─────────────────────────────── */
+    .ptype-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 10px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: box-shadow .15s, border-color .15s;
+    }
+
+    .ptype-card:hover {
+      border-color: var(--green-500);
+      box-shadow: var(--shadow-sm);
+      color: var(--text-primary);
+    }
+
+    .ptype-icon {
+      font-size: 1.75rem;
+      line-height: 1;
+    }
 
     /* ─── Lang toggle logic ─────────────────────────────────── */
     .lang-es, .lang-en { }
@@ -671,6 +699,16 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         <span class="lang-es">Privacidad</span>
         <span class="lang-en">Privacy</span>
+      </a>
+      <a class="sidebar-link" href="#disclaimer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="lang-es">Aviso legal</span>
+        <span class="lang-en">Legal notice</span>
+      </a>
+      <a class="sidebar-link" href="#licenses">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span class="lang-es">Licencias</span>
+        <span class="lang-en">Licenses</span>
       </a>
     </div>
   </nav>
@@ -1504,108 +1542,117 @@
         <h2 class="lang-en">Plantation Types</h2>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:44px; text-align:center;"></th>
-              <th>
-                <span class="lang-es">Español</span>
-                <span class="lang-en">English</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🥕</td>
-              <td><span class="lang-es">Huerta</span><span class="lang-en">Vegetable Garden</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">☀️</td>
-              <td><span class="lang-es">Secano</span><span class="lang-en">Dry Farming</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">💧</td>
-              <td><span class="lang-es">Regadío</span><span class="lang-en">Irrigated</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🍇</td>
-              <td><span class="lang-es">Viñedo</span><span class="lang-en">Vineyard</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🫒</td>
-              <td><span class="lang-es">Olivar</span><span class="lang-en">Olive Grove</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🍎</td>
-              <td><span class="lang-es">Frutal</span><span class="lang-en">Fruit Orchard</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🍊</td>
-              <td><span class="lang-es">Cítricos</span><span class="lang-en">Citrus Orchard</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🏡</td>
-              <td><span class="lang-es">Invernadero</span><span class="lang-en">Greenhouse</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🌿</td>
-              <td><span class="lang-es">Aromáticas</span><span class="lang-en">Herb Garden</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🌺</td>
-              <td><span class="lang-es">Medicinales</span><span class="lang-en">Medicinal Plants</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🌾</td>
-              <td><span class="lang-es">Cereal</span><span class="lang-en">Grain Crops</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🫛</td>
-              <td><span class="lang-es">Leguminosas</span><span class="lang-en">Legumes</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🥔</td>
-              <td><span class="lang-es">Tubérculos</span><span class="lang-en">Root Vegetables</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🌸</td>
-              <td><span class="lang-es">Floricultura</span><span class="lang-en">Floriculture</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🪴</td>
-              <td><span class="lang-es">Vivero</span><span class="lang-en">Plant Nursery</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🌲</td>
-              <td><span class="lang-es">Bosque / Silvicultura</span><span class="lang-en">Commercial Forestry</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🐑</td>
-              <td><span class="lang-es">Pradera / Prado</span><span class="lang-en">Pasture / Meadow</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">⛰️</td>
-              <td><span class="lang-es">Montaña / Terraza</span><span class="lang-en">Mountain / Terraced</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🥑</td>
-              <td><span class="lang-es">Aguacate</span><span class="lang-en">Avocado</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🍚</td>
-              <td><span class="lang-es">Arrozal</span><span class="lang-en">Rice Paddy</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🍌</td>
-              <td><span class="lang-es">Platanera</span><span class="lang-en">Banana Plantation</span></td>
-            </tr>
-            <tr>
-              <td style="text-align:center; font-size:1.25rem;">🌱</td>
-              <td><span class="lang-es">Otro</span><span class="lang-en">Other</span></td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap:10px;">
+        <div class="ptype-card">
+          <span class="ptype-icon">🥕</span>
+          <span class="lang-es">Huerta</span>
+          <span class="lang-en">Vegetable Garden</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">☀️</span>
+          <span class="lang-es">Secano</span>
+          <span class="lang-en">Dry Farming</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">💧</span>
+          <span class="lang-es">Regadío</span>
+          <span class="lang-en">Irrigated</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🍇</span>
+          <span class="lang-es">Viñedo</span>
+          <span class="lang-en">Vineyard</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🫒</span>
+          <span class="lang-es">Olivar</span>
+          <span class="lang-en">Olive Grove</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🍎</span>
+          <span class="lang-es">Frutal</span>
+          <span class="lang-en">Fruit Orchard</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🍊</span>
+          <span class="lang-es">Cítricos</span>
+          <span class="lang-en">Citrus Orchard</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🏡</span>
+          <span class="lang-es">Invernadero</span>
+          <span class="lang-en">Greenhouse</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🌿</span>
+          <span class="lang-es">Aromáticas</span>
+          <span class="lang-en">Herb Garden</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🌺</span>
+          <span class="lang-es">Medicinales</span>
+          <span class="lang-en">Medicinal Plants</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🌾</span>
+          <span class="lang-es">Cereal</span>
+          <span class="lang-en">Grain Crops</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🫛</span>
+          <span class="lang-es">Leguminosas</span>
+          <span class="lang-en">Legumes</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🥔</span>
+          <span class="lang-es">Tubérculos</span>
+          <span class="lang-en">Root Vegetables</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🌸</span>
+          <span class="lang-es">Floricultura</span>
+          <span class="lang-en">Floriculture</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🪴</span>
+          <span class="lang-es">Vivero</span>
+          <span class="lang-en">Plant Nursery</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🌲</span>
+          <span class="lang-es">Bosque / Silvicultura</span>
+          <span class="lang-en">Commercial Forestry</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🐑</span>
+          <span class="lang-es">Pradera / Prado</span>
+          <span class="lang-en">Pasture / Meadow</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">⛰️</span>
+          <span class="lang-es">Montaña / Terraza</span>
+          <span class="lang-en">Mountain / Terraced</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🥑</span>
+          <span class="lang-es">Aguacate</span>
+          <span class="lang-en">Avocado</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🍚</span>
+          <span class="lang-es">Arrozal</span>
+          <span class="lang-en">Rice Paddy</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🍌</span>
+          <span class="lang-es">Platanera</span>
+          <span class="lang-en">Banana Plantation</span>
+        </div>
+        <div class="ptype-card">
+          <span class="ptype-icon">🌱</span>
+          <span class="lang-es">Otro</span>
+          <span class="lang-en">Other</span>
+        </div>
       </div>
     </section>
 
@@ -1683,6 +1730,142 @@
           <li>HuggingFace OAuth credentials are stored in the device's <strong>DataStore</strong> and are never sent to AgroAI servers.</li>
           <li>The app works completely <strong>offline</strong> once the model is downloaded and map tiles are cached.</li>
         </ul>
+      </div>
+    </section>
+
+    <!-- ─── DISCLAIMER ─────────────────────────────── -->
+    <section class="section" id="disclaimer">
+      <div class="section-header">
+        <div class="section-icon">⚠️</div>
+        <h2 class="lang-es">Aviso legal e IA</h2>
+        <h2 class="lang-en">Legal notice &amp; AI</h2>
+      </div>
+
+      <div class="alert alert-danger" style="margin-bottom:20px;">
+        <span class="alert-icon">🤖</span>
+        <div>
+          <strong class="lang-es">El desarrollador no se hace responsable de las decisiones tomadas por la IA</strong>
+          <strong class="lang-en">The developer is not responsible for decisions made by the AI</strong>
+          <span class="lang-es">Los análisis y sugerencias generados por el modelo Gemma son meramente orientativos y no constituyen asesoramiento agronómico profesional. El usuario asume plena responsabilidad sobre cualquier decisión de gestión agrícola que tome basándose en las recomendaciones de la aplicación.</span>
+          <span class="lang-en">Analyses and suggestions generated by the Gemma model are for informational purposes only and do not constitute professional agronomic advice. The user assumes full responsibility for any agricultural management decision made based on the app's recommendations.</span>
+        </div>
+      </div>
+
+      <div class="card lang-es">
+        <ul class="feature-list">
+          <li>Las sugerencias de tratamiento generadas por Gemma <strong>no reemplazan el criterio de un agrónomo o técnico agrícola cualificado</strong>.</li>
+          <li>La precisión del diagnóstico depende de la calidad de la fotografía, las condiciones de iluminación y las limitaciones del modelo de lenguaje utilizado.</li>
+          <li>El desarrollador de AgroAI <strong>no se responsabiliza de pérdidas económicas, daños en cultivos ni cualquier otro perjuicio</strong> derivado del seguimiento de las recomendaciones de la IA.</li>
+          <li>Para decisiones críticas (uso de fitosanitarios, dosis de fertilización, etc.) consulta siempre con un profesional especializado y cumple la normativa local vigente.</li>
+          <li>Los datos meteorológicos proceden de Open-Meteo y pueden diferir de las condiciones reales en tu parcela.</li>
+        </ul>
+      </div>
+      <div class="card lang-en">
+        <ul class="feature-list">
+          <li>Treatment suggestions generated by Gemma <strong>do not replace the judgment of a qualified agronomist or agricultural technician</strong>.</li>
+          <li>Diagnostic accuracy depends on photo quality, lighting conditions, and the limitations of the language model used.</li>
+          <li>The AgroAI developer <strong>is not liable for financial losses, crop damage, or any other harm</strong> resulting from following AI recommendations.</li>
+          <li>For critical decisions (pesticide use, fertilization rates, etc.) always consult a qualified professional and comply with applicable local regulations.</li>
+          <li>Weather data comes from Open-Meteo and may differ from actual conditions at your specific plot.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── LICENSES ─────────────────────────────── -->
+    <section class="section" id="licenses">
+      <div class="section-header">
+        <div class="section-icon">📄</div>
+        <h2 class="lang-es">Licencias de software</h2>
+        <h2 class="lang-en">Software licenses</h2>
+      </div>
+
+      <div class="card lang-es" style="margin-bottom:20px;">
+        <p>AgroAI se basa en componentes de código abierto. A continuación se listan los componentes de terceros y sus licencias correspondientes.</p>
+      </div>
+      <div class="card lang-en" style="margin-bottom:20px;">
+        <p>AgroAI is built on open-source components. The following lists the third-party components and their corresponding licenses.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="lang-es">Componente</th>
+              <th class="lang-en">Component</th>
+              <th class="lang-es">Autor / Fuente</th>
+              <th class="lang-en">Author / Source</th>
+              <th class="lang-es">Licencia</th>
+              <th class="lang-en">License</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Gemma 3</td>
+              <td>Google DeepMind</td>
+              <td><a href="https://ai.google.dev/gemma/terms" target="_blank">Gemma Terms of Use</a></td>
+            </tr>
+            <tr>
+              <td>MediaPipe Tasks GenAI</td>
+              <td>Google</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+            <tr>
+              <td>Kotlin</td>
+              <td>JetBrains</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+            <tr>
+              <td>Jetpack Compose · Room · WorkManager · CameraX · DataStore · Navigation · Hilt</td>
+              <td>Google / AOSP</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+            <tr>
+              <td>osmdroid</td>
+              <td>osmdroid contributors</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+            <tr>
+              <td>OpenStreetMap <span class="lang-es">(datos cartográficos)</span><span class="lang-en">(map data)</span></td>
+              <td>OpenStreetMap contributors</td>
+              <td><a href="https://opendatacommons.org/licenses/odbl/" target="_blank">ODbL 1.0</a></td>
+            </tr>
+            <tr>
+              <td>Nominatim</td>
+              <td>OpenStreetMap Foundation</td>
+              <td><a href="https://opendatacommons.org/licenses/odbl/" target="_blank">ODbL 1.0</a></td>
+            </tr>
+            <tr>
+              <td>Open-Meteo</td>
+              <td>Open-Meteo.com</td>
+              <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
+            </tr>
+            <tr>
+              <td>Retrofit · OkHttp</td>
+              <td>Square, Inc.</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+            <tr>
+              <td>Coil</td>
+              <td>Coil contributors</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+            <tr>
+              <td>Material Design 3 (M3)</td>
+              <td>Google</td>
+              <td><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache 2.0</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-info" style="margin-top:16px;">
+        <span class="alert-icon">ℹ️</span>
+        <div>
+          <strong class="lang-es">Atribución obligatoria de OpenStreetMap</strong>
+          <strong class="lang-en">Mandatory OpenStreetMap attribution</strong>
+          <span class="lang-es">El uso de los datos y tiles de OpenStreetMap requiere mostrar la atribución <strong>© OpenStreetMap contributors</strong> visible en el mapa en todo momento, conforme a la licencia ODbL.</span>
+          <span class="lang-en">Use of OpenStreetMap data and tiles requires showing the attribution <strong>© OpenStreetMap contributors</strong> visible on the map at all times, as required by the ODbL license.</span>
+        </div>
       </div>
     </section>
 

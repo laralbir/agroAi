@@ -200,6 +200,125 @@ Descarga modelo Gemma
 
 ---
 
+---
+
+## ⬜ FASE 7 — Bugs críticos y mejoras en análisis de fotos
+
+**Bloqueante para:** flujo real de IA; sin esto el análisis no aporta valor.
+
+### Bugs
+- [ ] **Cámara no funciona** — reproducir el fallo, identificar causa (permisos, CameraX config, URI FileProvider) y corregir
+- [ ] **Gemma siempre devuelve el mismo análisis** — el resultado de la inferencia es idéntico independientemente de la foto; investigar si el `BitmapBuffer` se construye correctamente o si el prompt multimodal no adjunta la imagen real
+
+### Requisito previo para analizar
+- [ ] Bloquear el botón de análisis si no se ha seleccionado plantación Y tipo de planta; mostrar mensaje guía
+
+### Prompt enriquecido con contexto
+- [ ] Incluir en el prompt de análisis de foto:
+  - Tipo de plantación, ubicación (municipio/provincia), variedad de planta
+  - Meteorología actual y previsión hasta 15 días (Open-Meteo)
+  - Idioma activo según configuración (EN/ES)
+- [ ] La respuesta de Gemma, si contiene markdown, renderizarla con un componente `MarkdownText` legible (negrita, listas, encabezados, etc.)
+
+### Campo de pregunta opcional
+- [ ] En `PhotoAnalysisScreen`, añadir un `OutlinedTextField` opcional ("¿Tienes alguna duda?") cuyo contenido se inyecta como pregunta principal en el prompt
+
+### Gestión de plantas en `PlantationDetailScreen`
+- [ ] Añadir icono/botón **Analizar** en cada tarjeta de planta → navega a `PhotoAnalysisScreen` con plantación y planta pre-seleccionadas
+- [ ] Botón **Editar** en cada tarjeta de planta → abre formulario de edición (`PlantType`)
+- [ ] Botón **Eliminar** en cada tarjeta de planta → diálogo de confirmación + `DeletePlantTypeHandler`
+
+### Tests
+- [ ] Unit test `PhotoAnalysisViewModelTest` — campo `userQuestion` se incluye en el prompt
+- [ ] Unit test del builder de prompt — verifica que incluye meteorología, variedad y idioma
+- [ ] Unit test `DeletePlantTypeHandlerTest`
+
+---
+
+## ⬜ FASE 8 — Home mejorado y meteorología avanzada
+
+**Bloqueante para:** utilidad diaria de la app.
+
+### `HomeScreen` — tareas del día
+- [ ] Mostrar las tareas (treatments/acciones) agendadas para hoy en el calendario
+- [ ] Si no hay tareas hoy, mostrar las próximas (máx. 5) con fecha relativa ("mañana", "en 3 días")
+- [ ] Tap en tarea → `TreatmentDetailScreen` o detalle de acción
+
+### `HomeScreen` — resumen meteorológico de ubicación actual
+- [ ] Widget de clima en Home basado en la ubicación GPS actual (o última conocida)
+- [ ] Mostrar: temperatura actual, condición, humedad, viento, precipitación próximas 24h
+- [ ] Actualizar al abrir la pantalla; usar caché si tiene < 1h
+
+### `PlantationDetailScreen` — previsión meteorológica 15 días
+- [ ] Sección expandible "Previsión 15 días" con fila por día: icono WMO + temp max/min + probabilidad precipitación
+- [ ] Datos de `WeatherData.dailyForecast` ya disponibles en Open-Meteo (`temperature_2m_max/min`, `precipitation_probability_max`, `weather_code` daily)
+
+### Tests
+- [ ] `HomeViewModelTest` — tareas del día, fallback a próximas, sin tareas
+- [ ] `PlantationDetailScreenTest` — sección previsión 15 días visible
+
+---
+
+## ⬜ FASE 9 — Acciones: gestión manual, IA en background y notificaciones
+
+**Bloqueante para:** automatización agrícola real; es el núcleo de valor de la app.
+
+### Cuenta Google en ajustes
+- [ ] En `SettingsScreen`, añadir sección "Calendario" con selector de cuenta Google (`AccountManager`)
+- [ ] Guardar la cuenta elegida en DataStore; usarla como default en `ScheduleTreatmentHandler` y en el worker de background
+
+### Gestión manual de acciones
+- [ ] Pantalla `ActionListScreen` con catálogo de acciones predefinidas: **Regar, Podar, Cavar, Fertilizar, Fumigar, Cosechar, Injertar, Trasplantar, Abonar, Airear, Aclarar, Otro**
+- [ ] Crear `PlantationAction` (aggregate): id, plantationId, plantTypeId, actionType, title, notes, scheduledAt, status (`PENDING / DONE / SKIPPED`), calendarEventId, source (`MANUAL / AI`)
+- [ ] `ScheduleActionHandler`, `CompleteActionHandler`, `DeleteActionHandler`, `UpdateActionHandler`
+- [ ] UI: listar acciones de una plantación, filtrar por estado, crear/editar/eliminar acción
+- [ ] Agendar en Google Calendar al crear (si cuenta configurada)
+
+### Marcar acciones como realizadas
+- [ ] Botón "Marcar como hecha" en el detalle de acción → `CompleteActionHandler` → actualiza estado + calendarEvent
+- [ ] Las acciones `DONE` o `SKIPPED` se excluyen de los prompts de análisis y del worker de background
+
+### Worker de IA en background (cada 6 horas)
+- [ ] `PlantationReviewWorker` — WorkManager con `PeriodicWorkRequest` de 6h, requiere red
+- [ ] Para cada plantación activa:
+  1. Carga todas las plantas (`PlantType`) y acciones pendientes
+  2. Obtiene previsión meteorológica 15 días (Open-Meteo)
+  3. Construye prompt contextualizado con toda la info y lo envía a Gemma
+  4. Parsea respuesta → lista de acciones sugeridas
+  5. Crea acciones nuevas (`source = AI`) y las agenda en Calendar
+  6. Elimina/cancela acciones `AI` pendientes que ya no sean relevantes (meteorología cambió o ya completadas)
+- [ ] El worker respeta el idioma configurado en DataStore
+
+### Notificaciones push
+- [ ] Cuando el worker agenda una acción nueva, lanzar notificación local con `NotificationManager`
+- [ ] Notificación incluye: nombre de plantación, tipo de acción, fecha propuesta, acción rápida "Ver"
+- [ ] Canal de notificación `agroai_actions` creado en `AgroAIApplication.onCreate()`
+- [ ] Permiso `POST_NOTIFICATIONS` solicitado en onboarding (Android 13+)
+
+### Tests
+- [ ] `ScheduleActionHandlerTest` — 5 tests (manual, con calendar, sin cuenta, duplicado, evento)
+- [ ] `CompleteActionHandlerTest` — 4 tests
+- [ ] `PlantationReviewWorkerTest` con `TestListenableWorkerBuilder` — mock de `GemmaInferenceEngine` y `WeatherRepository`
+- [ ] `ActionListScreenTest` — listar, completar, eliminar
+
+---
+
+## ⬜ FASE 10 — Informes de plantación
+
+**Bloqueante para:** visibilidad histórica del trabajo agrícola.
+
+### Informe por plantación
+- [ ] Pantalla `PlantationReportScreen` (accesible desde `PlantationDetailScreen`)
+- [ ] Sección **Historial**: lista de acciones/tratamientos completados con fecha, notas y fuente (manual/IA)
+- [ ] Sección **Pendiente**: lista de acciones agendadas en Calendar con fecha y tipo
+- [ ] Botón **Exportar** → genera texto en markdown o PDF compartible (`shareIntent`)
+- [ ] Filtros: por rango de fechas, por tipo de acción, por planta
+
+### Tests
+- [ ] `PlantationReportViewModelTest` — historial completo, filtro por fecha, export content
+
+---
+
 ## Resumen de orden
 
 | Fase | Bloqueante para | Esfuerzo estimado | Estado |
@@ -211,5 +330,9 @@ Descarga modelo Gemma
 | 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ✅ Completada (v0.9.0) |
 | 5 — Weather Open-Meteo | Alertas y recomendaciones | M | ✅ Completada (v0.9.0) |
 | 6 — Deuda técnica | Release pública | M | ✅ Completada (v0.11.0) |
+| 7 — Bugs críticos + análisis de fotos | IA funcional y útil | M | ⬜ Pendiente |
+| 8 — Home mejorado + meteorología | Utilidad diaria | S | ⬜ Pendiente |
+| 9 — Acciones manuales + IA background | Automatización agrícola | L | ⬜ Pendiente |
+| 10 — Informes de plantación | Visibilidad histórica | S | ⬜ Pendiente |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas
