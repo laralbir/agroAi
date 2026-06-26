@@ -5,8 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,6 +23,12 @@ import com.laralnet.agroai.plantation.domain.model.Location
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.treatment.domain.model.Treatment
+import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
+import com.laralnet.agroai.ui.screens.treatment.resolveLabel
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +37,8 @@ fun PlantationDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAnalysis: () -> Unit,
     onNavigateToEdit: () -> Unit,
+    onNavigateToScheduleTreatment: (String) -> Unit,
+    onNavigateToTreatmentDetail: (String) -> Unit,
     viewModel: PlantationDetailViewModel = hiltViewModel()
 ) {
     LaunchedEffect(plantationId) { viewModel.load(plantationId) }
@@ -47,6 +56,9 @@ fun PlantationDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToAnalysis) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = stringResource(R.string.analysis_take_photo))
+                    }
                     IconButton(onClick = onNavigateToEdit) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.plantation_edit))
                     }
@@ -54,8 +66,8 @@ fun PlantationDetailScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAnalysis) {
-                Icon(Icons.Default.CameraAlt, contentDescription = stringResource(R.string.analysis_take_photo))
+            FloatingActionButton(onClick = { onNavigateToScheduleTreatment(plantationId) }) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.treatment_add))
             }
         }
     ) { paddingValues ->
@@ -105,7 +117,10 @@ fun PlantationDetailScreen(
                     }
                 } else {
                     items(treatments, key = { it.id }) { treatment ->
-                        TreatmentCard(treatment = treatment)
+                        TreatmentCard(
+                            treatment = treatment,
+                            onClick = { onNavigateToTreatmentDetail(treatment.id) }
+                        )
                     }
                 }
             }
@@ -204,15 +219,42 @@ private fun PlantCard(plant: PlantType) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TreatmentCard(treatment: Treatment) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+private fun TreatmentCard(treatment: Treatment, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val statusColor = when (treatment.status) {
+        TreatmentStatus.PENDING -> MaterialTheme.colorScheme.secondary
+        TreatmentStatus.DONE -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val dateStr = LocalDateTime.ofInstant(treatment.scheduledAt, ZoneId.systemDefault())
+        .let { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT).format(it) }
+
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         ListItem(
             headlineContent = { Text(treatment.title) },
             supportingContent = {
                 Text(
-                    "${treatment.type.name} • ${treatment.status.name}",
+                    "${treatment.type.resolveLabel(context)} · $dateStr",
                     style = MaterialTheme.typography.bodySmall
                 )
+            },
+            trailingContent = {
+                Surface(
+                    color = statusColor.copy(alpha = 0.12f),
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text(
+                        when (treatment.status) {
+                            TreatmentStatus.PENDING -> context.getString(R.string.treatment_status_pending)
+                            TreatmentStatus.DONE -> context.getString(R.string.treatment_status_done)
+                            TreatmentStatus.SKIPPED -> context.getString(R.string.treatment_status_skipped)
+                            TreatmentStatus.RESCHEDULED -> context.getString(R.string.treatment_status_rescheduled)
+                        },
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        color = statusColor,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         )
     }

@@ -183,11 +183,14 @@ private fun PlantationTypeGrid(
 ) {
     val context = LocalContext.current
     FlowRow(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        maxItemsInEachRow = 2
     ) {
         PlantationType.entries.forEach { type ->
             FilterChip(
+                modifier = Modifier.weight(1f),
                 selected = selected == type,
                 onClick = { onSelected(type) },
                 label = { Text("${type.defaultIconEmoji} ${type.resolveLabel(context)}") }

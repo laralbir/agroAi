@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.4.0-canary01`
+Estado actual: `v0.8.0`
 
 ---
 
@@ -19,9 +19,9 @@ Descarga modelo Gemma
 
 ---
 
-## ✅ FASE 1 — Pantalla de descarga y gestión de modelos IA _(completada en v0.4.0-canary01)_
+## ✅ FASE 1 — Pantalla de descarga y gestión de modelos IA _(completada en v0.7.0)_
 
-### UI
+### UI y funcionalidad (v0.4.0-canary01)
 - [x] `ModelManagementScreen` — lista de variantes (1B / 4B / 12B), estado, botones Descargar / Activar / Eliminar
 - [x] `ModelManagementViewModel` — suscribe `ObserveModelsQuery`, invoca `DownloadModelHandler`, `SetActiveModelHandler`, `DeleteModelHandler`
 - [x] Barra de progreso de descarga — observa `WorkManager` progress via `WorkInfo.State`
@@ -29,44 +29,88 @@ Descarga modelo Gemma
 - [x] Banner en Home si no hay modelo activo → navega a `ModelManagementScreen`
 - [x] Entrada en Settings → `ModelManagementScreen`; ruta `Screen.ModelManagement("models")`
 
+### Ampliaciones (v0.5.0)
+- [x] HuggingFace OAuth 2.0 con PKCE (Chrome Custom Tab) — sin copiar tokens manualmente
+- [x] Botón **Probar** en tarjetas de modelo: sheet con prompt editable, respuesta completa, tiempos de carga e inferencia
+- [x] Auto-activación del primer modelo descargado
+- [x] Backend.CPU para MediaPipe (elimina GPU que causaba SIGSEGV por OpenCL inaccesible)
+- [x] Migraciones Room 3→4 (purga filas con variantes de enum desconocidas)
+
+### Ampliaciones (v0.6.0)
+- [x] Modelo GEMMA4_E2B (`gemma-4-E2B-it.litertlm`, ~2.5 GB)
+- [x] SDK LiteRT-LM (`litertlm-android:0.13.1`) para el formato `.litertlm` de Gemma 4
+- [x] `GemmaInferenceEngine` dual-engine: `.task` → MediaPipe Tasks GenAI, `.litertlm` → LiteRT-LM con `Backend.CPU`
+- [x] Prompt de prueba editable antes de ejecutar; botón unificado Ejecutar/Reintentar
+
 ### Tests
 - [x] `ModelManagementViewModelTest` — 12 tests: NOT_DOWNLOADED, DOWNLOADED, DOWNLOADING, FAILED, warning dialog, reactive updates, GEMMA4 unavailable
 
 ---
 
-## FASE 2 — Treatment: handlers, queries y UI de programación
+## ✅ FASE 1.5 — Edición de plantaciones _(completada en v0.7.1)_
+
+**Por qué aquí:** El wizard ya muestra pantalla de creación; editar una plantación existente es la siguiente necesidad UX.
+
+### Application layer
+- [x] `UpdatePlantationCommand` + `UpdatePlantationHandler` — implementados en `PlantationHandlers.kt`
+
+### UI
+- [x] `PlantationWizardViewModel` — modo edición: carga plantación existente, `isEditMode`, invoca `UpdatePlantationHandler`
+- [x] `PlantationWizardScreen` — título dinámico Crear/Editar, callback `onPlantationSaved`
+- [x] `PlantationDetailScreen` — botón Editar → `Screen.PlantationEdit`
+- [x] `Screen.PlantationEdit` + ruta en `NavGraph`
+- [x] Fix `Plantation.create()/update()` — `plants` reciben `plantationId` correcto al construir
+- [x] Mejora de `PlantationDetailScreen` — tarjetas header/location/plants con diseño claro
+- [x] Geocodificación automática vía Nominatim (700ms debounce) cuando se introduce municipio/provincia
+
+### Tests
+- [x] `UpdatePlantationHandlerTest` — 6 tests (save, evento, plantationId en plants, not found, preserva id, área)
+- [x] `PlantationWizardViewModelTest` modo edición — 6 tests (isEditMode, carga datos, carga plantas, llama update, savedId, error)
+
+---
+
+## ✅ FASE 2 — Treatment: handlers, queries y UI de programación _(completada)_
 
 **Por qué segundo:** `PlantationDetailScreen` ya muestra treatments pero no puede crearlos ni completarlos; los handlers son el núcleo funcional de la app.
 
 ### Application layer
-- [ ] `TreatmentHandlers.kt` — `ScheduleTreatmentHandler`, `CompleteTreatmentHandler`, `DeleteTreatmentHandler`
-- [ ] `TreatmentEvents.kt` — `TreatmentScheduled`, `TreatmentCompleted`, `TreatmentDeleted`
-- [ ] `TreatmentQueries.kt` — `ObserveTreatmentsByPlantationQuery`, `ObserveUpcomingTreatmentsQuery`, `GetTreatmentQuery`
+- [x] `TreatmentHandlers.kt` — `ScheduleTreatmentHandler`, `CompleteTreatmentHandler`, `DeleteTreatmentHandler`
+- [x] `TreatmentEvents.kt` — `TreatmentScheduled`, `TreatmentCompleted`, `TreatmentDeleted`
+- [x] `TreatmentQueries.kt` — `ObserveTreatmentsByPlantationQuery`, `ObserveUpcomingTreatmentsQuery`, `GetTreatmentQuery`
 
 ### UI
-- [ ] `ScheduleTreatmentSheet` — bottom sheet con tipo, fecha/hora, notas, checkbox "añadir a Calendar"
-- [ ] `TreatmentDetailScreen` — ver detalle, marcar como completado, adjuntar foto
-- [ ] `HomeViewModel` — conectar `ObserveUpcomingTreatmentsQuery` para mostrar próximos tratamientos en Home
+- [x] `ScheduleTreatmentScreen` — pantalla con tipo, título, fecha/hora, checkbox "añadir a Calendar" + email
+- [x] `TreatmentDetailScreen` — ver detalle (status badge, fecha), marcar como completado con notas, eliminar con confirmación
+- [x] `HomeViewModel` + `HomeScreen` — próximos 3 tratamientos pendientes con navegación a detalle
+- [x] `PlantationDetailScreen` — FAB "+" para programar, tarjetas de tratamiento tappables con estado/fecha
+- [x] Navegación: `Screen.ScheduleTreatment` + `Screen.TreatmentDetail` en NavGraph
 
 ### Tests
-- [ ] Unit tests de los 3 handlers (mismo patrón que AIModel)
+- [x] `ScheduleTreatmentHandlerTest` — 5 tests (sin calendario, con calendario, fallo calendario no bloquea)
+- [x] `CompleteTreatmentHandlerTest` — 4 tests (DONE, record, evento, not found)
+- [x] `DeleteTreatmentHandlerTest` — 5 tests (delete, evento, sin calendario, sin event, not found)
 
 ---
 
 ## FASE 3 — Calendar: handlers e integración con Treatment
 
-**Por qué tercero:** `ScheduleTreatmentHandler` con `addToCalendar = true` necesita `CreateCalendarEventHandler`. `GoogleCalendarRepository` ya está implementado.
+**Por qué tercero:** `ScheduleTreatmentHandler` ya llama directamente a `CalendarRepository` (Fase 2). Fase 3 introduce los handlers dedicados y la UI de calendario.
 
-### Application layer
+### Infraestructura _(ya completada)_
+- [x] `GoogleCalendarRepository` — ContentResolver implementation completa
+- [x] `CalendarRepository` port (interfaz de dominio)
+- [x] Binding en `RepositoryModule`
+
+### Application layer _(pendiente)_
 - [ ] `CalendarHandlers.kt` — `CreateCalendarEventHandler`, `UpdateCalendarEventHandler`, `DeleteCalendarEventHandler`
 - [ ] `CalendarEvents.kt` (domain events) — `CalendarEventCreated`, `CalendarEventDeleted`
 - [ ] `CalendarQueries.kt` — `GetCalendarsQuery` (lista cuentas Google disponibles)
-- [ ] Enlazar `ScheduleTreatmentHandler`: si `addToCalendar == true`, invocar `CreateCalendarEventHandler` y guardar `calendarEventId` en el `Treatment`
+- [ ] Refactorizar `ScheduleTreatmentHandler` para delegar en `CreateCalendarEventHandler`
 
-### UI
+### UI _(pendiente)_
 - [ ] `CalendarScreen` — vista de calendario mensual con tratamientos programados
 - [ ] Añadir tab **Calendar** al bottom nav (`Screen.Calendar` ya definido en `NavGraph`)
-- [ ] Selector de cuenta Google en `ScheduleTreatmentSheet`
+- [ ] Selector de cuenta Google en `ScheduleTreatmentScreen` (usando `GetCalendarsQuery`)
 - [ ] Solicitar permisos `READ_CALENDAR` / `WRITE_CALENDAR` en runtime antes de mostrar la pantalla
 
 ### Tests
@@ -93,18 +137,16 @@ Descarga modelo Gemma
 
 ---
 
-## FASE 5 — Weather (AEMET): parseo real, caché y WorkManager
+## FASE 5 — Weather (Open-Meteo): caché Room, WorkManager y UI
 
-**Por qué quinta:** `AemetWeatherRepository.fetchWeather()` obtiene la URL de AEMET pero devuelve `forecast = emptyList()` — la segunda llamada HTTP (a la URL de datos) ni siquiera se hace.
+**Por qué quinta:** `OpenMeteoWeatherRepository.fetchWeather()` ya funciona (v0.7.0), pero `observeCachedWeather()` devuelve `flowOf(null)` — no hay persistencia en Room ni refresco periódico.
 
-### Infrastructure
-- [ ] `AemetWeatherRepository.fetchWeather()` — completar parseo:
-  1. Primera llamada → obtener `datos` URL
-  2. Segunda llamada → descargar JSON de predicción
-  3. Mapear `elaborado`, `prediccion.dia[]` → `DailyForecast` usando `mapSkyState()` (ya implementado)
+### Infrastructure (parcialmente completado en v0.7.0)
+- [x] `OpenMeteoApiService` — endpoint `/forecast` con variables current y daily, WMO codes
+- [x] `OpenMeteoWeatherRepository.fetchWeather()` — parseo completo de respuesta Open-Meteo
+- [x] `OpenMeteoWeatherRepository` como binding en DI (`RepositoryModule`)
 - [ ] `observeCachedWeather()` — actualmente `flowOf(null)`; implementar con Room (`WeatherEntity`, `WeatherDao`)
-- [ ] `WeatherEntity` + `WeatherDao` + migración de base de datos (version 2)
-- [ ] `AemetWeatherRepository` como binding en DI (`RepositoryModule`)
+- [ ] `WeatherEntity` + `WeatherDao` + migración de base de datos (version 5)
 - [ ] `WeatherRefreshWorker` — WorkManager que llama `refreshWeather()` cada 6h
 - [ ] Scheduling del Worker en `AgroAIApplication.onCreate()`
 
@@ -115,10 +157,9 @@ Descarga modelo Gemma
 ### UI
 - [ ] Widget de clima en `PlantationDetailScreen` (temperatura, condición, próximas alertas)
 - [ ] Alerta visible en `TreatmentDetailScreen` si hay lluvia/helada en la fecha programada
-- [ ] Pantalla de configuración AEMET en Settings (campo de API key ya existe, falta conectarlo)
 
 ### Tests
-- [ ] Unit test de parseo AEMET (JSON de muestra real)
+- [ ] Unit test de parseo Open-Meteo (JSON de muestra real)
 - [ ] Unit test de `RefreshWeatherHandler`
 
 ---
@@ -140,7 +181,6 @@ Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de
 
 ### Accesibilidad y strings
 - [ ] Revisar `contentDescription` en todos los `Icon()` de las pantallas existentes
-- [ ] Completar `strings.xml` (en) y `strings-es.xml` — hay literales hardcodeados en inglés en algunas pantallas
 
 ### Pruebas instrumentadas pendientes
 - [ ] `ModelManagementScreenTest`
@@ -153,11 +193,12 @@ Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de
 
 | Fase | Bloqueante para | Esfuerzo estimado | Estado |
 |------|----------------|-------------------|--------|
-| 1 — AIModel screen | Usar cualquier función de IA | M | ✅ Completada |
-| 2 — Treatment handlers + UI | Flujo principal de la app | L | ⬜ Pendiente |
-| 3 — Calendar handlers + tab | Integración calendario | M | ⬜ Pendiente |
+| 1 — AIModel screen + modelos | Usar cualquier función de IA | M | ✅ Completada (v0.7.0) |
+| 1.5 — Edición de plantaciones | UX básica de gestión | S | ✅ Completada (v0.7.1) |
+| 2 — Treatment handlers + UI | Flujo principal de la app | L | ✅ Completada (v0.8.0) |
+| 3 — Calendar handlers + tab | Integración calendario | M | ⬜ Pendiente (infra ✅) |
 | 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ⬜ Pendiente |
-| 5 — Weather AEMET | Alertas y recomendaciones | L | ⬜ Pendiente |
+| 5 — Weather Open-Meteo | Alertas y recomendaciones | M | 🔄 Parcial (API ✅, caché ⬜) |
 | 6 — Deuda técnica | Release pública | M | ⬜ Pendiente |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas

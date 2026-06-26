@@ -11,12 +11,20 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 ## Características
 
 ### Gestión de Plantaciones
-- Registro de múltiples plantaciones con wizard detallado
+- Registro de múltiples plantaciones con wizard detallado (crear y editar)
 - Tipos de plantación: huerta, secano, regadío, viñedo, olivar, frutal, cítricos, invernadero, aromáticas, medicinales, cereal, leguminosas, tubérculos, floricultura, vivero, bosque, pradera, montaña, aguacate, arrozal, platanera y más
 - Gestión de plantas por variedad, distancia de siembra y número de ejemplares
 - Registro de ubicación (GPS o manual) con dirección, municipio y provincia
 - Medición de superficie en m²
-- Historial de acciones y tratamientos por plantación
+- Historial de tratamientos por plantación con estado en tiempo real
+
+### Tratamientos
+- Programación de tratamientos: riego, poda, cosecha, fertilización, fumigación, injerto, trasplante y otros
+- Título, descripción, fecha y hora configurables por tratamiento
+- Marcar tratamiento como completado con notas de ejecución
+- Eliminar tratamiento (con borrado opcional del evento de calendario)
+- Vista rápida de los 3 próximos tratamientos pendientes en la pantalla de inicio
+- Integración directa con Google Calendar al programar (opcional)
 
 ### IA Local con Gemma
 - Análisis de fotos de plantas, árboles, frutos y plantaciones

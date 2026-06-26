@@ -251,4 +251,29 @@
     <string name="loading">Cargando…</string>
     <string name="error_generic">Ha ocurrido un error. Por favor, inténtalo de nuevo.</string>
     <string name="error_network">Error de red. Comprueba tu conexión.</string>
+
+    <!-- Treatment UI -->
+    <string name="treatment_add">Añadir tratamiento</string>
+    <string name="treatment_schedule_title">Programar tratamiento</string>
+    <string name="treatment_detail_title">Detalle del tratamiento</string>
+    <string name="treatment_type_label">Tipo</string>
+    <string name="treatment_title_label">Título</string>
+    <string name="treatment_description_label">Descripción</string>
+    <string name="treatment_scheduled_at">Programado para</string>
+    <string name="treatment_pick_date">Fecha</string>
+    <string name="treatment_pick_time">Hora</string>
+    <string name="treatment_add_to_calendar">Añadir a Google Calendar</string>
+    <string name="treatment_calendar_email">Email de la cuenta Google</string>
+    <string name="treatment_btn_schedule">Programar</string>
+    <string name="treatment_btn_complete">Marcar como completado</string>
+    <string name="treatment_btn_delete">Eliminar tratamiento</string>
+    <string name="treatment_status_pending">Pendiente</string>
+    <string name="treatment_status_done">Completado</string>
+    <string name="treatment_status_skipped">Omitido</string>
+    <string name="treatment_status_rescheduled">Reprogramado</string>
+    <string name="treatment_complete_notes">Notas de finalización (opcional)</string>
+    <string name="treatment_delete_confirm_title">¿Eliminar tratamiento?</string>
+    <string name="treatment_delete_confirm_body">Esta acción no se puede deshacer.</string>
+    <string name="treatment_in_calendar">Añadido a Google Calendar</string>
+    <string name="home_upcoming_treatments">Próximos tratamientos</string>
 </resources>

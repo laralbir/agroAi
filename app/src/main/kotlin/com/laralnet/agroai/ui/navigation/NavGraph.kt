@@ -38,6 +38,8 @@ import com.laralnet.agroai.ui.screens.plantation.wizard.LocationPickerScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardViewModel
 import com.laralnet.agroai.ui.screens.settings.SettingsScreen
+import com.laralnet.agroai.ui.screens.treatment.ScheduleTreatmentScreen
+import com.laralnet.agroai.ui.screens.treatment.TreatmentDetailScreen
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
@@ -54,6 +56,12 @@ sealed class Screen(val route: String) {
     data object Calendar : Screen("calendar")
     data object Settings : Screen("settings")
     data object ModelManagement : Screen("models")
+    data object ScheduleTreatment : Screen("plantation/{plantationId}/treatment/new") {
+        fun route(plantationId: String) = "plantation/$plantationId/treatment/new"
+    }
+    data object TreatmentDetail : Screen("treatment/{treatmentId}") {
+        fun route(id: String) = "treatment/$id"
+    }
 }
 
 private const val KEY_PICKED_LAT = "picked_lat"
@@ -135,6 +143,9 @@ fun AgroAINavGraph(
                     },
                     onNavigateToModels = {
                         navController.navigate(Screen.ModelManagement.route)
+                    },
+                    onNavigateToTreatmentDetail = { id ->
+                        navController.navigate(Screen.TreatmentDetail.route(id))
                     }
                 )
             }
@@ -161,6 +172,12 @@ fun AgroAINavGraph(
                     },
                     onNavigateToEdit = {
                         navController.navigate(Screen.PlantationEdit.route(id))
+                    },
+                    onNavigateToScheduleTreatment = { pId ->
+                        navController.navigate(Screen.ScheduleTreatment.route(pId))
+                    },
+                    onNavigateToTreatmentDetail = { tId ->
+                        navController.navigate(Screen.TreatmentDetail.route(tId))
                     }
                 )
             }
@@ -258,6 +275,23 @@ fun AgroAINavGraph(
             }
             composable(Screen.ModelManagement.route) {
                 ModelManagementScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.ScheduleTreatment.route,
+                arguments = listOf(navArgument("plantationId") { type = NavType.StringType })
+            ) {
+                ScheduleTreatmentScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onTreatmentScheduled = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.TreatmentDetail.route,
+                arguments = listOf(navArgument("treatmentId") { type = NavType.StringType })
+            ) {
+                TreatmentDetailScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

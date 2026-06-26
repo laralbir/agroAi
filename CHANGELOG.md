@@ -10,6 +10,29 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.8.0] - 2026-06-26
+
+### Añadido
+- **Programación de tratamientos**: pantalla `ScheduleTreatmentScreen` con selector de tipo (riego, poda, cosecha, fertilización, fumigación, injerto, trasplante, otro), título, descripción, fecha/hora y opción de crear evento en Google Calendar con la cuenta indicada
+- **Detalle de tratamiento**: `TreatmentDetailScreen` — badge de estado (pendiente/completado/omitido/reprogramado), marcar como completado con notas, eliminar con confirmación
+- **Próximos tratamientos en Home**: los 3 tratamientos pendientes más próximos con tipo, fecha y estado; tappables para ir al detalle
+- **FAB de programar en detalle de plantación**: el botón "+" abre la pantalla de programación para esa plantación; las tarjetas de tratamiento son tappables
+- `ScheduleTreatmentHandler` — programa tratamiento y opcionalmente crea evento en Google Calendar (fallo de calendario no bloquea el guardado)
+- `CompleteTreatmentHandler` — marca tratamiento como DONE y guarda registro con notas
+- `DeleteTreatmentHandler` — elimina tratamiento y opcionalmente su evento de calendario
+- Queries `ObserveTreatmentsByPlantationQuery`, `ObserveUpcomingTreatmentsQuery`, `GetTreatmentQuery`
+- Eventos de dominio: `TreatmentScheduled`, `TreatmentCompleted`, `TreatmentDeleted`
+- Nuevas strings i18n (en/es): `treatment_add`, `treatment_schedule_title`, `treatment_detail_title`, tipos, estados, botones, confirmaciones
+
+### Tests
+- `ScheduleTreatmentHandlerTest` — 5 tests (sin calendario, con calendario, fallo de calendario no bloquea)
+- `CompleteTreatmentHandlerTest` — 4 tests (DONE, registro con notas, evento, not found)
+- `DeleteTreatmentHandlerTest` — 5 tests (delete, evento, sin calendarEventId, sin calendario, not found)
+- `UpdatePlantationHandlerTest` — 6 tests (save, `PlantationUpdated`, plantationId en plants, not found, preserva id, área)
+- `PlantationWizardViewModelTest` modo edición — 6 tests (isEditMode, carga datos, carga plantas, llama updateHandler, savedId, error)
+
+---
+
 ## [0.7.1] - 2026-06-25
 
 ### Añadido

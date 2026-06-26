@@ -251,4 +251,29 @@
     <string name="loading">Loading…</string>
     <string name="error_generic">An error occurred. Please try again.</string>
     <string name="error_network">Network error. Check your connection.</string>
+
+    <!-- Treatment UI -->
+    <string name="treatment_add">Add treatment</string>
+    <string name="treatment_schedule_title">Schedule Treatment</string>
+    <string name="treatment_detail_title">Treatment Detail</string>
+    <string name="treatment_type_label">Type</string>
+    <string name="treatment_title_label">Title</string>
+    <string name="treatment_description_label">Description</string>
+    <string name="treatment_scheduled_at">Scheduled for</string>
+    <string name="treatment_pick_date">Date</string>
+    <string name="treatment_pick_time">Time</string>
+    <string name="treatment_add_to_calendar">Add to Google Calendar</string>
+    <string name="treatment_calendar_email">Google account email</string>
+    <string name="treatment_btn_schedule">Schedule</string>
+    <string name="treatment_btn_complete">Mark as done</string>
+    <string name="treatment_btn_delete">Delete treatment</string>
+    <string name="treatment_status_pending">Pending</string>
+    <string name="treatment_status_done">Done</string>
+    <string name="treatment_status_skipped">Skipped</string>
+    <string name="treatment_status_rescheduled">Rescheduled</string>
+    <string name="treatment_complete_notes">Completion notes (optional)</string>
+    <string name="treatment_delete_confirm_title">Delete treatment?</string>
+    <string name="treatment_delete_confirm_body">This action cannot be undone.</string>
+    <string name="treatment_in_calendar">Added to Google Calendar</string>
+    <string name="home_upcoming_treatments">Upcoming treatments</string>
 </resources>

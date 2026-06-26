@@ -10,12 +10,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 import com.laralnet.agroai.plantation.domain.model.Plantation
+import com.laralnet.agroai.treatment.domain.model.Treatment
+import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
+import com.laralnet.agroai.ui.screens.treatment.resolveLabel
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,10 +31,12 @@ fun HomeScreen(
     onNavigateToPlantations: () -> Unit,
     onNavigateToPlantationDetail: (String) -> Unit,
     onNavigateToModels: () -> Unit,
+    onNavigateToTreatmentDetail: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val plantations by viewModel.plantations.collectAsState()
     val hasActiveModel by viewModel.hasActiveModel.collectAsState()
+    val upcomingTreatments by viewModel.upcomingTreatments.collectAsState()
 
     Scaffold(
         topBar = {
@@ -67,9 +77,7 @@ fun HomeScreen(
                     .padding(paddingValues)
             ) {
                 if (!hasActiveModel) {
-                    item {
-                        NoModelBanner(onClick = onNavigateToModels)
-                    }
+                    item { NoModelBanner(onClick = onNavigateToModels) }
                 }
                 item {
                     Text(
@@ -84,6 +92,25 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                 }
+
+                // Upcoming treatments (limited to 3)
+                val preview = upcomingTreatments.take(3)
+                if (preview.isNotEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.home_upcoming_treatments),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    items(preview, key = { "t_${it.id}" }) { treatment ->
+                        UpcomingTreatmentCard(
+                            treatment = treatment,
+                            onClick = { onNavigateToTreatmentDetail(treatment.id) }
+                        )
+                    }
+                    item { Spacer(Modifier.height(4.dp)) }
+                }
+
                 items(plantations, key = { it.id }) { plantation ->
                     PlantationSummaryCard(
                         plantation = plantation,
@@ -92,6 +119,43 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun UpcomingTreatmentCard(treatment: Treatment, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val statusColor = when (treatment.status) {
+        TreatmentStatus.PENDING -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val dateStr = LocalDateTime.ofInstant(treatment.scheduledAt, ZoneId.systemDefault())
+        .let { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT).format(it) }
+
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        ListItem(
+            headlineContent = { Text(treatment.title) },
+            supportingContent = {
+                Text(
+                    "${treatment.type.resolveLabel(context)} · $dateStr",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            },
+            trailingContent = {
+                Surface(
+                    color = statusColor.copy(alpha = 0.12f),
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text(
+                        stringResource(R.string.treatment_status_pending),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        color = statusColor,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+        )
     }
 }
 
