@@ -102,7 +102,7 @@ fun ScheduleTreatmentScreen(
                 title = { Text(stringResource(R.string.treatment_schedule_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
                     }
                 }
             )

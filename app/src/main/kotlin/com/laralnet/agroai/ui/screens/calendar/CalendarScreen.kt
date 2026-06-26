@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.annotation.VisibleForTesting
+import androidx.compose.ui.platform.testTag
 import com.laralnet.agroai.R
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
@@ -57,8 +59,30 @@ fun CalendarScreen(
         ActivityResultContracts.RequestPermission()
     ) { granted -> hasPermission = granted }
 
+    CalendarContent(
+        uiState = uiState,
+        hasPermission = hasPermission,
+        onNavigateToTreatmentDetail = onNavigateToTreatmentDetail,
+        onPrevious = viewModel::previousMonth,
+        onNext = viewModel::nextMonth,
+        onDaySelected = viewModel::selectDay,
+        onGrantPermission = { permissionLauncher.launch(Manifest.permission.READ_CALENDAR) }
+    )
+}
+
+@Composable
+@VisibleForTesting
+internal fun CalendarContent(
+    uiState: CalendarUiState,
+    hasPermission: Boolean,
+    onNavigateToTreatmentDetail: (String) -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onDaySelected: (LocalDate) -> Unit,
+    onGrantPermission: () -> Unit
+) {
     if (!hasPermission) {
-        CalendarPermissionScreen(onGrant = { permissionLauncher.launch(Manifest.permission.READ_CALENDAR) })
+        CalendarPermissionScreen(onGrant = onGrantPermission)
         return
     }
 
@@ -71,17 +95,18 @@ fun CalendarScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .testTag("calendar_content")
         ) {
             MonthHeader(
                 currentMonth = uiState.currentMonth,
-                onPrevious = viewModel::previousMonth,
-                onNext = viewModel::nextMonth
+                onPrevious = onPrevious,
+                onNext = onNext
             )
             MonthGrid(
                 currentMonth = uiState.currentMonth,
                 selectedDay = uiState.selectedDay,
                 daysWithTreatments = uiState.treatmentsByDay.keys,
-                onDaySelected = viewModel::selectDay
+                onDaySelected = onDaySelected
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             DayTreatmentList(
@@ -95,7 +120,12 @@ fun CalendarScreen(
 
 @Composable
 private fun CalendarPermissionScreen(onGrant: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("calendar_permission_screen"),
+        contentAlignment = Alignment.Center
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -127,7 +157,7 @@ private fun MonthHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onPrevious) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_previous_month))
         }
         Text(
             text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault()))
@@ -136,7 +166,7 @@ private fun MonthHeader(
             fontWeight = FontWeight.SemiBold
         )
         IconButton(onClick = onNext) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.cd_next_month))
         }
     }
 }

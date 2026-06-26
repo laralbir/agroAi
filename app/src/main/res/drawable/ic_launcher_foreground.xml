@@ -3,38 +3,56 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+  <!-- Leaf body — filled solid green -->
   <path
-      android:pathData="M54,24C68,38 74,54 64,74C54,84 54,84 54,84C54,84 54,84 44,74C34,54 40,38 54,24Z"
-      android:strokeLineJoin="round"
-      android:strokeWidth="3.5"
+      android:pathData="M54,18C71,33 79,53 67,73C61,83 54,87 54,87C54,87 47,83 41,73C29,53 37,33 54,18Z"
+      android:fillColor="#10B981"/>
+
+  <!-- Central vein -->
+  <path
+      android:pathData="M54,83L54,30"
+      android:strokeWidth="2.5"
       android:fillColor="#00000000"
-      android:strokeColor="#10B981"
+      android:strokeColor="#ECFDF5"
       android:strokeLineCap="round"/>
+
+  <!-- Left branch -->
   <path
-      android:fillColor="#FF000000"
-      android:pathData="M54,80L54,38"
-      android:strokeWidth="3"
-      android:strokeColor="#06B6D4"
-      android:strokeLineCap="round"/>
-  <path
-      android:pathData="M54,62L44,52L38,52"
-      android:strokeWidth="2"
+      android:pathData="M54,65L42,55"
+      android:strokeWidth="1.8"
       android:fillColor="#00000000"
-      android:strokeColor="#06B6D4"
+      android:strokeColor="#ECFDF5"
       android:strokeLineCap="round"/>
   <path
-      android:pathData="M38,52m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
-      android:fillColor="#06B6D4"/>
+      android:pathData="M42,55m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+      android:fillColor="#A7F3D0"/>
+
+  <!-- Right-upper branch -->
   <path
-      android:pathData="M54,50L64,40L70,40"
-      android:strokeWidth="2"
+      android:pathData="M54,51L66,41"
+      android:strokeWidth="1.8"
       android:fillColor="#00000000"
-      android:strokeColor="#06B6D4"
+      android:strokeColor="#ECFDF5"
       android:strokeLineCap="round"/>
   <path
-      android:pathData="M70,40m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
-      android:fillColor="#06B6D4"/>
+      android:pathData="M66,41m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+      android:fillColor="#A7F3D0"/>
+
+  <!-- Right-lower branch -->
   <path
-      android:pathData="M54,38m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
-      android:fillColor="#34D399"/>
+      android:pathData="M54,63L64,72"
+      android:strokeWidth="1.8"
+      android:fillColor="#00000000"
+      android:strokeColor="#ECFDF5"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M64,72m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
+      android:fillColor="#A7F3D0"/>
+
+  <!-- Apex node — white dot representing AI data point -->
+  <path
+      android:pathData="M54,30m-4.5,0a4.5,4.5 0,1 1,9 0a4.5,4.5 0,1 1,-9 0"
+      android:fillColor="#FFFFFF"/>
+
 </vector>

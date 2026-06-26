@@ -1,0 +1,352 @@
+package com.laralnet.agroai.ui.screens.onboarding
+
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.Grass
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.WbCloudy
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.laralnet.agroai.R
+
+@Composable
+fun OnboardingScreen(onCompleted: () -> Unit) {
+    var page by remember { mutableIntStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("onboarding_screen")
+            .systemBarsPadding()
+    ) {
+        AnimatedContent(
+            targetState = page,
+            transitionSpec = {
+                slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+            },
+            modifier = Modifier.weight(1f),
+            label = "onboarding_page"
+        ) { targetPage ->
+            when (targetPage) {
+                0 -> WelcomePage()
+                1 -> PermissionsPage()
+                else -> ReadyPage()
+            }
+        }
+
+        // Dots + navigation row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Page dots
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                repeat(3) { i ->
+                    Box(
+                        modifier = Modifier
+                            .size(if (i == page) 10.dp else 7.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (i == page) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outlineVariant
+                            )
+                    )
+                }
+            }
+
+            if (page < 2) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = onCompleted) {
+                        Text(stringResource(R.string.onboarding_skip))
+                    }
+                    Button(
+                        onClick = { page++ },
+                        modifier = Modifier.testTag("onboarding_next_btn")
+                    ) {
+                        Text(stringResource(R.string.onboarding_next))
+                    }
+                }
+            } else {
+                Button(
+                    onClick = onCompleted,
+                    modifier = Modifier.testTag("onboarding_start_btn")
+                ) {
+                    Text(stringResource(R.string.onboarding_start))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WelcomePage() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // App icon placeholder — leaf icon in primary color circle
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.Grass,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(56.dp)
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        Text(
+            text = stringResource(R.string.onboarding_welcome_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.onboarding_welcome_subtitle),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = stringResource(R.string.onboarding_welcome_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun PermissionsPage() {
+    val context = LocalContext.current
+
+    var cameraGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var locationGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var calendarGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        cameraGranted = it
+    }
+    val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        locationGranted = it
+    }
+    val calendarLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        calendarGranted = results[Manifest.permission.READ_CALENDAR] == true
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(R.string.onboarding_permissions_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.onboarding_permissions_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(28.dp))
+
+        PermissionRow(
+            icon = { Icon(Icons.Default.CameraAlt, contentDescription = null) },
+            title = stringResource(R.string.onboarding_permission_camera),
+            description = stringResource(R.string.onboarding_permission_camera_desc),
+            granted = cameraGranted,
+            onGrant = { cameraLauncher.launch(Manifest.permission.CAMERA) }
+        )
+        Spacer(Modifier.height(16.dp))
+        PermissionRow(
+            icon = { Icon(Icons.Default.GpsFixed, contentDescription = null) },
+            title = stringResource(R.string.onboarding_permission_location),
+            description = stringResource(R.string.onboarding_permission_location_desc),
+            granted = locationGranted,
+            onGrant = { locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
+        )
+        Spacer(Modifier.height(16.dp))
+        PermissionRow(
+            icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
+            title = stringResource(R.string.onboarding_permission_calendar),
+            description = stringResource(R.string.onboarding_permission_calendar_desc),
+            granted = calendarGranted,
+            onGrant = {
+                calendarLauncher.launch(
+                    arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun PermissionRow(
+    icon: @Composable () -> Unit,
+    title: String,
+    description: String,
+    granted: Boolean,
+    onGrant: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = if (granted) MaterialTheme.colorScheme.secondaryContainer
+            else MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) { icon() }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (granted) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = stringResource(R.string.onboarding_permission_granted),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                FilledTonalButton(onClick = onGrant) {
+                    Text(stringResource(R.string.onboarding_permission_grant))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReadyPage() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(56.dp)
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        Text(
+            text = stringResource(R.string.onboarding_ready_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.onboarding_ready_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(32.dp))
+
+        FeatureItem(Icons.Default.Grass, stringResource(R.string.onboarding_ready_feature_plantations))
+        Spacer(Modifier.height(12.dp))
+        FeatureItem(Icons.Default.Psychology, stringResource(R.string.onboarding_ready_feature_ai))
+        Spacer(Modifier.height(12.dp))
+        FeatureItem(Icons.Default.WbCloudy, stringResource(R.string.onboarding_ready_feature_treatments))
+    }
+}
+
+@Composable
+private fun FeatureItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Text(text, style = MaterialTheme.typography.bodyMedium)
+    }
+}

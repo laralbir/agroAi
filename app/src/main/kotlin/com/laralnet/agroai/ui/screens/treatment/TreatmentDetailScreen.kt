@@ -1,5 +1,6 @@
 package com.laralnet.agroai.ui.screens.treatment
 
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,12 +35,25 @@ fun TreatmentDetailScreen(
     viewModel: TreatmentDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
-
     LaunchedEffect(state.isDone, state.isDeleted) {
         if (state.isDone || state.isDeleted) onNavigateBack()
     }
+    TreatmentDetailContent(
+        state = state,
+        onNavigateBack = onNavigateBack,
+        onComplete = viewModel::complete,
+        onDelete = viewModel::delete
+    )
+}
 
+@Composable
+@VisibleForTesting
+internal fun TreatmentDetailContent(
+    state: TreatmentDetailState,
+    onNavigateBack: () -> Unit,
+    onComplete: (String) -> Unit,
+    onDelete: () -> Unit
+) {
     var showCompleteDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var completeNotes by remember { mutableStateOf("") }
@@ -58,7 +73,7 @@ fun TreatmentDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.complete(completeNotes)
+                    onComplete(completeNotes)
                     showCompleteDialog = false
                 }) { Text("OK") }
             },
@@ -77,7 +92,7 @@ fun TreatmentDetailScreen(
             text = { Text(stringResource(R.string.treatment_delete_confirm_body)) },
             confirmButton = {
                 TextButton(
-                    onClick = { viewModel.delete(); showDeleteDialog = false },
+                    onClick = { onDelete(); showDeleteDialog = false },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) { Text(stringResource(R.string.btn_delete)) }
             },
@@ -95,7 +110,7 @@ fun TreatmentDetailScreen(
                 title = { Text(stringResource(R.string.treatment_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
                     }
                 },
                 actions = {
@@ -113,12 +128,14 @@ fun TreatmentDetailScreen(
         }
     ) { padding ->
         state.treatment?.let { treatment ->
+            val context = LocalContext.current
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(padding)
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .testTag("treatment_content"),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TreatmentInfoCard(treatment = treatment, context = context)
@@ -138,7 +155,10 @@ fun TreatmentDetailScreen(
                 }
 
                 if (treatment.calendarEventId != null) {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("treatment_calendar_badge")
+                    ) {
                         ListItem(
                             leadingContent = {
                                 Icon(
@@ -166,7 +186,9 @@ fun TreatmentDetailScreen(
                 if (treatment.status == TreatmentStatus.PENDING) {
                     Button(
                         onClick = { showCompleteDialog = true },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("treatment_complete_btn"),
                         enabled = !state.isLoading
                     ) {
                         Icon(Icons.Default.CheckCircle, contentDescription = null)
@@ -176,7 +198,10 @@ fun TreatmentDetailScreen(
                 }
             }
         } ?: Box(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .testTag("treatment_loading"),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
@@ -198,7 +223,11 @@ private fun TreatmentInfoCard(treatment: Treatment, context: android.content.Con
         TreatmentStatus.RESCHEDULED -> stringResource(R.string.treatment_status_rescheduled)
     }
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("treatment_info_card")
+    ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -251,7 +280,9 @@ private fun WeatherAlertCard(alert: WeatherAlert) {
         }
     )
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("treatment_weather_alert"),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.errorContainer
         )

@@ -30,9 +30,12 @@ import com.laralnet.agroai.ui.screens.aimodel.ModelManagementScreen
 import com.laralnet.agroai.ui.screens.analysis.PhotoAnalysisScreen
 import android.net.Uri
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.plantation.domain.model.Location
 import com.laralnet.agroai.ui.screens.home.HomeScreen
+import com.laralnet.agroai.ui.screens.onboarding.OnboardingScreen
+import com.laralnet.agroai.ui.screens.onboarding.OnboardingViewModel
 import com.laralnet.agroai.ui.screens.plantation.detail.PlantationDetailScreen
 import com.laralnet.agroai.ui.screens.plantation.list.PlantationListScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.LocationPickerScreen
@@ -79,6 +82,9 @@ sealed class Screen(val route: String) {
     data object TreatmentDetail : Screen("treatment/{treatmentId}") {
         fun route(id: String) = "treatment/$id"
     }
+    data object Onboarding : Screen("onboarding")
+    /** Silent router — navigates immediately to Onboarding or Home, never shown to the user. */
+    data object Router : Screen("router")
 }
 
 private const val KEY_PICKED_LAT = "picked_lat"
@@ -96,7 +102,8 @@ private data class BottomNavItem(
 
 @Composable
 fun AgroAINavGraph(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    onboardingViewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val bottomItems = listOf(
         BottomNavItem(Screen.Home, R.string.nav_home) {
@@ -155,9 +162,30 @@ fun AgroAINavGraph(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Router.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // Silent router: reads onboarding flag and navigates immediately
+            composable(Screen.Router.route) {
+                val done by onboardingViewModel.onboardingDone.collectAsState()
+                LaunchedEffect(done) {
+                    if (done == null) return@LaunchedEffect // still loading DataStore
+                    val target = if (done == true) Screen.Home.route else Screen.Onboarding.route
+                    navController.navigate(target) {
+                        popUpTo(Screen.Router.route) { inclusive = true }
+                    }
+                }
+            }
+            composable(Screen.Onboarding.route) {
+                OnboardingScreen(
+                    onCompleted = {
+                        onboardingViewModel.markDone()
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Onboarding.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToPlantations = {

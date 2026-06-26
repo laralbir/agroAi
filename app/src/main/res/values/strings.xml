@@ -311,4 +311,39 @@
     <string name="calendar_no_treatments_day">No treatments scheduled for this day</string>
     <string name="calendar_permission_rationale">Calendar permission is needed to display scheduled treatments</string>
     <string name="calendar_grant_permission">Grant Permission</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Welcome to AgroAI</string>
+    <string name="onboarding_welcome_subtitle">Your intelligent agricultural assistant</string>
+    <string name="onboarding_welcome_desc">Manage your plantations, analyze diseases with local AI, and schedule treatments with weather alerts — all offline.</string>
+    <string name="onboarding_permissions_title">Required Permissions</string>
+    <string name="onboarding_permissions_subtitle">AgroAI needs a few permissions to work properly.</string>
+    <string name="onboarding_permission_camera">Camera</string>
+    <string name="onboarding_permission_camera_desc">To photograph plants and crops for Gemma analysis</string>
+    <string name="onboarding_permission_location">Location</string>
+    <string name="onboarding_permission_location_desc">To geolocate your plantations and get local weather</string>
+    <string name="onboarding_permission_calendar">Calendar</string>
+    <string name="onboarding_permission_calendar_desc">To add scheduled treatments to Google Calendar</string>
+    <string name="onboarding_permission_grant">Grant</string>
+    <string name="onboarding_permission_granted">Granted</string>
+    <string name="onboarding_ready_title">All set!</string>
+    <string name="onboarding_ready_subtitle">You\'re ready to start using AgroAI</string>
+    <string name="onboarding_ready_feature_plantations">Register and manage your plantations</string>
+    <string name="onboarding_ready_feature_ai">Analyze photos with local AI (offline)</string>
+    <string name="onboarding_ready_feature_treatments">Schedule treatments with weather alerts</string>
+    <string name="onboarding_start">Get Started</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Accessibility -->
+    <string name="cd_navigate_back">Navigate back</string>
+    <string name="cd_previous_month">Previous month</string>
+    <string name="cd_next_month">Next month</string>
+    <string name="cd_status_success">Status: success</string>
+    <string name="cd_status_error">Status: error</string>
+    <string name="cd_run_test">Run model test</string>
+    <string name="cd_treatment_status">Treatment status</string>
+    <string name="cd_weather_alert">Weather alert</string>
+    <string name="cd_plantation_location">Plantation location</string>
+    <string name="cd_plantation_type">Plantation type</string>
 </resources>

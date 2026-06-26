@@ -8,6 +8,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-06-26
+
+### Añadido
+- **Arquitectura Location (Fase 6)**: `PlaceResult` domain value object, `LocationRepository` puerto, `SearchPlacesQuery/ReverseGeocodeQuery/GetCurrentLocationQuery`, `NominatimLocationRepository` adaptador, `LocationModule` Hilt — `LocationPickerViewModel` ya no importa infraestructura directamente
+- **Onboarding**: flujo de primer arranque con 3 páginas (Bienvenida, Permisos, Listo); solicita permisos de Cámara, Ubicación y Calendario en runtime; `Screen.Router` como destino inicial del NavGraph para decidir si mostrar onboarding o ir directamente a Home
+- **Tests instrumentados**: `ModelManagementScreenTest` (6 tests), `TreatmentDetailScreenTest` (10 tests), `CalendarScreenTest` (7 tests) — todos los screens testeables mediante composables `*Content` extraídos con `@VisibleForTesting`
+
+### Cambiado
+- **Icono**: `ic_launcher_foreground.xml` rediseñado con hoja rellena (#10B981), venas de datos en blanco y nodo ápice blanco; fondo cambiado a `#F0FDF4` (verde muy claro)
+- **Accesibilidad**: `contentDescription` añadido a todos los `ArrowBack` en TopAppBars (→ `R.string.cd_navigate_back`) y a las flechas de mes anterior/siguiente en `CalendarScreen`
+- `ModelManagementScreen`, `TreatmentDetailScreen` y `CalendarScreen` refactorizados para exponer composables `*Content` internos testeables sin Hilt
+
 ---
 
 ## [0.10.0] - 2026-06-26

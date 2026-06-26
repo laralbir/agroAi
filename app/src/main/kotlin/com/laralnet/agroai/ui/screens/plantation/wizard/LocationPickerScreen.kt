@@ -70,7 +70,7 @@ fun LocationPickerScreen(
                 title = { Text(stringResource(R.string.location_picker_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
                     }
                 },
                 actions = {
@@ -148,7 +148,7 @@ fun LocationPickerScreen(
                                 ListItem(
                                     headlineContent = {
                                         Text(
-                                            place.address.resolvedMunicipality.ifBlank { place.displayName },
+                                            place.municipality.ifBlank { place.displayName },
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )

@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.10.0`
+Estado actual: `v0.11.0`
 
 ---
 
@@ -165,28 +165,38 @@ Descarga modelo Gemma
 
 ---
 
-## FASE 6 — Deuda técnica y pulido
-
-Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de una release pública.
+## ✅ FASE 6 — Deuda técnica y pulido _(completada en v0.11.0)_
 
 ### Location (arquitectura)
-- [ ] Mover `GpsLocationProvider` e `NominatimApiService` a un módulo con interfaz de puerto
-  (actualmente se accede directamente desde `LocationPickerViewModel` sin capa domain/application)
-- [ ] `LocationQueries.kt` — `ReverseGeocodeQuery`, `SearchPlacesQuery`
+- [x] `PlaceResult` value object en `location/domain/model/`
+- [x] `LocationRepository` puerto (interfaz) en `location/domain/repository/`
+- [x] `SearchPlacesQuery`, `ReverseGeocodeQuery`, `GetCurrentLocationQuery` en `location/application/query/`
+- [x] `NominatimLocationRepository` adaptador en `location/infrastructure/repository/`
+- [x] `LocationModule` binding Hilt en `location/infrastructure/di/`
+- [x] `LocationPickerViewModel` refactorizado: ya no importa de infraestructura directamente
+- [x] `LocationPickerScreen` actualizado para usar `PlaceResult.municipality`
 
 ### Iconos de la app
-- [ ] Sustituir los placeholders de `ic_launcher` (verde sólido generado en Canary 1) por el icono real de AgroAI
+- [x] `ic_launcher_foreground.xml` rediseñado: hoja rellena + venas de datos + nodo ápice blanco
+- [x] `ic_launcher_background.xml` actualizado a `#F0FDF4` (verde muy claro)
+- [x] `agroai_launcher.xml` sincronizado
 
 ### Onboarding
-- [ ] Flujo completo: primer arranque → pedir permisos → descargar modelo → tutorial
+- [x] `OnboardingViewModel` — lee/escribe `onboarding_done` en DataStore
+- [x] `OnboardingScreen` — 3 páginas: Bienvenida → Permisos (Cámara/Ubicación/Calendario) → Listo
+- [x] `Screen.Router` + `Screen.Onboarding` añadidos al NavGraph
+- [x] Primer arranque navega a Onboarding; vuelve a Home al completar; saltar también disponible
+- [x] Strings i18n completos en EN y ES
 
-### Accesibilidad y strings
-- [ ] Revisar `contentDescription` en todos los `Icon()` de las pantallas existentes
+### Accesibilidad
+- [x] `contentDescription = stringResource(R.string.cd_navigate_back)` en todos los ArrowBack de TopAppBar
+- [x] `contentDescription = stringResource(R.string.cd_previous_month/cd_next_month)` en CalendarScreen
+- [x] Strings de accesibilidad añadidos: `cd_*` en values/ y values-es/
 
-### Pruebas instrumentadas pendientes
-- [ ] `ModelManagementScreenTest`
-- [ ] `TreatmentDetailScreenTest`
-- [ ] `CalendarScreenTest`
+### Pruebas instrumentadas
+- [x] `ModelManagementScreenTest` — 6 tests: banner HF, variant cards (NOT_DOWNLOADED/DOWNLOADING/DOWNLOADED/FAILED/múltiples)
+- [x] `TreatmentDetailScreenTest` — 10 tests: loading, título, info card, complete button, weather alert, calendar badge, diálogo
+- [x] `CalendarScreenTest` — 7 tests: permiso, contenido, mes anterior/siguiente, nombre de mes, lista vacía
 
 ---
 
@@ -200,6 +210,6 @@ Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de
 | 3 — Calendar handlers + tab | Integración calendario | M | ✅ Completada |
 | 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ✅ Completada (v0.9.0) |
 | 5 — Weather Open-Meteo | Alertas y recomendaciones | M | ✅ Completada (v0.9.0) |
-| 6 — Deuda técnica | Release pública | M | ⬜ Pendiente |
+| 6 — Deuda técnica | Release pública | M | ✅ Completada (v0.11.0) |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas

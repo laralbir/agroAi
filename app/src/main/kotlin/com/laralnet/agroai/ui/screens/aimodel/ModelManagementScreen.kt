@@ -64,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -74,6 +75,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 import com.laralnet.agroai.aimodel.domain.model.DownloadState
+import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,47 +106,17 @@ fun ModelManagementScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.model_management_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (!uiState.hasHfToken) {
-                item(key = "hf_banner") {
-                    NoTokenBanner(onConnect = viewModel::onConnectHuggingFace)
-                }
-            }
-
-            items(uiState.rows, key = { it.variant.name }) { row ->
-                ModelVariantCard(
-                    row = row,
-                    onDownload = { viewModel.onDownloadClick(row.variant) },
-                    onActivate = { row.model?.id?.let { viewModel.onActivate(it) } },
-                    onDelete = { row.model?.id?.let { viewModel.onDelete(it) } },
-                    onTest = { row.model?.filePath?.let { path ->
-                        viewModel.openTestSheet(path, row.variant.displayName)
-                    }},
-                    onReconnect = { viewModel.onReconnectHuggingFace(row.variant) }
-                )
-            }
-        }
-    }
+    ModelManagementContent(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onConnect = viewModel::onConnectHuggingFace,
+        onDownload = viewModel::onDownloadClick,
+        onActivate = { id -> viewModel.onActivate(id) },
+        onDelete = { id -> viewModel.onDelete(id) },
+        onTest = { path, name -> viewModel.openTestSheet(path, name) },
+        onReconnect = viewModel::onReconnectHuggingFace,
+        snackbarHostState = snackbarHostState
+    )
 
     // Model test bottom sheet
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -199,12 +171,71 @@ fun ModelManagementScreen(
 }
 
 @Composable
-private fun NoTokenBanner(onConnect: () -> Unit) {
+@androidx.annotation.VisibleForTesting
+internal fun ModelManagementContent(
+    uiState: ModelManagementViewModel.UiState,
+    onNavigateBack: () -> Unit,
+    onConnect: () -> Unit,
+    onDownload: (ModelVariant) -> Unit,
+    onActivate: (String) -> Unit,
+    onDelete: (String) -> Unit,
+    onTest: (String, String) -> Unit,
+    onReconnect: (ModelVariant) -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.model_management_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+                .testTag("model_list"),
+            contentPadding = PaddingValues(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (!uiState.hasHfToken) {
+                item(key = "hf_banner") {
+                    NoTokenBanner(
+                        onConnect = onConnect,
+                        modifier = Modifier.testTag("model_hf_banner")
+                    )
+                }
+            }
+
+            items(uiState.rows, key = { it.variant.name }) { row ->
+                ModelVariantCard(
+                    row = row,
+                    onDownload = { onDownload(row.variant) },
+                    onActivate = { row.model?.id?.let { onActivate(it) } },
+                    onDelete = { row.model?.id?.let { onDelete(it) } },
+                    onTest = { row.model?.filePath?.let { path -> onTest(path, row.variant.displayName) } },
+                    onReconnect = { onReconnect(row.variant) },
+                    modifier = Modifier.testTag("model_variant_card_${row.variant.name}")
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NoTokenBanner(onConnect: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -298,12 +329,13 @@ private fun ModelVariantCard(
     onActivate: () -> Unit,
     onDelete: () -> Unit,
     onTest: () -> Unit,
-    onReconnect: () -> Unit = {}
+    onReconnect: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     val locale = androidx.compose.ui.platform.LocalContext.current.resources.configuration.locales[0]
     val description = if (locale.language == "es") row.variant.descriptionEs else row.variant.descriptionEn
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Recommended badge
             if (row.variant.isRecommended) {

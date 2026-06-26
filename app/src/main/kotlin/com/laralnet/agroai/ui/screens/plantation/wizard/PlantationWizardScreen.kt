@@ -61,7 +61,7 @@ fun PlantationWizardScreen(
                         if (currentStep == 0) onNavigateBack()
                         else viewModel.previousStep()
                     }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
                     }
                 }
             )

@@ -311,4 +311,39 @@
     <string name="calendar_no_treatments_day">Sin tratamientos programados para este día</string>
     <string name="calendar_permission_rationale">Se necesita permiso de calendario para mostrar los tratamientos programados</string>
     <string name="calendar_grant_permission">Conceder permiso</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Bienvenido a AgroAI</string>
+    <string name="onboarding_welcome_subtitle">Tu asistente agrícola inteligente</string>
+    <string name="onboarding_welcome_desc">Gestiona tus plantaciones, analiza enfermedades con IA local y programa tratamientos con alertas meteorológicas, todo sin conexión.</string>
+    <string name="onboarding_permissions_title">Permisos necesarios</string>
+    <string name="onboarding_permissions_subtitle">AgroAI necesita algunos permisos para funcionar correctamente.</string>
+    <string name="onboarding_permission_camera">Cámara</string>
+    <string name="onboarding_permission_camera_desc">Para fotografiar plantas y cultivos y analizarlos con Gemma</string>
+    <string name="onboarding_permission_location">Ubicación</string>
+    <string name="onboarding_permission_location_desc">Para geolocalizar tus plantaciones y obtener el tiempo local</string>
+    <string name="onboarding_permission_calendar">Calendario</string>
+    <string name="onboarding_permission_calendar_desc">Para añadir tratamientos programados a Google Calendar</string>
+    <string name="onboarding_permission_grant">Conceder</string>
+    <string name="onboarding_permission_granted">Concedido</string>
+    <string name="onboarding_ready_title">¡Todo listo!</string>
+    <string name="onboarding_ready_subtitle">Ya puedes empezar a usar AgroAI</string>
+    <string name="onboarding_ready_feature_plantations">Registra y gestiona tus plantaciones</string>
+    <string name="onboarding_ready_feature_ai">Analiza fotos con IA local (sin conexión)</string>
+    <string name="onboarding_ready_feature_treatments">Programa tratamientos con alertas de tiempo</string>
+    <string name="onboarding_start">Empezar</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_skip">Saltar</string>
+
+    <!-- Accessibility -->
+    <string name="cd_navigate_back">Volver atrás</string>
+    <string name="cd_previous_month">Mes anterior</string>
+    <string name="cd_next_month">Mes siguiente</string>
+    <string name="cd_status_success">Estado: correcto</string>
+    <string name="cd_status_error">Estado: error</string>
+    <string name="cd_run_test">Ejecutar prueba del modelo</string>
+    <string name="cd_treatment_status">Estado del tratamiento</string>
+    <string name="cd_weather_alert">Alerta meteorológica</string>
+    <string name="cd_plantation_location">Ubicación de la plantación</string>
+    <string name="cd_plantation_type">Tipo de plantación</string>
 </resources>
