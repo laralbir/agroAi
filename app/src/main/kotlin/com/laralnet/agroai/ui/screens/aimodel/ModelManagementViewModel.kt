@@ -207,6 +207,11 @@ class ModelManagementViewModel @Inject constructor(
         it.copy(oauthDialogVariant = null, oauthConnecting = false)
     }
 
+    fun onReconnectHuggingFace(variant: ModelVariant) {
+        _uiState.update { it.copy(oauthDialogVariant = variant) }
+        onConnectHuggingFace()
+    }
+
     private fun startDownload(variant: ModelVariant) = viewModelScope.launch {
         downloadHandler.handle(DownloadModelCommand(variant))
             .onFailure { e -> _uiState.update { it.copy(error = e.message) } }

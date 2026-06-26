@@ -11,12 +11,14 @@ import com.laralnet.agroai.aimodel.domain.model.AIModel
 import com.laralnet.agroai.aimodel.domain.model.DownloadState
 import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
+import com.laralnet.agroai.aimodel.domain.repository.HuggingFaceAuthRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import java.io.File
 
 @HiltWorker
@@ -24,7 +26,8 @@ class ModelDownloadWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val repository: AIModelRepository,
-    private val okHttpClient: OkHttpClient
+    private val okHttpClient: OkHttpClient,
+    private val hfAuthRepository: HuggingFaceAuthRepository
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -38,6 +41,7 @@ class ModelDownloadWorker @AssistedInject constructor(
         const val NOTIFICATION_ID = 1001
 
         const val KEY_STATUS = KEY_LOG
+        const val KEY_NEEDS_RECONNECT = "needs_reconnect"
 
         private const val TAG = "ModelDownloadWorker"
         // WorkManager Data hard limit is 10240 bytes; keep log under 8000 chars
@@ -60,57 +64,62 @@ class ModelDownloadWorker @AssistedInject constructor(
 
         Log.d(TAG, "variant=$variantName modelId=$modelId")
         runCatching {
-            val hfToken = inputData.getString(KEY_HF_TOKEN).orEmpty()
-            val tokenDisplay = if (hfToken.isNotBlank())
-                "Bearer hf_***${hfToken.takeLast(4)}"
-            else
-                "(ninguno — se rechazará)"
+            var hfToken = inputData.getString(KEY_HF_TOKEN).orEmpty()
 
             log("=== DESCARGA ${variant.displayName} ===")
             log("Destino: ${destFile.absolutePath}")
             log("")
             log("--- REQUEST ---")
             log("GET ${variant.downloadUrl}")
-            log("Authorization: $tokenDisplay")
+            log("Authorization: ${tokenDisplay(hfToken)}")
 
-            val request = Request.Builder()
-                .url(variant.downloadUrl)
-                .apply { if (hfToken.isNotBlank()) header("Authorization", "Bearer $hfToken") }
-                .build()
+            var response = makeRequest(hfToken, variant.downloadUrl)
 
-            okHttpClient.newCall(request).execute().use { response ->
+            // On 401, attempt one token refresh before failing
+            if (response.code == 401) {
+                log("")
+                log("--- HTTP 401: RENOVACIÓN AUTOMÁTICA DE TOKEN ---")
+                val freshToken = hfAuthRepository.getValidAccessToken()
+                if (freshToken != null && freshToken != hfToken) {
+                    response.close()  // close original 401 response before retrying
+                    hfToken = freshToken
+                    log("Token renovado — reintentando solicitud…")
+                    log("Authorization: ${tokenDisplay(hfToken)}")
+                    response = makeRequest(hfToken, variant.downloadUrl)
+                } else {
+                    log("No se pudo obtener un token válido — se requiere reconexión")
+                    // keep original 401 response — processed below
+                }
+            }
+
+            response.use { resp ->
                 log("")
                 log("--- RESPONSE ---")
-                log("HTTP ${response.code} ${response.message}")
-                response.headers.forEach { (name, value) ->
-                    // Mask any auth-related response headers
-                    log("$name: $value")
-                }
+                log("HTTP ${resp.code} ${resp.message}")
+                resp.headers.forEach { (name, value) -> log("$name: $value") }
 
-                if (!response.isSuccessful) {
-                    val reason = when (response.code) {
-                        401 -> "Token inválido o caducado"
+                if (!resp.isSuccessful) {
+                    val reason = when (resp.code) {
+                        401 -> "Token inválido o caducado — reconecta tu cuenta HuggingFace"
                         403 -> "Acceso denegado — acepta las condiciones de Gemma en HuggingFace"
                         404 -> "Archivo no encontrado — la URL puede haber cambiado"
                         429 -> "Demasiadas solicitudes — espera un momento"
                         else -> "Error inesperado"
                     }
-                    // Log response body so the exact server message appears in panel + Logcat
-                    val errorBody = runCatching {
-                        response.body?.string()?.take(1000)
-                    }.getOrNull()
+                    val errorBody = runCatching { resp.body?.string()?.take(1000) }.getOrNull()
                     log("")
                     log("--- RESPONSE BODY ---")
                     if (!errorBody.isNullOrBlank()) log(errorBody) else log("(vacío)")
                     log("")
                     log("--- ERROR ---")
                     log(reason)
-                    Log.e(TAG, "HTTP ${response.code} — URL: ${variant.downloadUrl}")
+                    if (resp.code == 401) log("[RECONNECT]")
+                    Log.e(TAG, "HTTP ${resp.code} — URL: ${variant.downloadUrl}")
                     Log.e(TAG, "Body: $errorBody")
-                    error("[HTTP ${response.code}] $reason")
+                    error("[HTTP ${resp.code}] $reason")
                 }
 
-                val body = response.body ?: error("Cuerpo de respuesta vacío")
+                val body = resp.body ?: error("Cuerpo de respuesta vacío")
                 val contentLength = body.contentLength()
                 val totalMbStr = if (contentLength > 0) "${contentLength / 1024 / 1024} MB" else "desconocido (chunked)"
 
@@ -184,9 +193,26 @@ class ModelDownloadWorker @AssistedInject constructor(
                     )
                 )
             }.onFailure { dbErr -> Log.e(TAG, "Failed to save FAILED state to DB", dbErr) }
-            Result.failure(workDataOf(KEY_ERROR to (e.message ?: "Error desconocido")))
+            val needsReconnect = log.contains("[RECONNECT]")
+            Result.failure(
+                workDataOf(
+                    KEY_ERROR to (e.message ?: "Error desconocido"),
+                    KEY_NEEDS_RECONNECT to needsReconnect
+                )
+            )
         }
     }
+
+    private fun makeRequest(token: String, url: String): Response {
+        val request = Request.Builder()
+            .url(url)
+            .apply { if (token.isNotBlank()) header("Authorization", "Bearer $token") }
+            .build()
+        return okHttpClient.newCall(request).execute()
+    }
+
+    private fun tokenDisplay(token: String): String =
+        if (token.isNotBlank()) "Bearer hf_***${token.takeLast(4)}" else "(ninguno — se rechazará)"
 
     /** Append a line to the log and push it via setProgress. */
     private suspend fun log(line: String) {

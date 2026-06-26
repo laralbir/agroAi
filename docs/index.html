@@ -1217,7 +1217,19 @@
         </div>
       </div>
 
-      <div class="alert alert-tip" style="margin-top:16px;">
+      <div class="alert alert-danger" style="margin-top:16px;">
+        <span class="alert-icon">🔑</span>
+        <div>
+          <strong class="lang-es">Error 401 — token caducado o revocado</strong>
+          <strong class="lang-en">401 error — expired or revoked token</strong>
+          <span class="lang-es">Si durante la descarga el servidor responde con <strong>HTTP 401</strong>, la app intenta renovar el token de acceso automáticamente usando el refresh token. Si la renovación funciona, la descarga se reintenta de forma transparente.<br><br>
+          Si el refresh también falla (token revocado en HuggingFace, o token manual sin capacidad de renovación), aparece el botón <strong>Reconectar cuenta HuggingFace</strong> en el panel de error del modelo. Al pulsarlo, la app abre el navegador para que vuelvas a autenticarte y relanza la descarga en cuanto se completa el inicio de sesión.</span>
+          <span class="lang-en">If the server returns <strong>HTTP 401</strong> during download, the app automatically tries to renew the access token using the refresh token. If renewal succeeds, the download retries transparently.<br><br>
+          If the refresh also fails (token revoked on HuggingFace, or a manual token without refresh capability), a <strong>Reconnect HuggingFace account</strong> button appears in the model's error panel. Tapping it opens the browser so you can re-authenticate, then restarts the download as soon as sign-in completes.</span>
+        </div>
+      </div>
+
+      <div class="alert alert-tip" style="margin-top:12px;">
         <span class="alert-icon">💡</span>
         <div>
           <strong class="lang-es">Solo Gemma 3 1B disponible actualmente</strong>

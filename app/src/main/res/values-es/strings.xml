@@ -134,6 +134,7 @@
     <string name="model_no_token_dialog_body">Los modelos Gemma están alojados en HuggingFace y requieren un token de acceso gratuito. Introdúcelo a continuación u obtenlo en huggingface.co/settings/tokens.</string>
     <string name="model_save_and_download">Guardar y descargar</string>
     <string name="model_accept_terms">Aceptar condiciones de Gemma en HuggingFace</string>
+    <string name="hf_reconnect_button">Reconectar cuenta HuggingFace</string>
     <!-- HuggingFace OAuth -->
     <string name="model_no_account_title">Cuenta de HuggingFace necesaria</string>
     <string name="model_no_account_subtitle">Conecta tu cuenta de HuggingFace para descargar los modelos Gemma.</string>

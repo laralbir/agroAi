@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.9.0`
+Estado actual: `v0.10.0`
 
 ---
 

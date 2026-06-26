@@ -134,6 +134,7 @@
     <string name="model_no_token_dialog_body">Gemma models are hosted on HuggingFace and require a free access token. Enter your token below or get one on huggingface.co/settings/tokens.</string>
     <string name="model_save_and_download">Save and download</string>
     <string name="model_accept_terms">Accept Gemma terms on HuggingFace</string>
+    <string name="hf_reconnect_button">Reconnect HuggingFace account</string>
     <!-- HuggingFace OAuth -->
     <string name="model_no_account_title">HuggingFace account required</string>
     <string name="model_no_account_subtitle">Connect your HuggingFace account to download Gemma models.</string>

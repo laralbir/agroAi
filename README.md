@@ -39,6 +39,7 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
   - **Gemma 3 1B** — ~0.6 GB, ~2 GB RAM ([litert-community/Gemma3-1B-IT](https://huggingface.co/litert-community/Gemma3-1B-IT))
   - **Gemma 4 E2B** — ~2.5 GB, ~4 GB RAM ([litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm))
 - Conexión con cuenta HuggingFace vía **OAuth 2.0** (sin copiar tokens manualmente)
+- **Recuperación de token automática**: si la descarga falla con HTTP 401, el Worker intenta renovar el token con el refresh token y reintenta; si el refresh también falla, aparece el botón "Reconectar cuenta HuggingFace" que relanza el OAuth y continúa la descarga automáticamente
 - **Prueba de modelo integrada** — verifica que el modelo descargado funciona con una pregunta agrícola de muestra; muestra tiempos de carga e inferencia
 - El primer modelo descargado se activa automáticamente
 - Prompts editables con indicación de nivel de riesgo

@@ -10,6 +10,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.10.0] - 2026-06-26
+
+### Añadido
+- **Renovación automática de token en descarga**: si el servidor HuggingFace devuelve HTTP 401, el Worker intenta renovar el token de acceso con el refresh token antes de fallar. Si la renovación tiene éxito, reintenta la descarga de forma transparente sin que el usuario tenga que hacer nada
+- **Botón "Reconectar cuenta HuggingFace"**: si el refresh del token también falla (token revocado, PAT sin refresh token), aparece el botón *Reconectar cuenta HuggingFace* directamente en el panel de error del modelo afectado. Al pulsarlo, abre el flujo OAuth y relanza la descarga automáticamente al completarse la autenticación
+
+### Técnico
+- `ModelDownloadWorker` inyecta `HuggingFaceAuthRepository`; en 401 llama a `getValidAccessToken()` (que ya maneja refresh interno) antes de marcar el fallo. Si sigue en 401, escribe el marcador `[RECONNECT]` en el log persistido en `lastError`
+- `ModelManagementViewModel.onReconnectHuggingFace(variant)`: guarda la variante como pendiente y delega en el flujo OAuth existente; el observer del `init` block relanza la descarga al recibir la nueva credencial
+- `DownloadLogPanel` detecta `[RECONNECT]` en el texto del log y renderiza el botón de reconexión junto al panel de error (mismo patrón que el botón "Aceptar términos" para 403)
+
+---
+
 ## [0.9.0] - 2026-06-26
 
 ### Añadido

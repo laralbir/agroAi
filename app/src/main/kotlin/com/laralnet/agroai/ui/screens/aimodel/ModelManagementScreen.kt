@@ -139,7 +139,8 @@ fun ModelManagementScreen(
                     onDelete = { row.model?.id?.let { viewModel.onDelete(it) } },
                     onTest = { row.model?.filePath?.let { path ->
                         viewModel.openTestSheet(path, row.variant.displayName)
-                    }}
+                    }},
+                    onReconnect = { viewModel.onReconnectHuggingFace(row.variant) }
                 )
             }
         }
@@ -296,7 +297,8 @@ private fun ModelVariantCard(
     onDownload: () -> Unit,
     onActivate: () -> Unit,
     onDelete: () -> Unit,
-    onTest: () -> Unit
+    onTest: () -> Unit,
+    onReconnect: () -> Unit = {}
 ) {
     val locale = androidx.compose.ui.platform.LocalContext.current.resources.configuration.locales[0]
     val description = if (locale.language == "es") row.variant.descriptionEs else row.variant.descriptionEn
@@ -381,7 +383,9 @@ private fun ModelVariantCard(
                 DownloadLogPanel(
                     log = logText,
                     isFailed = row.downloadState == DownloadState.FAILED,
-                    modelInfoUrl = row.variant.infoUrl
+                    modelInfoUrl = row.variant.infoUrl,
+                    reconnectNeeded = logText.contains("[RECONNECT]"),
+                    onReconnect = onReconnect
                 )
             }
 
@@ -461,7 +465,13 @@ private fun ModelVariantCard(
 }
 
 @Composable
-private fun DownloadLogPanel(log: String, isFailed: Boolean, modelInfoUrl: String) {
+private fun DownloadLogPanel(
+    log: String,
+    isFailed: Boolean,
+    modelInfoUrl: String,
+    reconnectNeeded: Boolean = false,
+    onReconnect: () -> Unit = {}
+) {
     val uriHandler = LocalUriHandler.current
     val is403 = log.contains("403")
     val containerColor = if (isFailed)
@@ -534,6 +544,24 @@ private fun DownloadLogPanel(log: String, isFailed: Boolean, modelInfoUrl: Strin
                     Spacer(Modifier.size(4.dp))
                     Text(
                         text = stringResource(R.string.model_accept_terms),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+
+            if (isFailed && reconnectNeeded) {
+                TextButton(
+                    onClick = onReconnect,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.size(4.dp))
+                    Text(
+                        text = stringResource(R.string.hf_reconnect_button),
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
