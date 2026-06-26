@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,9 +29,22 @@ import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
 @Composable
 fun PhotoAnalysisScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToScheduleTreatment: ((plantationId: String, type: String, title: String, description: String, rawAnalysis: String?) -> Unit)? = null,
     viewModel: PhotoAnalysisViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.scheduleEvent.collect { event ->
+            onNavigateToScheduleTreatment?.invoke(
+                event.plantationId,
+                event.suggestion.type,
+                event.suggestion.type,
+                event.suggestion.description,
+                event.rawAnalysis
+            )
+        }
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -60,23 +74,17 @@ fun PhotoAnalysisScreen(
                 return@Column
             }
 
-            // Photo preview
             uiState.imageUri?.let { uri ->
                 AsyncImage(
                     model = uri,
                     contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp),
+                    modifier = Modifier.fillMaxWidth().height(240.dp),
                     contentScale = ContentScale.Crop
                 )
             } ?: PhotoPlaceholder(modifier = Modifier.fillMaxWidth().height(240.dp))
 
-            // Action buttons
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
@@ -97,7 +105,6 @@ fun PhotoAnalysisScreen(
                 }
             }
 
-            // Analysis result
             if (uiState.isAnalyzing) {
                 Column(
                     modifier = Modifier.padding(32.dp),
@@ -117,20 +124,67 @@ fun PhotoAnalysisScreen(
                 }
             }
 
-            uiState.suggestions.takeIf { it.isNotEmpty() }?.let { suggestions ->
+            uiState.analysisResult?.let { result ->
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        stringResource(R.string.analysis_suggestions),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    suggestions.forEach { suggestion ->
-                        SuggestionCard(
-                            suggestion = suggestion,
-                            onSchedule = { viewModel.scheduleSuggestion(suggestion) }
+                    if (result.species.isNotBlank() || result.generalCondition.isNotBlank() || result.issues.isNotEmpty()) {
+                        Card(modifier = Modifier.fillMaxWidth()) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                if (result.species.isNotBlank()) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(
+                                            stringResource(R.string.analysis_species),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            result.species,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                                if (result.generalCondition.isNotBlank()) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(
+                                            stringResource(R.string.analysis_condition),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(result.generalCondition, style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
+                                if (result.issues.isNotEmpty()) {
+                                    Text(
+                                        stringResource(R.string.analysis_issues),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    result.issues.forEach { issue ->
+                                        Text("• $issue", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (result.suggestions.isNotEmpty()) {
+                        Text(
+                            stringResource(R.string.analysis_suggestions),
+                            style = MaterialTheme.typography.titleMedium
                         )
+                        result.suggestions.forEach { suggestion ->
+                            SuggestionCard(
+                                suggestion = suggestion,
+                                canSchedule = viewModel.plantationId != null,
+                                onSchedule = { viewModel.scheduleSuggestion(suggestion) }
+                            )
+                        }
                     }
                 }
             }
@@ -170,11 +224,17 @@ private fun PhotoPlaceholder(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SuggestionCard(suggestion: TreatmentSuggestion, onSchedule: () -> Unit) {
+private fun SuggestionCard(
+    suggestion: TreatmentSuggestion,
+    canSchedule: Boolean,
+    onSchedule: () -> Unit
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -185,11 +245,16 @@ private fun SuggestionCard(suggestion: TreatmentSuggestion, onSchedule: () -> Un
             }
             Text(suggestion.description, style = MaterialTheme.typography.bodyMedium)
             suggestion.suggestedDate?.let { date ->
-                Text("Suggested: $date", style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "Suggested: $date",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            Button(onClick = onSchedule, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.analysis_schedule_calendar))
+            if (canSchedule) {
+                Button(onClick = onSchedule, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.analysis_schedule_calendar))
+                }
             }
         }
     }

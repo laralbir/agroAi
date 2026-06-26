@@ -29,7 +29,9 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 ### IA Local con Gemma
 - Análisis de fotos de plantas, árboles, frutos y plantaciones
 - Identificación de enfermedades, plagas y necesidades de mantenimiento
-- Sugerencias de tratamientos con opción de agendarlos en Google Calendar
+- Muestra especie detectada, estado general y problemas encontrados
+- Sugerencias de tratamientos con tipo, urgencia y fecha sugerida
+- Botón "Agendar" en cada sugerencia: navega a la pantalla de programación con datos pre-rellenados; el JSON del análisis se guarda junto al tratamiento para trazabilidad
 - Dos SDKs de inferencia en local según el formato del modelo:
   - **MediaPipe Tasks GenAI** (`.task`) — Gemma 3
   - **LiteRT-LM** (`.litertlm`) — Gemma 4 (nuevo formato nativo de Google AI Edge)
@@ -50,8 +52,10 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 ### Meteorología (Open-Meteo)
 - Integración con [Open-Meteo](https://open-meteo.com/) — API pública y gratuita, sin clave API
 - Predicción basada en coordenadas GPS de cada plantación (funciona en cualquier país)
-- Alertas meteorológicas que pueden afectar a tratamientos agendados
-- Actualización automática cada 6 horas
+- **Widget en la pantalla de detalle de plantación**: temperatura actual, condición, humedad y viento
+- **Alertas en el detalle de tratamiento**: aviso destacado si el pronóstico del día programado incluye helada, lluvia intensa, tormenta, granizo o nieve
+- Caché local en Room (tabla `weather_cache`) — datos disponibles sin conexión tras la primera carga
+- Actualización automática cada 6 horas vía WorkManager (requiere conexión)
 
 ### Personalización
 - Temas: claro, oscuro o seguir el sistema

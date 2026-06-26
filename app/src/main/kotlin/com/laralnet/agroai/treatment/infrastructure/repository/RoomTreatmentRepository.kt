@@ -43,6 +43,7 @@ class RoomTreatmentRepository @Inject constructor(
         scheduledAt = Instant.ofEpochMilli(scheduledAt),
         status = status, calendarEventId = calendarEventId,
         calendarAccountEmail = calendarAccountEmail,
+        aiAnalysisResult = aiAnalysisResult,
         createdAt = Instant.ofEpochMilli(createdAt)
     )
 
@@ -58,6 +59,7 @@ class RoomTreatmentRepository @Inject constructor(
         scheduledAt = scheduledAt.toEpochMilli(),
         status = status, calendarEventId = calendarEventId,
         calendarAccountEmail = calendarAccountEmail,
+        aiAnalysisResult = aiAnalysisResult,
         createdAt = createdAt.toEpochMilli()
     )
 

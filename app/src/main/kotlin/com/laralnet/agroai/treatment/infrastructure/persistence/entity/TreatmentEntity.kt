@@ -16,6 +16,7 @@ data class TreatmentEntity(
     val status: TreatmentStatus,
     val calendarEventId: Long?,
     val calendarAccountEmail: String?,
+    val aiAnalysisResult: String?,
     val createdAt: Long
 )
 

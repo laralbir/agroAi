@@ -10,6 +10,39 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.9.0] - 2026-06-26
+
+### Añadido
+- **Widget meteorológico en detalle de plantación**: tarjeta con temperatura actual, condición (emoji), humedad y viento. Se refresca automáticamente al abrir la pantalla y cada 6 horas en background vía `WeatherRefreshWorker`
+- **Alertas de tiempo en detalle de tratamiento**: si el pronóstico para el día programado incluye helada, lluvia intensa, tormenta, granizo o nieve, aparece una tarjeta de alerta (fondo `errorContainer`) junto a la fecha
+- **Análisis de foto — parseo real de Gemma**: la respuesta JSON se parsea correctamente con `kotlinx.serialization` (modo lenient, extrae JSON de markdown code fences y texto libre, fallback si no hay JSON)
+- **Análisis de foto — especie y estado**: `species` y `generalCondition` devueltos por Gemma se muestran como etiquetas en la UI sobre la lista de sugerencias
+- **Análisis de foto — flujo de agendado completo**: el botón *Agendar* en cada sugerencia navega a `ScheduleTreatmentScreen` con tipo, título y descripción pre-rellenados (vía query params URL-encoded). El raw JSON del análisis se guarda en `Treatment.aiAnalysisResult` (nuevo campo en BD)
+- `WeatherRefreshWorker` (`@HiltWorker`) — WorkManager periódico cada 6 horas (requiere conexión); itera todas las plantaciones con coordenadas y refresca su clima en Room
+- `WeatherEntity` + `WeatherDao` — caché Room con serialización Gson; clave = lat/lon redondeada a 2 decimales con `Locale.ROOT`
+- `RefreshWeatherHandler` — handler CQRS para refrescar meteorología de una ubicación
+- `ObserveWeatherQuery` — Flow reactivo sobre la caché Room de meteorología
+- `GetWeatherAlertsQuery` — deriva `WeatherAlert`s a partir de un `WeatherData` y una fecha; mapea condiciones peligrosas a tipo y severidad
+- Campo `aiAnalysisResult: String?` en `Treatment` para almacenar el contexto de la IA que motivó el tratamiento
+
+### Corregido
+- `locationKey` usa `Locale.ROOT` en el format de lat/lon para evitar separador decimal de coma en locales españolas
+
+### Técnico
+- Migración DB v5→v6: tabla `weather_cache`
+- Migración DB v4→v5 (v0.8.0): columna `aiAnalysisResult` en `treatments`
+- `PlantationDetailViewModel` inyecta `ObserveWeatherQuery` y `RefreshWeatherHandler`; expone `weather: StateFlow<WeatherData?>`
+- `TreatmentDetailViewModel` inyecta `PlantationRepository`, `ObserveWeatherQuery` y `GetWeatherAlertsQuery`; expone `weatherAlerts: List<WeatherAlert>`
+- Worker programado en `AgroAIApplication.onCreate()` con `ExistingPeriodicWorkPolicy.UPDATE`
+
+### Tests
+- `OpenMeteoParserTest` — 9 tests (WMO codes: CLEAR, STORM, FROST, HEAVY_RAIN; compass N/E; forecast list; API failure; locationKey Locale)
+- `RefreshWeatherHandlerTest` — 3 tests (delega a repositorio, fallo, coordenadas correctas)
+- `PhotoAnalysisParserTest` — 6 tests (JSON válido, markdown code fence, JSON en prosa, fallback raw, suggestedDate ausente/presente)
+- `PhotoAnalysisViewModelTest` — 7 tests (scheduleSuggestion con/sin plantationId, modelLoaded, analyzePhoto, reset, error)
+
+---
+
 ## [0.8.0] - 2026-06-26
 
 ### Añadido

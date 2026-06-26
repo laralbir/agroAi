@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.8.0`
+Estado actual: `v0.9.0`
 
 ---
 
@@ -123,26 +123,22 @@ Descarga modelo Gemma
 
 ---
 
-## FASE 4 — Análisis de fotos: parseo real y flujo completo
+## ✅ FASE 4 — Análisis de fotos: parseo real y flujo completo _(completada en v0.9.0)_
 
 **Por qué cuarta:** La pantalla existe y el streaming funciona, pero el parseo de la respuesta de Gemma es un stub que ignora el JSON.
 
 ### Fixes en `PhotoAnalysisViewModel`
-- [ ] `parseSuggestions()` — parseo real del JSON que devuelve Gemma:
-  ```
-  { species, issues, treatments: [{type, description, urgency, suggestedDate}], generalCondition }
-  ```
-  Usar `kotlinx.serialization` (ya en dependencias)
-- [ ] `scheduleSuggestion()` — actualmente no-op; debe navegar a `ScheduleTreatmentSheet` con los datos pre-rellenados
-- [ ] Mostrar `species` y `generalCondition` en la UI (actualmente solo se muestra texto raw)
-- [ ] Guardar resultado del análisis en `TreatmentRecord.aiAnalysisResult`
+- [x] `parseSuggestions()` — parseo real del JSON que devuelve Gemma (kotlinx.serialization, lenient, markdown fences, fallback a raw)
+- [x] `scheduleSuggestion()` — navega a `ScheduleTreatmentScreen` con datos pre-rellenados vía URL-encoded query params
+- [x] Mostrar `species` y `generalCondition` en la UI
+- [x] Guardar resultado del análisis en `Treatment.aiAnalysisResult` (columna DB + migración v4→v5); se pasa como `prefillAnalysis` en la URL de navegación
 
 ### Tests
-- [ ] `PhotoAnalysisViewModelTest` — cubre parseo correcto e incorrecto de la respuesta
+- [x] `PhotoAnalysisViewModelTest` — 13 tests: parser (6) + ViewModel (7)
 
 ---
 
-## FASE 5 — Weather (Open-Meteo): caché Room, WorkManager y UI
+## ✅ FASE 5 — Weather (Open-Meteo): caché Room, WorkManager y UI _(completada en v0.9.0)_
 
 **Por qué quinta:** `OpenMeteoWeatherRepository.fetchWeather()` ya funciona (v0.7.0), pero `observeCachedWeather()` devuelve `flowOf(null)` — no hay persistencia en Room ni refresco periódico.
 
@@ -150,22 +146,22 @@ Descarga modelo Gemma
 - [x] `OpenMeteoApiService` — endpoint `/forecast` con variables current y daily, WMO codes
 - [x] `OpenMeteoWeatherRepository.fetchWeather()` — parseo completo de respuesta Open-Meteo
 - [x] `OpenMeteoWeatherRepository` como binding en DI (`RepositoryModule`)
-- [ ] `observeCachedWeather()` — actualmente `flowOf(null)`; implementar con Room (`WeatherEntity`, `WeatherDao`)
-- [ ] `WeatherEntity` + `WeatherDao` + migración de base de datos (version 5)
-- [ ] `WeatherRefreshWorker` — WorkManager que llama `refreshWeather()` cada 6h
-- [ ] Scheduling del Worker en `AgroAIApplication.onCreate()`
+- [x] `observeCachedWeather()` — implementado con Room (`WeatherEntity`, `WeatherDao`)
+- [x] `WeatherEntity` + `WeatherDao` + migración de base de datos (version 6)
+- [x] `WeatherRefreshWorker` — WorkManager que llama `refreshWeather()` cada 6h, requiere red
+- [x] Scheduling del Worker en `AgroAIApplication.onCreate()`
 
 ### Application layer
-- [ ] `WeatherHandlers.kt` — `RefreshWeatherHandler`
-- [ ] `WeatherQueries.kt` — `ObserveWeatherQuery`, `GetWeatherAlertsQuery`
+- [x] `WeatherHandlers.kt` — `RefreshWeatherHandler`
+- [x] `WeatherQueries.kt` — `ObserveWeatherQuery`, `GetWeatherAlertsQuery`
 
 ### UI
-- [ ] Widget de clima en `PlantationDetailScreen` (temperatura, condición, próximas alertas)
-- [ ] Alerta visible en `TreatmentDetailScreen` si hay lluvia/helada en la fecha programada
+- [x] Widget de clima en `PlantationDetailScreen` (temperatura, condición, humedad, viento)
+- [x] Alerta visible en `TreatmentDetailScreen` si hay lluvia intensa/helada/tormenta/granizo/nieve en la fecha programada
 
 ### Tests
-- [ ] Unit test de parseo Open-Meteo (JSON de muestra real)
-- [ ] Unit test de `RefreshWeatherHandler`
+- [x] `OpenMeteoParserTest` — 9 tests (WMO codes, compass, forecast, failure, locationKey)
+- [x] `RefreshWeatherHandlerTest` — 3 tests
 
 ---
 
@@ -202,8 +198,8 @@ Tareas transversales sin bloquear las fases anteriores, pero necesarias antes de
 | 1.5 — Edición de plantaciones | UX básica de gestión | S | ✅ Completada (v0.7.1) |
 | 2 — Treatment handlers + UI | Flujo principal de la app | L | ✅ Completada (v0.8.0) |
 | 3 — Calendar handlers + tab | Integración calendario | M | ✅ Completada |
-| 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ⬜ Pendiente |
-| 5 — Weather Open-Meteo | Alertas y recomendaciones | M | 🔄 Parcial (API ✅, caché ⬜) |
+| 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ✅ Completada (v0.9.0) |
+| 5 — Weather Open-Meteo | Alertas y recomendaciones | M | ✅ Completada (v0.9.0) |
 | 6 — Deuda técnica | Release pública | M | ⬜ Pendiente |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas

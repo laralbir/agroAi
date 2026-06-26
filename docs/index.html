@@ -1265,24 +1265,34 @@
         <div class="step">
           <div class="step-left"><div class="step-number">3</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Revisa las sugerencias</h4>
-            <h4 class="lang-en">Review the suggestions</h4>
-            <p class="lang-es">Gemma devuelve un diagnóstico y una lista de tratamientos recomendados: riego, poda, fertilización, fumigación, cosecha, injerto o trasplante.</p>
-            <p class="lang-en">Gemma returns a diagnosis and a list of recommended treatments: irrigation, pruning, fertilization, fumigation, harvest, grafting, or transplanting.</p>
+            <h4 class="lang-es">Revisa el diagnóstico</h4>
+            <h4 class="lang-en">Review the diagnosis</h4>
+            <p class="lang-es">Aparece una tarjeta con la <strong>especie detectada</strong>, el <strong>estado general</strong> de la planta y los <strong>problemas identificados</strong>. Debajo, la lista de tratamientos recomendados con tipo, descripción y urgencia.</p>
+            <p class="lang-en">A card appears with the <strong>detected species</strong>, the plant's <strong>general condition</strong> and the <strong>identified issues</strong>. Below, the list of recommended treatments with type, description and urgency.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-left"><div class="step-number">4</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Agenda en Google Calendar</h4>
-            <h4 class="lang-en">Schedule in Google Calendar</h4>
-            <p class="lang-es">Pulsa <em>Agendar en Calendario</em> en cualquier sugerencia para crear un evento directamente en tu Google Calendar con la fecha y descripción del tratamiento.</p>
-            <p class="lang-en">Tap <em>Schedule in Calendar</em> on any suggestion to create an event directly in your Google Calendar with the treatment date and description.</p>
+            <h4 class="lang-es">Agenda el tratamiento</h4>
+            <h4 class="lang-en">Schedule the treatment</h4>
+            <p class="lang-es">Pulsa <em>Agendar en Calendario</em> en cualquier sugerencia. La pantalla de programación se abre con el tipo, título y descripción ya rellenos. Elige fecha, hora y (opcionalmente) añade el evento a Google Calendar. El contexto del análisis de Gemma se guarda junto al tratamiento para consulta futura.</p>
+            <p class="lang-en">Tap <em>Schedule in Calendar</em> on any suggestion. The scheduling screen opens with the type, title and description already filled in. Choose the date, time and (optionally) add the event to Google Calendar. Gemma's analysis context is saved with the treatment for future reference.</p>
           </div>
         </div>
       </div>
 
-      <div class="alert alert-danger" style="margin-top:16px;">
+      <div class="alert alert-tip" style="margin-top:16px;">
+        <span class="alert-icon">🌿</span>
+        <div>
+          <strong class="lang-es">Mejor resultado con plantación vinculada</strong>
+          <strong class="lang-en">Better results with a linked plantation</strong>
+          <span class="lang-es">Si accedes al análisis desde el detalle de una plantación (botón 📸 en la cabecera), el botón <em>Agendar</em> aparece en cada sugerencia. Si entras directamente desde la pestaña Análisis, el botón se oculta porque no hay plantación a la que asociar el tratamiento.</span>
+          <span class="lang-en">If you open the analysis from a plantation's detail screen (📸 button in the header), the <em>Schedule</em> button appears on each suggestion. If you open it directly from the Analysis tab, the button is hidden because there is no plantation to associate the treatment with.</span>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" style="margin-top:12px;">
         <span class="alert-icon">🚫</span>
         <div>
           <strong class="lang-es">Sin modelo activo</strong>
@@ -1302,23 +1312,25 @@
       </div>
 
       <div class="card lang-es">
-        <p>AgroAI obtiene predicciones meteorológicas de <strong>Open-Meteo</strong>, una API pública y gratuita que no requiere ninguna clave. El tiempo se consulta automáticamente usando las coordenadas GPS de cada plantación, por lo que funciona en cualquier lugar del mundo.</p>
+        <p>AgroAI obtiene predicciones meteorológicas de <strong>Open-Meteo</strong>, una API pública y gratuita que no requiere ninguna clave. El tiempo se consulta automáticamente usando las coordenadas GPS de cada plantación, se guarda en caché local y se refresca cada 6 horas en segundo plano.</p>
       </div>
       <div class="card lang-en">
-        <p>AgroAI fetches weather forecasts from <strong>Open-Meteo</strong>, a free public API that requires no key. Weather is queried automatically using each plantation's GPS coordinates, so it works anywhere in the world.</p>
+        <p>AgroAI fetches weather forecasts from <strong>Open-Meteo</strong>, a free public API that requires no key. Weather is queried automatically using each plantation's GPS coordinates, cached locally, and refreshed every 6 hours in the background.</p>
       </div>
 
       <ul class="feature-list" style="margin-bottom:16px;">
-        <li class="lang-es">Predicción diaria para los próximos 7 días</li>
-        <li class="lang-en">Daily forecast for the next 7 days</li>
-        <li class="lang-es">Temperatura actual, humedad, viento y precipitación</li>
-        <li class="lang-en">Current temperature, humidity, wind and precipitation</li>
-        <li class="lang-es">Alertas de lluvia, helada o tormenta que afectan a eventos de Google Calendar</li>
-        <li class="lang-en">Rain, frost or storm alerts that affect Google Calendar events</li>
-        <li class="lang-es">Actualización automática cada 6 horas</li>
-        <li class="lang-en">Automatic refresh every 6 hours</li>
-        <li class="lang-es">Sin clave API — funciona desde el primer uso</li>
-        <li class="lang-en">No API key — works from first use</li>
+        <li class="lang-es"><strong>Widget en el detalle de plantación</strong>: temperatura actual, condición (con emoji), humedad y velocidad/dirección del viento</li>
+        <li class="lang-en"><strong>Widget in plantation detail</strong>: current temperature, condition (with emoji), humidity and wind speed/direction</li>
+        <li class="lang-es"><strong>Alertas en el detalle de tratamiento</strong>: tarjeta roja de aviso si el día agendado presenta helada, lluvia intensa, tormenta, granizo o nieve</li>
+        <li class="lang-en"><strong>Alerts in treatment detail</strong>: red warning card if the scheduled day has frost, heavy rain, storm, hail or snow</li>
+        <li class="lang-es">Predicción diaria para los próximos 7 días con temperatura máx/mín, probabilidad de lluvia y UV</li>
+        <li class="lang-en">Daily forecast for the next 7 days with max/min temperature, rain probability and UV index</li>
+        <li class="lang-es">Caché local en Room — disponible sin conexión tras la primera carga</li>
+        <li class="lang-en">Local Room cache — available offline after first load</li>
+        <li class="lang-es">Actualización automática cada 6 horas (requiere conexión)</li>
+        <li class="lang-en">Automatic refresh every 6 hours (requires network)</li>
+        <li class="lang-es">Sin clave API — funciona desde el primer uso en cualquier país</li>
+        <li class="lang-en">No API key — works from first use anywhere in the world</li>
       </ul>
 
       <div class="alert alert-tip">
@@ -1326,8 +1338,8 @@
         <div>
           <strong class="lang-es">Basado en coordenadas GPS</strong>
           <strong class="lang-en">Based on GPS coordinates</strong>
-          <span class="lang-es">El tiempo se descarga automáticamente para las plantaciones que tengan ubicación definida (latitud y longitud). No es necesario introducir ningún código de municipio.</span>
-          <span class="lang-en">Weather is automatically fetched for plantations that have a location defined (latitude and longitude). No municipality code is needed.</span>
+          <span class="lang-es">El widget y las alertas solo aparecen en plantaciones con ubicación definida (latitud y longitud). Configúrala en el asistente de creación o edición de la plantación.</span>
+          <span class="lang-en">The widget and alerts only appear on plantations with a defined location (latitude and longitude). Set it in the plantation creation or editing wizard.</span>
         </div>
       </div>
     </section>

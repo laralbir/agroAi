@@ -25,6 +25,9 @@ import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
 import com.laralnet.agroai.ui.screens.treatment.resolveLabel
+import com.laralnet.agroai.weather.domain.model.CurrentWeather
+import com.laralnet.agroai.weather.domain.model.WeatherCondition
+import com.laralnet.agroai.weather.domain.model.WeatherData
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -45,6 +48,7 @@ fun PlantationDetailScreen(
 
     val plantation by viewModel.plantation.collectAsState()
     val treatments by viewModel.treatments.collectAsState()
+    val weather by viewModel.weather.collectAsState()
 
     Scaffold(
         topBar = {
@@ -86,6 +90,10 @@ fun PlantationDetailScreen(
                 val loc = p.location
                 if (loc.displayAddress.isNotBlank() || loc.hasCoordinates) {
                     item { PlantationLocationCard(location = loc) }
+                }
+
+                weather?.let { w ->
+                    item { WeatherCard(weather = w) }
                 }
 
                 if (p.plants.isNotEmpty()) {
@@ -215,6 +223,69 @@ private fun PlantCard(plant: PlantType) {
             } else null
         )
     }
+}
+
+@Composable
+private fun WeatherCard(weather: WeatherData) {
+    val current = weather.current ?: return
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.weather_today),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    current.condition.toLabel(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Text(
+                "%.1f°C".format(current.temperatureCelsius),
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    stringResource(R.string.weather_humidity, current.humidity),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    stringResource(R.string.weather_wind, "%.0f".format(current.windSpeedKmh), current.windDirection),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+private fun WeatherCondition.toLabel(): String = when (this) {
+    WeatherCondition.CLEAR -> "☀️"
+    WeatherCondition.PARTLY_CLOUDY -> "⛅"
+    WeatherCondition.CLOUDY -> "🌥️"
+    WeatherCondition.OVERCAST -> "☁️"
+    WeatherCondition.LIGHT_RAIN -> "🌦️"
+    WeatherCondition.MODERATE_RAIN -> "🌧️"
+    WeatherCondition.HEAVY_RAIN -> "🌧️"
+    WeatherCondition.STORM -> "⛈️"
+    WeatherCondition.SNOW -> "❄️"
+    WeatherCondition.FROST -> "🌨️"
+    WeatherCondition.FOG -> "🌫️"
+    WeatherCondition.HAIL -> "🌩️"
+    WeatherCondition.WINDY -> "💨"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

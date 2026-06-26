@@ -3,6 +3,7 @@ package com.laralnet.agroai
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.laralnet.agroai.weather.infrastructure.worker.WeatherRefreshWorker
 import dagger.hilt.android.HiltAndroidApp
 import org.osmdroid.config.Configuration as OsmConfiguration
 import java.io.File
@@ -17,6 +18,7 @@ class AgroAIApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         configureOsmdroid()
+        WeatherRefreshWorker.schedule(this)
     }
 
     override val workManagerConfiguration: Configuration

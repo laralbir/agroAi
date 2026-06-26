@@ -19,6 +19,7 @@ data class Treatment(
     val status: TreatmentStatus = TreatmentStatus.PENDING,
     val calendarEventId: Long? = null,
     val calendarAccountEmail: String? = null,
+    val aiAnalysisResult: String? = null,
     val createdAt: Instant = Instant.now()
 )
 

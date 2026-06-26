@@ -11,6 +11,8 @@ import com.laralnet.agroai.plantation.infrastructure.persistence.entity.PlantTyp
 import com.laralnet.agroai.treatment.infrastructure.persistence.dao.TreatmentDao
 import com.laralnet.agroai.treatment.infrastructure.persistence.entity.TreatmentEntity
 import com.laralnet.agroai.treatment.infrastructure.persistence.entity.TreatmentRecordEntity
+import com.laralnet.agroai.weather.infrastructure.persistence.dao.WeatherDao
+import com.laralnet.agroai.weather.infrastructure.persistence.entity.WeatherEntity
 
 @Database(
     entities = [
@@ -19,13 +21,15 @@ import com.laralnet.agroai.treatment.infrastructure.persistence.entity.Treatment
         TreatmentEntity::class,
         TreatmentRecordEntity::class,
         AIModelEntity::class,
-        PromptTemplateEntity::class
+        PromptTemplateEntity::class,
+        WeatherEntity::class
     ],
-    version = 4,
+    version = 6,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun plantationDao(): PlantationDao
     abstract fun treatmentDao(): TreatmentDao
     abstract fun aiModelDao(): AIModelDao
+    abstract fun weatherDao(): WeatherDao
 }

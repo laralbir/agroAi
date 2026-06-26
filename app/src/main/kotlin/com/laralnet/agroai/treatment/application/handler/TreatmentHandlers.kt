@@ -50,7 +50,8 @@ class ScheduleTreatmentHandler @Inject constructor(
             scheduledAt = command.scheduledAt,
             status = TreatmentStatus.PENDING,
             calendarEventId = calendarEventId,
-            calendarAccountEmail = savedAccountEmail ?: command.calendarAccountEmail
+            calendarAccountEmail = savedAccountEmail ?: command.calendarAccountEmail,
+            aiAnalysisResult = command.aiAnalysisResult
         )
         repository.save(treatment)
         eventBus.publish(TreatmentScheduled(treatmentId = treatment.id, plantationId = command.plantationId))

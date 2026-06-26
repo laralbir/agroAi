@@ -28,6 +28,7 @@ import androidx.navigation.navArgument
 import com.laralnet.agroai.R
 import com.laralnet.agroai.ui.screens.aimodel.ModelManagementScreen
 import com.laralnet.agroai.ui.screens.analysis.PhotoAnalysisScreen
+import android.net.Uri
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.plantation.domain.model.Location
@@ -53,12 +54,27 @@ sealed class Screen(val route: String) {
         fun route(id: String) = "plantation/$id/edit"
     }
     data object LocationPicker : Screen("location_picker")
-    data object PhotoAnalysis : Screen("analysis")
+    data object PhotoAnalysis : Screen("analysis?plantationId={plantationId}") {
+        val routeBase = "analysis"
+        fun route(plantationId: String? = null) =
+            if (plantationId != null) "analysis?plantationId=$plantationId" else "analysis"
+    }
     data object Calendar : Screen("calendar")
     data object Settings : Screen("settings")
     data object ModelManagement : Screen("models")
     data object ScheduleTreatment : Screen("plantation/{plantationId}/treatment/new") {
         fun route(plantationId: String) = "plantation/$plantationId/treatment/new"
+        fun routeWithPrefill(
+            plantationId: String,
+            type: String,
+            title: String,
+            description: String,
+            rawAnalysis: String? = null
+        ) = "plantation/$plantationId/treatment/new" +
+            "?prefillType=${Uri.encode(type)}" +
+            "&prefillTitle=${Uri.encode(title.take(120))}" +
+            "&prefillDesc=${Uri.encode(description.take(400))}" +
+            (rawAnalysis?.take(3000)?.let { "&prefillAnalysis=${Uri.encode(it)}" } ?: "")
     }
     data object TreatmentDetail : Screen("treatment/{treatmentId}") {
         fun route(id: String) = "treatment/$id"
@@ -74,6 +90,7 @@ private const val KEY_PICKED_PROVINCE = "picked_province"
 private data class BottomNavItem(
     val screen: Screen,
     val labelRes: Int,
+    val navigateRoute: String = screen.route,
     val icon: @Composable () -> Unit
 )
 
@@ -88,7 +105,11 @@ fun AgroAINavGraph(
         BottomNavItem(Screen.Plantations, R.string.nav_plantations) {
             Icon(Icons.Default.Agriculture, contentDescription = null)
         },
-        BottomNavItem(Screen.PhotoAnalysis, R.string.nav_analysis) {
+        BottomNavItem(
+            screen = Screen.PhotoAnalysis,
+            labelRes = R.string.nav_analysis,
+            navigateRoute = Screen.PhotoAnalysis.routeBase
+        ) {
             Icon(Icons.Default.CameraAlt, contentDescription = null)
         },
         BottomNavItem(Screen.Calendar, R.string.nav_calendar) {
@@ -118,7 +139,7 @@ fun AgroAINavGraph(
                                 it.route == item.screen.route
                             } == true,
                             onClick = {
-                                navController.navigate(item.screen.route) {
+                                navController.navigate(item.navigateRoute) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
@@ -172,7 +193,7 @@ fun AgroAINavGraph(
                     plantationId = id,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAnalysis = {
-                        navController.navigate(Screen.PhotoAnalysis.route)
+                        navController.navigate(Screen.PhotoAnalysis.route(id))
                     },
                     onNavigateToEdit = {
                         navController.navigate(Screen.PlantationEdit.route(id))
@@ -265,9 +286,23 @@ fun AgroAINavGraph(
                     }
                 )
             }
-            composable(Screen.PhotoAnalysis.route) {
+            composable(
+                route = Screen.PhotoAnalysis.route,
+                arguments = listOf(
+                    navArgument("plantationId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) {
                 PhotoAnalysisScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToScheduleTreatment = { plantationId, type, title, description, rawAnalysis ->
+                        navController.navigate(
+                            Screen.ScheduleTreatment.routeWithPrefill(plantationId, type, title, description, rawAnalysis)
+                        )
+                    }
                 )
             }
             composable(Screen.Settings.route) {
@@ -290,8 +325,15 @@ fun AgroAINavGraph(
                 )
             }
             composable(
-                route = Screen.ScheduleTreatment.route,
-                arguments = listOf(navArgument("plantationId") { type = NavType.StringType })
+                route = Screen.ScheduleTreatment.route +
+                    "?prefillType={prefillType}&prefillTitle={prefillTitle}&prefillDesc={prefillDesc}&prefillAnalysis={prefillAnalysis}",
+                arguments = listOf(
+                    navArgument("plantationId") { type = NavType.StringType },
+                    navArgument("prefillType") { type = NavType.StringType; defaultValue = ""; nullable = true },
+                    navArgument("prefillTitle") { type = NavType.StringType; defaultValue = ""; nullable = true },
+                    navArgument("prefillDesc") { type = NavType.StringType; defaultValue = ""; nullable = true },
+                    navArgument("prefillAnalysis") { type = NavType.StringType; defaultValue = ""; nullable = true }
+                )
             ) {
                 ScheduleTreatmentScreen(
                     onNavigateBack = { navController.popBackStack() },

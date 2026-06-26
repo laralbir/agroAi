@@ -20,6 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
+import com.laralnet.agroai.weather.domain.model.WeatherAlert
+import com.laralnet.agroai.weather.domain.model.WeatherAlertType
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -131,6 +133,10 @@ fun TreatmentDetailScreen(
                     )
                 }
 
+                state.weatherAlerts.forEach { alert ->
+                    WeatherAlertCard(alert = alert)
+                }
+
                 if (treatment.calendarEventId != null) {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         ListItem(
@@ -230,4 +236,40 @@ private fun TreatmentInfoCard(treatment: Treatment, context: android.content.Con
 private fun formatInstant(treatment: Treatment): String {
     val ldt = LocalDateTime.ofInstant(treatment.scheduledAt, ZoneId.systemDefault())
     return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).format(ldt)
+}
+
+@Composable
+private fun WeatherAlertCard(alert: WeatherAlert) {
+    val message = stringResource(
+        when (alert.type) {
+            WeatherAlertType.FROST -> R.string.weather_alert_frost
+            WeatherAlertType.HEAVY_RAIN -> R.string.weather_alert_heavy_rain
+            WeatherAlertType.STORM -> R.string.weather_alert_storm
+            WeatherAlertType.HAIL -> R.string.weather_alert_hail
+            WeatherAlertType.SNOW -> R.string.weather_alert_snow
+            else -> R.string.weather_alert_generic
+        }
+    )
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        ListItem(
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.errorContainer
+            ),
+            leadingContent = {
+                Text("⚠️", style = MaterialTheme.typography.titleMedium)
+            },
+            headlineContent = {
+                Text(
+                    message,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        )
+    }
 }

@@ -34,7 +34,8 @@ data class ScheduleTreatmentState(
     val isLoadingCalendars: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val savedId: String? = null
+    val savedId: String? = null,
+    val aiAnalysisResult: String? = null
 )
 
 @HiltViewModel
@@ -44,9 +45,21 @@ class ScheduleTreatmentViewModel @Inject constructor(
     private val getCalendarsQuery: GetCalendarsQuery
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(
-        ScheduleTreatmentState(plantationId = savedStateHandle["plantationId"] ?: "")
-    )
+    private val _state = MutableStateFlow(run {
+        val prefillType = (savedStateHandle.get<String>("prefillType") ?: "").let { raw ->
+            TreatmentType.entries.firstOrNull { it.name == raw }
+        }
+        val prefillTitle = savedStateHandle.get<String>("prefillTitle") ?: ""
+        val prefillDesc = savedStateHandle.get<String>("prefillDesc") ?: ""
+        val prefillAnalysis = savedStateHandle.get<String>("prefillAnalysis")?.ifBlank { null }
+        ScheduleTreatmentState(
+            plantationId = savedStateHandle["plantationId"] ?: "",
+            type = prefillType ?: TreatmentType.OTRO,
+            title = prefillTitle,
+            description = prefillDesc,
+            aiAnalysisResult = prefillAnalysis
+        )
+    })
     val state: StateFlow<ScheduleTreatmentState> = _state.asStateFlow()
 
     fun setType(type: TreatmentType) = _state.update { s ->
@@ -98,7 +111,8 @@ class ScheduleTreatmentViewModel @Inject constructor(
                 description = s.description,
                 scheduledAt = scheduledAt,
                 calendarAccountEmail = s.calendarEmail.ifBlank { null },
-                addToCalendar = s.addToCalendar && s.calendarEmail.isNotBlank()
+                addToCalendar = s.addToCalendar && s.calendarEmail.isNotBlank(),
+                aiAnalysisResult = s.aiAnalysisResult
             )
         ).onSuccess { treatment ->
             _state.update { it.copy(isLoading = false, savedId = treatment.id) }

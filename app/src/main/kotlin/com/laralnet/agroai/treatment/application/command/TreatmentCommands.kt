@@ -10,7 +10,8 @@ data class ScheduleTreatmentCommand(
     val description: String = "",
     val scheduledAt: Instant,
     val calendarAccountEmail: String? = null,
-    val addToCalendar: Boolean = false
+    val addToCalendar: Boolean = false,
+    val aiAnalysisResult: String? = null
 )
 
 data class CompleteTreatmentCommand(

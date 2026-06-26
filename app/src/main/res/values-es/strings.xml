@@ -190,6 +190,29 @@
     <string name="weather_no_location">Define una ubicación para tu plantación para ver los datos meteorológicos</string>
     <string name="weather_today">Hoy</string>
     <string name="weather_forecast">Previsión</string>
+    <string name="weather_feels_like">Sensación %s°C</string>
+    <string name="weather_humidity">Humedad %d%%</string>
+    <string name="weather_wind">Viento %s km/h %s</string>
+    <string name="weather_precipitation">Precip. %s mm</string>
+    <string name="weather_alert_frost">Riesgo de helada el día programado</string>
+    <string name="weather_alert_heavy_rain">Lluvia intensa el día programado</string>
+    <string name="weather_alert_storm">Tormenta el día programado</string>
+    <string name="weather_alert_hail">Granizo el día programado</string>
+    <string name="weather_alert_snow">Nieve el día programado</string>
+    <string name="weather_alert_generic">Tiempo adverso el día programado</string>
+    <string name="weather_condition_clear">Despejado</string>
+    <string name="weather_condition_partly_cloudy">Parcialmente nublado</string>
+    <string name="weather_condition_cloudy">Nublado</string>
+    <string name="weather_condition_overcast">Cubierto</string>
+    <string name="weather_condition_light_rain">Lluvia ligera</string>
+    <string name="weather_condition_moderate_rain">Lluvia moderada</string>
+    <string name="weather_condition_heavy_rain">Lluvia intensa</string>
+    <string name="weather_condition_storm">Tormenta</string>
+    <string name="weather_condition_snow">Nieve</string>
+    <string name="weather_condition_frost">Helada</string>
+    <string name="weather_condition_fog">Niebla</string>
+    <string name="weather_condition_hail">Granizo</string>
+    <string name="weather_condition_windy">Ventoso</string>
 
     <!-- History -->
     <string name="history_title">Historial</string>
@@ -227,6 +250,9 @@
 
     <!-- Analysis -->
     <string name="analysis_select_photo">Toma o selecciona una foto</string>
+    <string name="analysis_species">Especie:</string>
+    <string name="analysis_condition">Estado:</string>
+    <string name="analysis_issues">Problemas detectados:</string>
 
     <!-- Model download log -->
     <string name="model_download_log">Registro de descarga</string>
