@@ -4,12 +4,14 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Warning
@@ -22,31 +24,41 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.laralnet.agroai.R
-import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
-import com.laralnet.agroai.treatment.domain.model.TreatmentType
-import com.laralnet.agroai.ui.components.SimpleMarkdownText
 import java.io.File
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoAnalysisScreen(
     onNavigateBack: () -> Unit,
     onNavigateToScheduleTreatment: ((plantationId: String, type: String, title: String, description: String, rawAnalysis: String?) -> Unit)? = null,
+    onNavigateToResult: ((analysisId: String) -> Unit)? = null,
     viewModel: PhotoAnalysisViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // Navigate to result screen when analysis completes and is saved
+    LaunchedEffect(Unit) {
+        viewModel.navigateToResult.collect { id ->
+            onNavigateToResult?.invoke(id)
+        }
+    }
+
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> uri?.let { viewModel.setImageUri(it) } }
 
-    // Camera capture — TakePicture writes to a cached file via FileProvider
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
@@ -62,6 +74,14 @@ fun PhotoAnalysisScreen(
         )
         cameraUri = uri
         cameraLauncher.launch(uri)
+    }
+
+    // Analysis-in-progress modal
+    if (uiState.isAnalyzing) {
+        AnalysisProgressDialog(
+            wordCount = uiState.streamingText.split(Regex("\\s+")).count { it.isNotBlank() },
+            onCancel = { viewModel.cancelAnalysis() }
+        )
     }
 
     Scaffold(
@@ -222,86 +242,6 @@ fun PhotoAnalysisScreen(
                 )
             }
 
-            // ---- Progress ----
-            if (uiState.isAnalyzing) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    CircularProgressIndicator()
-                    Text(stringResource(R.string.analysis_analyzing))
-                }
-            }
-
-            // ---- Analysis result ----
-            uiState.analysisResult?.let { result ->
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Full markdown response (strips the JSON block visually)
-                    val displayText = result.rawResponse
-                        .substringBefore("```json").trimEnd()
-                        .ifBlank { result.rawResponse }
-                    if (displayText.isNotBlank()) {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            SimpleMarkdownText(
-                                text = displayText,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
-
-                    // Structured action cards
-                    if (result.suggestions.isNotEmpty()) {
-                        Text(
-                            stringResource(R.string.analysis_suggestions),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                        result.suggestions.forEach { suggestion ->
-                            SuggestionCard(
-                                suggestion = suggestion,
-                                onSchedule = if (viewModel.plantationId != null &&
-                                    onNavigateToScheduleTreatment != null
-                                ) {
-                                    {
-                                        onNavigateToScheduleTreatment.invoke(
-                                            viewModel.plantationId!!,
-                                            suggestion.type,
-                                            suggestion.title.ifBlank { suggestion.type },
-                                            suggestion.description,
-                                            result.rawResponse.take(3000)
-                                        )
-                                    }
-                                } else null
-                            )
-                        }
-                    } else {
-                        // Fallback: single schedule button when model didn't produce structured actions
-                        val pid = viewModel.plantationId
-                        if (pid != null && onNavigateToScheduleTreatment != null) {
-                            OutlinedButton(
-                                onClick = {
-                                    onNavigateToScheduleTreatment.invoke(
-                                        pid, "OTRO", "AI Analysis",
-                                        result.rawResponse.take(400),
-                                        result.rawResponse.take(3000)
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text(stringResource(R.string.analysis_schedule_calendar))
-                            }
-                        }
-                    }
-                }
-            }
-
             uiState.error?.let { error ->
                 Text(
                     text = error,
@@ -310,79 +250,119 @@ fun PhotoAnalysisScreen(
                 )
             }
 
+            // ---- Recent analyses history ----
+            if (uiState.recentAnalyses.isNotEmpty()) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+                Text(
+                    stringResource(R.string.analysis_history_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+                Spacer(Modifier.height(4.dp))
+                uiState.recentAnalyses.forEach { record ->
+                    val dateStr = DateTimeFormatter
+                        .ofLocalizedDateTime(FormatStyle.SHORT)
+                        .withZone(ZoneId.systemDefault())
+                        .format(record.createdAt)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .clickable { onNavigateToResult?.invoke(record.id) },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                dateStr,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (!record.plantationName.isNullOrBlank()) {
+                                Text(
+                                    buildString {
+                                        append(record.plantationName)
+                                        if (!record.plantTypeName.isNullOrBlank()) {
+                                            append(" · ")
+                                            append(record.plantTypeName)
+                                        }
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            val preview = record.rawResponse
+                                .substringBefore("```json").trimEnd()
+                                .take(120)
+                                .replace('\n', ' ')
+                            if (preview.isNotBlank()) {
+                                Text(
+                                    preview,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(24.dp))
         }
     }
 }
 
-// ---- Suggestion card ----
+// ---- Analysis progress modal ----
 @Composable
-private fun SuggestionCard(
-    suggestion: TreatmentSuggestion,
-    onSchedule: (() -> Unit)?
+private fun AnalysisProgressDialog(
+    wordCount: Int,
+    onCancel: () -> Unit
 ) {
-    val type = TreatmentType.entries.firstOrNull { it.name == suggestion.type } ?: TreatmentType.OTRO
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = MaterialTheme.shapes.large
         ) {
-            Text(type.emoji(), style = MaterialTheme.typography.titleLarge)
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                val titleText = suggestion.title.ifBlank {
-                    type.name.lowercase().replaceFirstChar { it.uppercaseChar() }
-                }
-                Text(titleText, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                if (suggestion.description.isNotBlank()) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    stringResource(R.string.analysis_analyzing),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                if (wordCount > 0) {
                     Text(
-                        suggestion.description,
+                        stringResource(R.string.analysis_words_generated, wordCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 2.dp)) {
-                    if (suggestion.urgency.isNotBlank()) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text(suggestion.urgency, style = MaterialTheme.typography.labelSmall) }
-                        )
-                    }
-                    suggestion.suggestedDate?.let { date ->
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text("📅 $date", style = MaterialTheme.typography.labelSmall) }
-                        )
-                    }
-                }
-                if (onSchedule != null) {
-                    OutlinedButton(
-                        onClick = onSchedule,
-                        modifier = Modifier.padding(top = 2.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                    ) {
-                        Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(14.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.analysis_schedule_calendar),
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
+                OutlinedButton(onClick = onCancel) {
+                    Text(stringResource(R.string.analysis_cancel))
                 }
             }
         }
     }
-}
-
-private fun TreatmentType.emoji() = when (this) {
-    TreatmentType.RIEGO -> "💧"
-    TreatmentType.PODA -> "✂️"
-    TreatmentType.COSECHA -> "🌾"
-    TreatmentType.FERTILIZACION -> "🧪"
-    TreatmentType.FUMIGACION -> "🌫️"
-    TreatmentType.INJERTO -> "🌿"
-    TreatmentType.TRANSPLANTE -> "🪴"
-    TreatmentType.OTRO -> "📋"
 }
 
 // ---- Plantation dropdown ----

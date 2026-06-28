@@ -11,15 +11,17 @@ import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 import com.laralnet.agroai.aimodel.infrastructure.gemma.GemmaInferenceEngine
 import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
 import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
+import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisHandler
+import com.laralnet.agroai.photoanalysis.application.query.ObserveAnalysesQuery
+import com.laralnet.agroai.photoanalysis.domain.model.AnalysisRecord
 import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
 import com.laralnet.agroai.weather.application.handler.RefreshWeatherHandler
 import com.laralnet.agroai.weather.application.query.ObserveWeatherQuery
 import com.laralnet.agroai.util.MainDispatcherRule
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.just
-import io.mockk.Runs
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -145,6 +147,8 @@ class PhotoAnalysisViewModelTest {
     private val plantationRepository: PlantationRepository = mockk(relaxed = true)
     private val observeWeatherQuery: ObserveWeatherQuery = mockk(relaxed = true)
     private val refreshWeatherHandler: RefreshWeatherHandler = mockk(relaxed = true)
+    private val saveAnalysisHandler: SaveAnalysisHandler = mockk(relaxed = true)
+    private val observeAnalysesQuery: ObserveAnalysesQuery = mockk(relaxed = true)
     private val context: Context = mockk(relaxed = true)
     private val sharedPrefs: SharedPreferences = mockk(relaxed = true)
 
@@ -153,7 +157,11 @@ class PhotoAnalysisViewModelTest {
         every { sharedPrefs.getString(any(), any()) } returns "ENGLISH"
         every { plantationRepository.observeAll() } returns flowOf(emptyList())
         coEvery { observeWeatherQuery.invoke(any(), any()) } returns flowOf(null)
-        coEvery { refreshWeatherHandler.handle(any(), any()) } just Runs
+        coJustRun { refreshWeatherHandler.handle(any(), any()) }
+        every { observeAnalysesQuery.invoke(any()) } returns flowOf(emptyList())
+        coEvery { saveAnalysisHandler.handle(any()) } returns Result.success(
+            AnalysisRecord(plantationId = null, plantTypeId = null, plantationName = null, plantTypeName = null, rawResponse = "")
+        )
 
         val handle = if (plantationId != null)
             SavedStateHandle(mapOf("plantationId" to plantationId))
@@ -166,7 +174,9 @@ class PhotoAnalysisViewModelTest {
             modelRepository = modelRepository,
             plantationRepository = plantationRepository,
             observeWeatherQuery = observeWeatherQuery,
-            refreshWeatherHandler = refreshWeatherHandler
+            refreshWeatherHandler = refreshWeatherHandler,
+            saveAnalysisHandler = saveAnalysisHandler,
+            observeAnalysesQuery = observeAnalysesQuery
         )
     }
 

@@ -10,6 +10,10 @@ import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
 import com.laralnet.agroai.aimodel.infrastructure.gemma.GemmaInferenceEngine
 import com.laralnet.agroai.aimodel.infrastructure.gemma.PhotoAnalysisResult
 import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
+import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisCommand
+import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisHandler
+import com.laralnet.agroai.photoanalysis.application.query.ObserveAnalysesQuery
+import com.laralnet.agroai.photoanalysis.domain.model.AnalysisRecord
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
@@ -18,7 +22,9 @@ import com.laralnet.agroai.weather.application.query.ObserveWeatherQuery
 import com.laralnet.agroai.weather.domain.model.WeatherData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,7 +34,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -50,7 +55,8 @@ data class PhotoAnalysisUiState(
     val plantations: List<Plantation> = emptyList(),
     val selectedPlantationId: String? = null,
     val selectedPlantTypeId: String? = null,
-    val userQuestion: String = ""
+    val userQuestion: String = "",
+    val recentAnalyses: List<AnalysisRecord> = emptyList()
 )
 
 data class ScheduleNavEvent(
@@ -68,7 +74,9 @@ class PhotoAnalysisViewModel @Inject constructor(
     private val modelRepository: AIModelRepository,
     private val plantationRepository: PlantationRepository,
     private val observeWeatherQuery: ObserveWeatherQuery,
-    private val refreshWeatherHandler: RefreshWeatherHandler
+    private val refreshWeatherHandler: RefreshWeatherHandler,
+    private val saveAnalysisHandler: SaveAnalysisHandler,
+    private val observeAnalysesQuery: ObserveAnalysesQuery
 ) : ViewModel() {
 
     // Pre-selected from nav args (e.g. from PlantCard "Analyze" button)
@@ -89,6 +97,11 @@ class PhotoAnalysisViewModel @Inject constructor(
 
     private val _scheduleEvent = Channel<ScheduleNavEvent>(Channel.BUFFERED)
     val scheduleEvent = _scheduleEvent.receiveAsFlow()
+
+    private val _navigateToResult = Channel<String>(Channel.BUFFERED)
+    val navigateToResult = _navigateToResult.receiveAsFlow()
+
+    private var analysisJob: Job? = null
 
     // All plantations — for the dropdown
     private val plantations: StateFlow<List<Plantation>> = plantationRepository.observeAll()
@@ -128,6 +141,15 @@ class PhotoAnalysisViewModel @Inject constructor(
                 Triple(pId, ptId, q)
             }.collect { (pId, ptId, q) ->
                 _uiState.update { it.copy(selectedPlantationId = pId, selectedPlantTypeId = ptId, userQuestion = q) }
+            }
+        }
+
+        // Observe recent analyses filtered by selected plantation
+        viewModelScope.launch {
+            _selectedPlantationId.flatMapLatest { pid ->
+                observeAnalysesQuery(pid)
+            }.collect { records ->
+                _uiState.update { it.copy(recentAnalyses = records) }
             }
         }
 
@@ -181,54 +203,87 @@ class PhotoAnalysisViewModel @Inject constructor(
         }
     }
 
+    /** Cancel an in-progress analysis. */
+    fun cancelAnalysis() {
+        analysisJob?.cancel()
+        analysisJob = null
+        _uiState.update { it.copy(isAnalyzing = false, streamingText = "", error = null) }
+    }
+
     /** Start analysis using the stored imageUri. Must be called from the Analyze button. */
-    fun analyzePhoto() = viewModelScope.launch {
-        val uri = _uiState.value.imageUri ?: return@launch
-        _uiState.update {
-            it.copy(isAnalyzing = true, analysisResult = null, error = null, streamingText = "")
-        }
+    fun analyzePhoto() {
+        analysisJob?.cancel()
+        analysisJob = viewModelScope.launch {
+            val uri = _uiState.value.imageUri ?: return@launch
+            _uiState.update {
+                it.copy(isAnalyzing = true, analysisResult = null, error = null, streamingText = "")
+            }
 
-        val plantation = selectedPlantation.value
-        val plantType = plantation?.plants?.firstOrNull { it.id == _selectedPlantTypeId.value }
-        val weather = currentWeather.value
-        val lang = resolveLanguage()
+            val plantation = selectedPlantation.value
+            val plantType = plantation?.plants?.firstOrNull { it.id == _selectedPlantTypeId.value }
+            val weather = currentWeather.value
+            val lang = resolveLanguage()
 
-        val baseTemplate = modelRepository.findPromptTemplate("photo_analysis")
-            ?: PromptTemplate.photoAnalysisDefault()
+            val baseTemplate = modelRepository.findPromptTemplate("photo_analysis")
+                ?: PromptTemplate.photoAnalysisDefault()
 
-        val enrichedPrompt = buildEnrichedPrompt(
-            baseTemplate = baseTemplate.content,
-            plantation = plantation,
-            plantType = plantType,
-            weather = weather,
-            userQuestion = _userQuestion.value.trim(),
-            language = lang
-        )
-
-        val responseBuilder = StringBuilder()
-
-        runCatching {
-            gemmaEngine.analyzePhoto(uri, baseTemplate.systemContext, enrichedPrompt)
-
-                .collect { chunk ->
-                    responseBuilder.append(chunk)
-                    _uiState.update { it.copy(streamingText = responseBuilder.toString()) }
-                }
-        }.onFailure { e ->
-            _uiState.update { it.copy(isAnalyzing = false, error = e.message, streamingText = "") }
-            return@launch
-        }
-
-        val fullResponse = responseBuilder.toString()
-        val result = parsePhotoAnalysisResponse(fullResponse)
-
-        _uiState.update { s ->
-            s.copy(
-                isAnalyzing = false,
-                rawResponse = fullResponse,
-                analysisResult = result,
-                streamingText = ""
+            val enrichedPrompt = buildEnrichedPrompt(
+                baseTemplate = baseTemplate.content,
+                plantation = plantation,
+                plantType = plantType,
+                weather = weather,
+                userQuestion = _userQuestion.value.trim(),
+                language = lang
             )
+
+            val responseBuilder = StringBuilder()
+
+            val collectResult = runCatching {
+                gemmaEngine.analyzePhoto(uri, baseTemplate.systemContext, enrichedPrompt)
+                    .collect { chunk ->
+                        responseBuilder.append(chunk)
+                        _uiState.update { it.copy(streamingText = responseBuilder.toString()) }
+                    }
+            }
+
+            if (collectResult.exceptionOrNull() is CancellationException) {
+                throw collectResult.exceptionOrNull()!!
+            }
+
+            collectResult.onFailure { e ->
+                _uiState.update { it.copy(isAnalyzing = false, error = e.message, streamingText = "") }
+                return@launch
+            }
+
+            val fullResponse = responseBuilder.toString()
+            val result = parsePhotoAnalysisResponse(fullResponse)
+
+            // Persist the analysis record
+            val saveResult = saveAnalysisHandler.handle(
+                SaveAnalysisCommand(
+                    plantationId = plantation?.id,
+                    plantTypeId = plantType?.id,
+                    plantationName = plantation?.name,
+                    plantTypeName = plantType?.let { pt ->
+                        if (pt.variety.isNotBlank()) "${pt.name} · ${pt.variety}" else pt.name
+                    },
+                    rawResponse = fullResponse
+                )
+            )
+
+            _uiState.update { s ->
+                s.copy(
+                    isAnalyzing = false,
+                    rawResponse = fullResponse,
+                    analysisResult = result,
+                    streamingText = ""
+                )
+            }
+
+            // Navigate to result screen
+            saveResult.onSuccess { record ->
+                _navigateToResult.send(record.id)
+            }
         }
     }
 

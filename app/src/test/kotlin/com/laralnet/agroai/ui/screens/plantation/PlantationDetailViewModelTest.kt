@@ -12,10 +12,8 @@ import com.laralnet.agroai.ui.screens.plantation.detail.PlantationDetailViewMode
 import com.laralnet.agroai.util.MainDispatcherRule
 import com.laralnet.agroai.weather.application.handler.RefreshWeatherHandler
 import com.laralnet.agroai.weather.application.query.ObserveWeatherQuery
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
@@ -26,6 +24,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
+import java.time.Instant
 
 class PlantationDetailViewModelTest {
 
@@ -46,17 +45,22 @@ class PlantationDetailViewModelTest {
         updatePlantationHandler = updatePlantationHandler
     )
 
-    private fun plantation(plants: List<PlantType> = emptyList()) = Plantation(
+    private fun plantation(plants: List<PlantType> = emptyList()) = Plantation.reconstitute(
         id = "p1",
         name = "Test Plantation",
         type = PlantationType.HUERTA,
         location = Location(),
         areaSqMeters = 100.0,
-        plants = plants
+        plants = plants,
+        notes = "",
+        googleAccountEmail = null,
+        createdAt = Instant.now(),
+        updatedAt = Instant.now()
     )
 
     private fun plantType(id: String = "pt1", name: String = "Tomato") = PlantType(
         id = id,
+        plantationId = "p1",
         name = name,
         variety = "",
         count = 10
@@ -97,8 +101,7 @@ class PlantationDetailViewModelTest {
         coEvery { treatmentRepository.observeByPlantation("p1") } returns flowOf(emptyList())
         coEvery { updatePlantationHandler.handle(any()) } returns Result.success(Unit)
 
-        // After delete, repository returns the plantation without pt1
-        val pAfterDelete = p.copy(plants = listOf(pt2))
+        val pAfterDelete = p.update(plants = listOf(pt2))
         coEvery { plantationRepository.findById("p1") } returnsMany listOf(p, pAfterDelete)
 
         val vm = viewModel()
@@ -134,7 +137,7 @@ class PlantationDetailViewModelTest {
         coEvery { treatmentRepository.observeByPlantation("p1") } returns flowOf(emptyList())
         coEvery { updatePlantationHandler.handle(any()) } returns Result.success(Unit)
 
-        val pAfterDelete = p.copy(plants = emptyList())
+        val pAfterDelete = p.update(plants = emptyList())
         coEvery { plantationRepository.findById("p1") } returnsMany listOf(p, pAfterDelete)
 
         val vm = viewModel()
@@ -156,7 +159,7 @@ class PlantationDetailViewModelTest {
         coEvery { updatePlantationHandler.handle(any()) } returns Result.success(Unit)
 
         val updated = original.copy(name = "Cherry Tomato", count = 20)
-        val pAfterUpdate = p.copy(plants = listOf(updated))
+        val pAfterUpdate = p.update(plants = listOf(updated))
         coEvery { plantationRepository.findById("p1") } returnsMany listOf(p, pAfterUpdate)
 
         val vm = viewModel()

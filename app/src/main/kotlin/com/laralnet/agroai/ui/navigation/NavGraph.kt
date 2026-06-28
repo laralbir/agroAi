@@ -31,6 +31,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.laralnet.agroai.R
 import com.laralnet.agroai.ui.screens.aimodel.ModelManagementScreen
+import com.laralnet.agroai.ui.screens.analysis.AnalysisResultScreen
 import com.laralnet.agroai.ui.screens.analysis.PhotoAnalysisScreen
 import android.net.Uri
 import androidx.compose.runtime.LaunchedEffect
@@ -91,6 +92,9 @@ sealed class Screen(val route: String) {
     }
     data object TreatmentDetail : Screen("treatment/{treatmentId}") {
         fun route(id: String) = "treatment/$id"
+    }
+    data object AnalysisResult : Screen("analysis/result/{analysisId}") {
+        fun route(id: String) = "analysis/result/$id"
     }
     data object Onboarding : Screen("onboarding")
     /** Silent router — navigates immediately to Onboarding or Home, never shown to the user. */
@@ -346,6 +350,22 @@ fun AgroAINavGraph(
                 )
             ) {
                 PhotoAnalysisScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToScheduleTreatment = { plantationId, type, title, description, rawAnalysis ->
+                        navController.navigate(
+                            Screen.ScheduleTreatment.routeWithPrefill(plantationId, type, title, description, rawAnalysis)
+                        )
+                    },
+                    onNavigateToResult = { analysisId ->
+                        navController.navigate(Screen.AnalysisResult.route(analysisId))
+                    }
+                )
+            }
+            composable(
+                route = Screen.AnalysisResult.route,
+                arguments = listOf(navArgument("analysisId") { type = NavType.StringType })
+            ) {
+                AnalysisResultScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToScheduleTreatment = { plantationId, type, title, description, rawAnalysis ->
                         navController.navigate(

@@ -6,6 +6,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.AIModelDao
 import com.laralnet.agroai.database.AppDatabase
+import com.laralnet.agroai.photoanalysis.infrastructure.persistence.dao.AnalysisRecordDao
 import com.laralnet.agroai.plantation.infrastructure.persistence.dao.PlantationDao
 import com.laralnet.agroai.treatment.infrastructure.persistence.dao.TreatmentDao
 import com.laralnet.agroai.weather.infrastructure.persistence.dao.WeatherDao
@@ -63,6 +64,23 @@ private val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+// Persistent analysis history — stores raw LLM response per analysis session.
+private val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """CREATE TABLE IF NOT EXISTS analysis_records (
+                id TEXT NOT NULL PRIMARY KEY,
+                plantationId TEXT,
+                plantTypeId TEXT,
+                plantationName TEXT,
+                plantTypeName TEXT,
+                rawResponse TEXT NOT NULL,
+                createdAtEpochMs INTEGER NOT NULL
+            )"""
+        )
+    }
+}
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -71,7 +89,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "agroai.db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
 
     @Provides
@@ -85,4 +103,7 @@ object DatabaseModule {
 
     @Provides
     fun provideWeatherDao(db: AppDatabase): WeatherDao = db.weatherDao()
+
+    @Provides
+    fun provideAnalysisRecordDao(db: AppDatabase): AnalysisRecordDao = db.analysisRecordDao()
 }

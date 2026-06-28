@@ -5,6 +5,8 @@ import androidx.room.RoomDatabase
 import com.laralnet.agroai.aimodel.infrastructure.persistence.AIModelEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.PromptTemplateEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.AIModelDao
+import com.laralnet.agroai.photoanalysis.infrastructure.persistence.dao.AnalysisRecordDao
+import com.laralnet.agroai.photoanalysis.infrastructure.persistence.entity.AnalysisRecordEntity
 import com.laralnet.agroai.plantation.infrastructure.persistence.dao.PlantationDao
 import com.laralnet.agroai.plantation.infrastructure.persistence.entity.PlantationEntity
 import com.laralnet.agroai.plantation.infrastructure.persistence.entity.PlantTypeEntity
@@ -22,9 +24,10 @@ import com.laralnet.agroai.weather.infrastructure.persistence.entity.WeatherEnti
         TreatmentRecordEntity::class,
         AIModelEntity::class,
         PromptTemplateEntity::class,
-        WeatherEntity::class
+        WeatherEntity::class,
+        AnalysisRecordEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,4 +35,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun treatmentDao(): TreatmentDao
     abstract fun aiModelDao(): AIModelDao
     abstract fun weatherDao(): WeatherDao
+    abstract fun analysisRecordDao(): AnalysisRecordDao
 }

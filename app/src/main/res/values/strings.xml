@@ -388,6 +388,13 @@
     <string name="onboarding_disclaimer_point3">The developer assumes no liability for crop damage, economic losses, or any harm resulting from the use of this application.</string>
     <string name="onboarding_disclaimer_accept_label">I have read and accept the terms. I understand that AI suggestions are informational only.</string>
 
+    <!-- Analysis result & history -->
+    <string name="analysis_cancel">Cancel analysis</string>
+    <string name="analysis_words_generated">%d words generated…</string>
+    <string name="analysis_result_title">Analysis Result</string>
+    <string name="analysis_history_title">Previous analyses</string>
+    <string name="analysis_history_empty">No analyses yet</string>
+
     <!-- Accessibility -->
     <string name="cd_navigate_back">Navigate back</string>
     <string name="cd_previous_month">Previous month</string>

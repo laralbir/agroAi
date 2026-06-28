@@ -2,10 +2,10 @@ package com.laralnet.agroai.ui.location
 
 import android.location.Location
 import app.cash.turbine.test
-import com.laralnet.agroai.location.infrastructure.gps.GpsLocationProvider
-import com.laralnet.agroai.location.infrastructure.nominatim.NominatimAddress
-import com.laralnet.agroai.location.infrastructure.nominatim.NominatimApiService
-import com.laralnet.agroai.location.infrastructure.nominatim.NominatimPlace
+import com.laralnet.agroai.location.application.query.GetCurrentLocationQuery
+import com.laralnet.agroai.location.application.query.ReverseGeocodeQuery
+import com.laralnet.agroai.location.application.query.SearchPlacesQuery
+import com.laralnet.agroai.location.domain.model.PlaceResult
 import com.laralnet.agroai.ui.screens.plantation.wizard.LocationPickerViewModel
 import com.laralnet.agroai.util.MainDispatcherRule
 import io.mockk.coEvery
@@ -28,22 +28,33 @@ class LocationPickerViewModelTest {
     @get:Rule
     val mainRule = MainDispatcherRule()
 
-    private val nominatim: NominatimApiService = mockk()
-    private val gpsProvider: GpsLocationProvider = mockk()
-    private val viewModel = LocationPickerViewModel(nominatim, gpsProvider)
+    private val searchPlacesQuery: SearchPlacesQuery = mockk()
+    private val reverseGeocodeQuery: ReverseGeocodeQuery = mockk()
+    private val getCurrentLocationQuery: GetCurrentLocationQuery = mockk()
 
-    private fun fakePlace(city: String = "Sevilla", lat: String = "37.38", lon: String = "-5.97") =
-        NominatimPlace(
-            placeId = 1L,
-            lat = lat,
-            lon = lon,
-            displayName = "$city, Andalucía, España",
-            address = NominatimAddress(city = city, state = "Andalucía", countryCode = "es")
-        )
+    private fun viewModel() = LocationPickerViewModel(
+        searchPlacesQuery = searchPlacesQuery,
+        reverseGeocodeQuery = reverseGeocodeQuery,
+        getCurrentLocationQuery = getCurrentLocationQuery
+    )
+
+    private fun fakePlace(
+        municipality: String = "Sevilla",
+        lat: Double = 37.38,
+        lon: Double = -5.97
+    ) = PlaceResult(
+        displayName = "$municipality, Andalucía, España",
+        latitude = lat,
+        longitude = lon,
+        municipality = municipality,
+        province = "Andalucía",
+        country = "España"
+    )
 
     @Test
     fun `initial state has null marker and empty search`() {
-        val state = viewModel.state.value
+        val vm = viewModel()
+        val state = vm.state.value
         assertNull(state.markerPosition)
         assertTrue(state.searchQuery.isEmpty())
         assertTrue(state.searchResults.isEmpty())
@@ -51,40 +62,47 @@ class LocationPickerViewModelTest {
 
     @Test
     fun `onSearchQueryChange with less than 3 chars does not trigger search`() = runTest {
-        viewModel.onSearchQueryChange("Se")
+        val vm = viewModel()
+        vm.onSearchQueryChange("Se")
         advanceTimeBy(600)
-        coVerify(exactly = 0) { nominatim.search(any()) }
+        coVerify(exactly = 0) { searchPlacesQuery.invoke(any()) }
     }
 
     @Test
     fun `onSearchQueryChange triggers search after debounce`() = runTest {
-        coEvery { nominatim.search(any()) } returns listOf(fakePlace())
+        coEvery { searchPlacesQuery("Sevilla") } returns Result.success(listOf(fakePlace()))
 
-        viewModel.onSearchQueryChange("Sevilla")
+        val vm = viewModel()
+        vm.onSearchQueryChange("Sevilla")
         advanceTimeBy(600)
 
-        coVerify(exactly = 1) { nominatim.search("Sevilla") }
+        coVerify(exactly = 1) { searchPlacesQuery("Sevilla") }
     }
 
     @Test
     fun `onSearchQueryChange populates searchResults on success`() = runTest {
-        coEvery { nominatim.search(any()) } returns listOf(fakePlace("Sevilla"), fakePlace("Huelva"))
+        coEvery { searchPlacesQuery(any()) } returns Result.success(
+            listOf(fakePlace("Sevilla"), fakePlace("Huelva"))
+        )
 
-        viewModel.onSearchQueryChange("Andalucía")
+        val vm = viewModel()
+        vm.onSearchQueryChange("Andalucía")
         advanceTimeBy(600)
 
-        assertEquals(2, viewModel.state.value.searchResults.size)
+        assertEquals(2, vm.state.value.searchResults.size)
     }
 
     @Test
     fun `onPlaceSelected updates markerPosition and clears results`() = runTest {
-        coEvery { nominatim.search(any()) } returns listOf(fakePlace())
-        viewModel.onSearchQueryChange("Sevilla")
+        coEvery { searchPlacesQuery(any()) } returns Result.success(listOf(fakePlace()))
+
+        val vm = viewModel()
+        vm.onSearchQueryChange("Sevilla")
         advanceTimeBy(600)
 
-        viewModel.onPlaceSelected(fakePlace())
+        vm.onPlaceSelected(fakePlace())
 
-        val state = viewModel.state.value
+        val state = vm.state.value
         assertNotNull(state.markerPosition)
         assertEquals(37.38, state.markerPosition!!.latitude, 0.01)
         assertTrue(state.searchResults.isEmpty())
@@ -92,51 +110,53 @@ class LocationPickerViewModelTest {
 
     @Test
     fun `onPlaceSelected sets resolved location municipality`() = runTest {
-        viewModel.onPlaceSelected(fakePlace("Córdoba"))
+        val vm = viewModel()
+        vm.onPlaceSelected(fakePlace("Córdoba"))
 
-        assertEquals("Córdoba", viewModel.state.value.resolvedLocation?.municipality)
+        assertEquals("Córdoba", vm.state.value.resolvedLocation?.municipality)
     }
 
     @Test
     fun `onMapTap updates marker and triggers reverse geocoding`() = runTest {
-        coEvery { nominatim.reverse(any(), any()) } returns fakePlace("Granada")
+        coEvery { reverseGeocodeQuery(any(), any()) } returns Result.success(fakePlace("Granada"))
 
-        viewModel.onMapTap(GeoPoint(37.18, -3.6))
+        val vm = viewModel()
+        vm.onMapTap(GeoPoint(37.18, -3.6))
 
-        coVerify { nominatim.reverse(37.18, -3.6) }
-        assertEquals(37.18, viewModel.state.value.markerPosition!!.latitude, 0.01)
+        coVerify { reverseGeocodeQuery(37.18, -3.6) }
+        assertEquals(37.18, vm.state.value.markerPosition!!.latitude, 0.01)
     }
 
     @Test
     fun `onUseGps sets marker from GPS coordinates`() = runTest {
-        val fakeAndroidLocation = mockk<Location>(relaxed = true)
-        io.mockk.every { fakeAndroidLocation.latitude } returns 36.72
-        io.mockk.every { fakeAndroidLocation.longitude } returns -4.42
-        coEvery { gpsProvider.getCurrentLocation() } returns Result.success(fakeAndroidLocation)
-        coEvery { nominatim.reverse(any(), any()) } returns fakePlace("Málaga")
+        val gpsPlace = fakePlace("Málaga", 36.72, -4.42)
+        coEvery { getCurrentLocationQuery() } returns Result.success(gpsPlace)
 
-        viewModel.onUseGps()
+        val vm = viewModel()
+        vm.onUseGps()
 
-        assertEquals(36.72, viewModel.state.value.markerPosition!!.latitude, 0.01)
+        assertEquals(36.72, vm.state.value.markerPosition!!.latitude, 0.01)
     }
 
     @Test
     fun `onUseGps sets error on GPS failure`() = runTest {
-        coEvery { gpsProvider.getCurrentLocation() } returns Result.failure(RuntimeException("No GPS"))
+        coEvery { getCurrentLocationQuery() } returns Result.failure(RuntimeException("No GPS"))
 
-        viewModel.onUseGps()
+        val vm = viewModel()
+        vm.onUseGps()
 
-        assertNotNull(viewModel.state.value.error)
+        assertNotNull(vm.state.value.error)
     }
 
     @Test
     fun `clearError removes error from state`() = runTest {
-        coEvery { gpsProvider.getCurrentLocation() } returns Result.failure(RuntimeException("err"))
-        viewModel.onUseGps()
-        assertNotNull(viewModel.state.value.error)
+        coEvery { getCurrentLocationQuery() } returns Result.failure(RuntimeException("err"))
+        val vm = viewModel()
+        vm.onUseGps()
+        assertNotNull(vm.state.value.error)
 
-        viewModel.clearError()
+        vm.clearError()
 
-        assertNull(viewModel.state.value.error)
+        assertNull(vm.state.value.error)
     }
 }

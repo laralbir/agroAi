@@ -388,6 +388,13 @@
     <string name="onboarding_disclaimer_point3">El desarrollador no asume ninguna responsabilidad por daños en los cultivos, pérdidas económicas o cualquier perjuicio derivado del uso de esta aplicación.</string>
     <string name="onboarding_disclaimer_accept_label">He leído y acepto las condiciones. Entiendo que las sugerencias de la IA son únicamente informativas.</string>
 
+    <!-- Resultado del análisis e historial -->
+    <string name="analysis_cancel">Cancelar análisis</string>
+    <string name="analysis_words_generated">%d palabras generadas…</string>
+    <string name="analysis_result_title">Resultado del análisis</string>
+    <string name="analysis_history_title">Análisis anteriores</string>
+    <string name="analysis_history_empty">Aún no hay análisis</string>
+
     <!-- Accessibility -->
     <string name="cd_navigate_back">Volver atrás</string>
     <string name="cd_previous_month">Mes anterior</string>
