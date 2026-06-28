@@ -83,6 +83,33 @@ class PhotoAnalysisParserTest {
     }
 
     @Test
+    fun `parsePhotoAnalysisResponse discards past dates and keeps null`() {
+        val response = """
+            ```json
+            {"actions":[{"type":"RIEGO","title":"Water","description":"Irrigate","urgency":"LOW","suggestedDate":"2024-03-15"}]}
+            ```
+        """.trimIndent()
+
+        val result = parsePhotoAnalysisResponse(response)
+
+        // 2024 is in the past — must be discarded rather than shown to the user
+        assertNull(result.suggestions[0].suggestedDate)
+    }
+
+    @Test
+    fun `parsePhotoAnalysisResponse keeps future dates`() {
+        val response = """
+            ```json
+            {"actions":[{"type":"PODA","title":"Prune","description":"Cut","urgency":"LOW","suggestedDate":"2026-12-01"}]}
+            ```
+        """.trimIndent()
+
+        val result = parsePhotoAnalysisResponse(response)
+
+        assertEquals("2026-12-01", result.suggestions[0].suggestedDate)
+    }
+
+    @Test
     fun `parsePhotoAnalysisResponse normalizes type to uppercase`() {
         val response = """
             ```json

@@ -256,7 +256,8 @@ class PhotoAnalysisViewModel @Inject constructor(
         language: String
     ): String = buildString {
         append(baseTemplate)
-        append("\n\nRespond in $language.\n")
+        append("\n\nToday's date: ${LocalDate.now(ZoneId.systemDefault())}. All suggestedDate values in the JSON block must use this year or later.\n")
+        append("Respond in $language.\n")
 
         if (plantation != null || plantType != null) {
             append("\n### Context\n")

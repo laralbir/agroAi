@@ -4,6 +4,7 @@ import com.laralnet.agroai.aimodel.infrastructure.gemma.PhotoAnalysisResult
 import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
 
 @Serializable
 internal data class ActionsWrapperJson(
@@ -40,13 +41,20 @@ internal fun parsePhotoAnalysisResponse(response: String): PhotoAnalysisResult {
 private fun parseActionsBlock(text: String): List<TreatmentSuggestion> {
     val json = extractActionsJson(text) ?: return emptyList()
     return runCatching {
+        val today = LocalDate.now()
         lenientJson.decodeFromString<ActionsWrapperJson>(json).actions.map { a ->
             TreatmentSuggestion(
                 type = a.type.uppercase().trim(),
                 title = a.title.trim(),
                 description = a.description.trim(),
                 urgency = a.urgency.trim(),
-                suggestedDate = a.suggestedDate?.trim()
+                suggestedDate = a.suggestedDate?.trim()?.let { raw ->
+                    runCatching {
+                        val parsed = LocalDate.parse(raw)
+                        // Discard past dates — the model may output outdated years
+                        if (parsed.isBefore(today)) null else raw
+                    }.getOrNull()
+                }
             )
         }
     }.getOrElse { emptyList() }

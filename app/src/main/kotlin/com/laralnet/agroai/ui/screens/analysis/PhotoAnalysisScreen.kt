@@ -221,23 +221,15 @@ fun PhotoAnalysisScreen(
                 )
             }
 
-            // ---- Progress / streaming ----
+            // ---- Progress ----
             if (uiState.isAnalyzing) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     CircularProgressIndicator()
                     Text(stringResource(R.string.analysis_analyzing))
-                    if (uiState.streamingText.isNotBlank()) {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            SimpleMarkdownText(
-                                text = uiState.streamingText,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
                 }
             }
 
