@@ -234,6 +234,44 @@ Descarga modelo Gemma
 
 ---
 
+## ⬜ FASE 7.5 — Correcciones críticas de análisis de imagen y calendario
+
+**Bloqueante para:** que el flujo de IA sea realmente usable de principio a fin.
+
+### Análisis de imagen — bugs críticos
+
+- [ ] **Imagen de cámara no llega al modelo** — al usar `TakePicture`, el bitmap no se pasa correctamente a `GemmaInferenceEngine`; el modelo responde como si no hubiera imagen. Investigar si el URI de FileProvider se resuelve correctamente antes de construir el `BitmapImageBuilder`/`MPImage`
+- [ ] **El análisis no debe lanzarse automáticamente** — la pantalla no debe analizar al seleccionar imagen; debe esperar a que el usuario pulse el botón *Analizar* explícitamente
+- [ ] **El análisis de imagen ha de funcionar con los dos modelos de imagen** — identificar los modelos de la lista que realmente soportan análisis visual (multimodal) y asegurarse de que `GemmaInferenceEngine` los usa correctamente con `MPImage`; los modelos sólo-texto deben deshabilitar el análisis de imagen o mostrar advertencia
+- [ ] **Ocultar modelos no multimodales en Ajustes** — en `ModelManagementScreen`, marcar visualmente (o filtrar) los modelos que no admiten análisis de imagen para evitar confusión al usuario
+
+### Análisis de imagen — mejoras de prompt
+
+- [ ] **Validación de imagen en el prompt** — añadir instrucción en el prompt para que Gemma compruebe que la imagen corresponde a la planta seleccionada y no a algo irrelevante (paisaje, persona, objeto), y que indique explícitamente si la imagen no es válida para el análisis
+
+### Sugerencias de calendario — bugs y mejoras
+
+- [ ] **Sugerencias mal parseadas** — solo aparece un botón "Añadir al calendario" y las fechas siempre muestran 2024; revisar `parseSuggestions()` en `PhotoAnalysisViewModel` y el JSON que devuelve Gemma para ajustar el parseo
+- [ ] **Prompt segmentado por acción** — pedir a Gemma que estructure las acciones sugeridas como una lista ordenada cronológicamente, con fecha estimada realista (año en curso), tipo de acción y descripción; cada acción debe poder agendarse individualmente
+- [ ] **Icono por tipo de acción** — en la lista de sugerencias de `PhotoAnalysisScreen`, mostrar un icono representativo junto a cada sugerencia: 💧 Riego, ✂️ Poda, 🌾 Cosecha, 🧪 Fertilización, 🌫️ Fumigación, 🌿 Injerto, 🪴 Trasplante, 📋 Otro
+
+### Google Calendar — integración previa obligatoria
+
+- [ ] **Cuenta de Google Calendar obligatoria antes de usar la app** — solicitar la selección de cuenta de Google Calendar en el wizard de onboarding (paso 3 o nuevo paso 4); si el usuario omite este paso, mostrar modal de aviso cuando intente agendar por primera vez
+- [ ] **Selector de cuenta en Ajustes** — en `SettingsScreen`, sección "Calendario" con la cuenta actualmente vinculada y botón para cambiarla; usar `AccountManager` para listar cuentas Google del dispositivo
+- [ ] **Aviso al cambiar de cuenta de Google Calendar** — diálogo de tres opciones al seleccionar una cuenta distinta a la actual:
+  1. **Cancelar** — no cambia nada
+  2. **Cambiar y perder acciones agendadas** — se vincula la nueva cuenta; los tratamientos con `calendarEventId` de la cuenta anterior quedan huérfanos (el campo se pone a `null`)
+  3. **Cambiar y migrar acciones** — copia los eventos de la cuenta anterior a la nueva con `CalendarRepository` y elimina los de la cuenta anterior; actualiza los `calendarEventId` de los tratamientos correspondientes
+
+### Tests
+
+- [ ] `GemmaInferenceEngineTest` — mock de `MPImage`; verifica que el bitmap de FileProvider se convierte correctamente antes de llamar al modelo
+- [ ] `PhotoAnalysisViewModelTest` — análisis no se lanza hasta `onAnalyzeClicked()`; validación de imagen en prompt; sugerencias con icono y fecha real
+- [ ] `CalendarAccountMigrationHandlerTest` — migra eventos, actualiza treatmentIds, elimina eventos origen
+
+---
+
 ## ⬜ FASE 8 — Home mejorado y meteorología avanzada
 
 **Bloqueante para:** utilidad diaria de la app.
@@ -330,6 +368,7 @@ Descarga modelo Gemma
 | 5 — Weather Open-Meteo | Alertas y recomendaciones | M | ✅ Completada (v0.9.0) |
 | 6 — Deuda técnica | Release pública | M | ✅ Completada (v0.11.0) |
 | 7 — Bugs críticos + análisis de fotos | IA funcional y útil | M | ✅ Completada (v0.12.0) |
+| 7.5 — Correcciones análisis + calendario | Flujo de IA usable de principio a fin | M | ⬜ Pendiente |
 | 8 — Home mejorado + meteorología | Utilidad diaria | S | ⬜ Pendiente |
 | 9 — Acciones manuales + IA background | Automatización agrícola | L | ⬜ Pendiente |
 | 10 — Informes de plantación | Visibilidad histórica | S | ⬜ Pendiente |
