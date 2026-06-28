@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
@@ -40,11 +41,8 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+            AppTopBar(
+                title = { Text(stringResource(R.string.app_name)) }
             )
         },
         floatingActionButton = {

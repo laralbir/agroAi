@@ -286,6 +286,10 @@
     <string name="settings_calendar_email_hint">your@google.com</string>
     <string name="settings_calendar_save">Save</string>
     <string name="settings_calendar_disconnect">Disconnect</string>
+    <string name="settings_calendar_connect">Link account</string>
+    <string name="settings_calendar_change">Change</string>
+    <string name="settings_calendar_pick_account">Select Google account</string>
+    <string name="settings_calendar_no_accounts">No Google accounts found on this device</string>
     <string name="settings_calendar_change_title">Change calendar account?</string>
     <string name="settings_calendar_change_body">You are switching from %1$s to %2$s. What would you like to do with the scheduled treatments?</string>
     <string name="settings_calendar_change_migrate">Migrate treatments to new account</string>

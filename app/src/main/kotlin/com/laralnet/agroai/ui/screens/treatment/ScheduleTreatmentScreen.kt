@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.treatment.domain.model.TreatmentType
 import java.time.Instant
 import java.time.ZoneId
@@ -98,7 +99,7 @@ fun ScheduleTreatmentScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = { Text(stringResource(R.string.treatment_schedule_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

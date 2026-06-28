@@ -46,6 +46,8 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 
 ### Integración Google Calendar
 - Soporte multi-cuenta Google
+- Selector nativo de cuentas Google del sistema (con foto de perfil), sin introducir el email manualmente
+- Diálogo de cambio de cuenta con opción de migrar tratamientos agendados a la nueva cuenta
 - Planificación de eventos: cosecha, riego, poda, fertilización, fumigación, trasplante
 - Notificaciones y recordatorios
 - Verificación de conflictos meteorológicos en eventos agendados
@@ -59,9 +61,9 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Actualización automática cada 6 horas vía WorkManager (requiere conexión)
 
 ### Personalización
-- Temas: claro, oscuro o seguir el sistema
+- Temas: claro, oscuro o seguir el sistema con paleta de colores naturales (verde salvia, gris cálido, ámbar)
+- Barra de título compacta que maximiza el espacio de contenido
 - Idiomas: español e inglés (configurable o automático según el sistema)
-- Material You (Dynamic Color) en Android 12+
 
 ---
 

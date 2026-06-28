@@ -35,31 +35,30 @@ class MigrateCalendarAccountHandler @Inject constructor(
         var failed = 0
 
         for (treatment in toMigrate) {
-            val event = CalendarEvent(
-                calendarId = primaryCalendar.id,
-                accountEmail = newEmail,
-                title = treatment.title,
-                description = treatment.description,
-                startAt = treatment.scheduledAt,
-                endAt = treatment.scheduledAt.plusSeconds(3600)
-            )
-            calendarRepository.createEvent(event)
-                .onSuccess { created ->
-                    // Delete from old account (best effort — we don't have the old calendarId stored)
-                    val oldCalendars = runCatching { calendarRepository.getCalendars(oldEmail) }.getOrElse { emptyList() }
-                    for (oldCal in oldCalendars) {
-                        runCatching { calendarRepository.deleteEvent(oldCal.id, treatment.calendarEventId!!) }
-                    }
-                    // Update treatment record
-                    treatmentRepository.save(
-                        treatment.copy(
-                            calendarAccountEmail = newEmail,
-                            calendarEventId = created.eventId
-                        )
+            val outcome = runCatching {
+                // 1. Create new event in new account
+                val event = CalendarEvent(
+                    calendarId = primaryCalendar.id,
+                    accountEmail = newEmail,
+                    title = treatment.title,
+                    description = treatment.description,
+                    startAt = treatment.scheduledAt,
+                    endAt = treatment.scheduledAt.plusSeconds(3600)
+                )
+                val created = calendarRepository.createEvent(event).getOrThrow()
+
+                // 2. Update treatment record BEFORE deleting old event so DB is always consistent
+                treatmentRepository.save(
+                    treatment.copy(
+                        calendarAccountEmail = newEmail,
+                        calendarEventId = created.eventId
                     )
-                    migrated++
-                }
-                .onFailure { failed++ }
+                )
+
+                // 3. Delete old event (best effort — failure here is non-fatal)
+                runCatching { calendarRepository.deleteEvent(0L, treatment.calendarEventId!!) }
+            }
+            if (outcome.isSuccess) migrated++ else failed++
         }
 
         return Result(migrated, failed)

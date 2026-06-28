@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.platform.testTag
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
 import com.laralnet.agroai.ui.screens.treatment.resolveLabel
@@ -88,7 +89,7 @@ internal fun CalendarContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.nav_calendar)) })
+            AppTopBar(title = { Text(stringResource(R.string.nav_calendar)) })
         }
     ) { padding ->
         Column(

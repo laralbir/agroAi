@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.ui.components.SimpleMarkdownText
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -68,7 +69,7 @@ fun AnalysisResultScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = { Text(stringResource(R.string.analysis_result_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

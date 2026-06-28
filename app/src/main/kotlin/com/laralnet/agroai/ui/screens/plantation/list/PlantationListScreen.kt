@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.ui.screens.home.HomeViewModel
 
@@ -27,7 +28,7 @@ fun PlantationListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.plantation_title)) })
+            AppTopBar(title = { Text(stringResource(R.string.plantation_title)) })
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToWizard) {

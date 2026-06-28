@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.PlantationType
 
 private fun PlantationType.resolveLabel(context: Context): String {
@@ -49,7 +50,7 @@ fun PlantationWizardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = {
                     Text(
                         if (uiState.isEditMode) stringResource(R.string.plantation_edit)

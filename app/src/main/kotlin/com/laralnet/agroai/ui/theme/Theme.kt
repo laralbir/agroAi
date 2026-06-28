@@ -1,66 +1,63 @@
 package com.laralnet.agroai.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import com.laralnet.agroai.ui.screens.settings.ThemeMode
 
 private val LightColorScheme = lightColorScheme(
-    primary = Green40,
-    onPrimary = Grey99,
-    primaryContainer = Green90,
-    onPrimaryContainer = Green10,
-    secondary = GreenGrey50,
-    onSecondary = Grey99,
-    secondaryContainer = GreenGrey90,
-    onSecondaryContainer = GreenGrey30,
-    tertiary = Amber40,
-    onTertiary = Grey99,
-    tertiaryContainer = Amber90,
-    onTertiaryContainer = Amber10,
-    error = Red40,
-    onError = Grey99,
-    errorContainer = Red90,
-    onErrorContainer = Red10,
-    background = Grey99,
-    onBackground = Grey10,
-    surface = Grey99,
-    onSurface = Grey10,
-    surfaceVariant = GreenGrey90,
-    onSurfaceVariant = GreenGrey30,
-    outline = GreenGrey50
+    primary = SageGreen40,
+    onPrimary = Color.White,
+    primaryContainer = SageGreen95,
+    onPrimaryContainer = SageGreen10,
+    secondary = SageGrey50,
+    onSecondary = Color.White,
+    secondaryContainer = SageGrey90,
+    onSecondaryContainer = SageGrey10,
+    tertiary = WarmAmber40,
+    onTertiary = Color.White,
+    tertiaryContainer = WarmAmber90,
+    onTertiaryContainer = WarmAmber30,
+    error = ErrorRed40,
+    onError = Color.White,
+    errorContainer = ErrorRed90,
+    onErrorContainer = ErrorRed10,
+    background = WarmGrey99,
+    onBackground = WarmGrey10,
+    surface = WarmGrey99,
+    onSurface = WarmGrey10,
+    surfaceVariant = SageGreen95,
+    onSurfaceVariant = SageGrey30,
+    outline = SageGrey60
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = GreenDarkPrimary,
-    onPrimary = GreenDarkOnPrimary,
-    primaryContainer = GreenDarkPrimaryContainer,
-    onPrimaryContainer = GreenDarkOnPrimaryContainer,
-    secondary = GreenGrey80,
-    onSecondary = GreenGrey30,
-    secondaryContainer = GreenGrey30,
-    onSecondaryContainer = GreenGrey80,
-    tertiary = Amber80,
-    onTertiary = Amber20,
-    tertiaryContainer = Amber30,
-    onTertiaryContainer = Amber90,
-    error = Red80,
-    onError = Red20,
-    errorContainer = Red30,
-    onErrorContainer = Red90,
-    background = Grey10,
-    onBackground = Grey90,
-    surface = Grey10,
-    onSurface = Grey90,
-    surfaceVariant = GreenGrey30,
-    onSurfaceVariant = GreenGrey80,
-    outline = GreenGrey60
+    primary = SageGreen80,
+    onPrimary = SageGreen10,
+    primaryContainer = SageGreen20,
+    onPrimaryContainer = SageGreen90,
+    secondary = SageGrey80,
+    onSecondary = SageGrey10,
+    secondaryContainer = SageGrey20,
+    onSecondaryContainer = SageGrey80,
+    tertiary = WarmAmber80,
+    onTertiary = WarmAmber30,
+    tertiaryContainer = Color(0xFF4A3200),
+    onTertiaryContainer = WarmAmber90,
+    error = ErrorRed80,
+    onError = ErrorRed20,
+    errorContainer = ErrorRed30,
+    onErrorContainer = ErrorRed90,
+    background = Color(0xFF111511),
+    onBackground = WarmGrey90,
+    surface = Color(0xFF111511),
+    onSurface = WarmGrey90,
+    surfaceVariant = Color(0xFF202D21),
+    onSurfaceVariant = SageGrey80,
+    outline = SageGrey60
 )
 
 @Composable
@@ -74,17 +71,8 @@ fun AgroAITheme(
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
 
-    val colorScheme = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = AgroAITypography,
         content = content
     )

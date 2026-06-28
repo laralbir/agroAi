@@ -286,6 +286,10 @@
     <string name="settings_calendar_email_hint">tu@google.com</string>
     <string name="settings_calendar_save">Guardar</string>
     <string name="settings_calendar_disconnect">Desvincular</string>
+    <string name="settings_calendar_connect">Vincular cuenta</string>
+    <string name="settings_calendar_change">Cambiar</string>
+    <string name="settings_calendar_pick_account">Selecciona tu cuenta de Google</string>
+    <string name="settings_calendar_no_accounts">No se encontraron cuentas de Google en este dispositivo</string>
     <string name="settings_calendar_change_title">¿Cambiar cuenta de calendario?</string>
     <string name="settings_calendar_change_body">Cambias de %1$s a %2$s. ¿Qué quieres hacer con los tratamientos programados?</string>
     <string name="settings_calendar_change_migrate">Migrar tratamientos a la nueva cuenta</string>

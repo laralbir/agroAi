@@ -32,6 +32,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.laralnet.agroai.R
+import com.laralnet.agroai.ui.components.AppTopBar
 import java.io.File
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -86,7 +87,7 @@ fun PhotoAnalysisScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = { Text(stringResource(R.string.analysis_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

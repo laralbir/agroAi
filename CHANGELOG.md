@@ -10,6 +10,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.15.0] - 2026-06-28
+
+### Añadido
+- **Selector de cuenta Google Calendar con picker del sistema**: al vincular o cambiar cuenta de Google Calendar en Ajustes, se abre el selector nativo de Android (`AccountManager.newChooseAccountIntent`) que lista todas las cuentas Google del dispositivo con foto de perfil; elimina el campo de texto manual
+- **Preselección de cuenta actual en el picker**: cuando ya hay una cuenta vinculada y se pulsa "Cambiar", el picker abre con esa cuenta pre-seleccionada
+- **Paleta de colores suave y natural**: nueva paleta earthy (verde salvia, gris cálido, ámbar suave) con buen contraste tanto en tema claro como oscuro; los colores dinámicos de Material You ya no sobreescriben la paleta personalizada
+
+### Cambiado
+- **Barra de título compacta** (`AppTopBar`): nueva implementación personalizada de 44 dp de alto (vs. los 64 dp de M3 por defecto) con título en `titleLarge`; respeta correctamente los insets de la barra de estado en todos los dispositivos
+- **Tamaños de fuente aumentados**: `titleMedium` 16→18 sp, `bodyMedium` 14→15 sp, `bodyLarge` 16→17 sp, `labelLarge` 14→15 sp para mayor legibilidad
+
+### Corregido
+- **Migración de cuenta de Google Calendar**: corregido el orden de operaciones — primero crea el evento en la nueva cuenta, luego actualiza el registro en BD, por último borra el evento antiguo (best-effort); cada tratamiento se procesa de forma aislada con `runCatching` para que un fallo individual no cancele la migración del resto
+
+---
+
 ## [0.13.0] - 2026-06-28
 
 ### Añadido

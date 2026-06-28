@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.13.0`
+Estado actual: `v0.15.0`
 
 ---
 
@@ -268,6 +268,22 @@ Descarga modelo Gemma
 
 ---
 
+## ⬜ FASE 7.6 — Correcciones de UI y tema
+
+### Status bar en tema claro
+- [ ] **Iconos del sistema invisibles en tema claro** — batería, señal, hora y otros indicadores de la barra de estado aparecen en blanco y no se distinguen del fondo; usar `WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true` cuando el tema sea claro para forzar iconos oscuros
+
+### Cabecera de pantalla
+- [ ] **Cabecera demasiado alta** — la barra de título ocupa más espacio del que necesita el texto; ajustar la altura al contenido real del título sin dejar padding innecesario
+
+### Listado de plantaciones — revisión manual
+- [ ] **Botón "Revisar plantaciones" en `PlantationListScreen`** — acción secundaria (icono en la barra superior o botón al pie) que lanza `PlantationReviewWorker` como `OneTimeWorkRequest` inmediato, sin esperar al ciclo periódico de 6 h; el texto del botón debe ser amigable (p.ej. "Revisar ahora" o "Analizar en background"), no usar la palabra "forzar"
+
+### Tests
+- [ ] Comprobación visual en ambos temas (claro y oscuro) en dispositivo real; no automatizable con tests unitarios
+
+---
+
 ## ⬜ FASE 8 — Home mejorado y meteorología avanzada
 
 **Bloqueante para:** utilidad diaria de la app.
@@ -312,6 +328,7 @@ Descarga modelo Gemma
 - [ ] Las acciones `DONE` o `SKIPPED` se excluyen de los prompts de análisis y del worker de background
 
 ### Worker de IA en background (cada 6 horas)
+- [ ] Botón "Revisar ahora" en `PlantationListScreen` — lanza el `PlantationReviewWorker` de forma puntual con `OneTimeWorkRequest` (sin esperar al ciclo periódico de 6h); visible como acción secundaria en la barra superior o como FAB secundario
 - [ ] `PlantationReviewWorker` — WorkManager con `PeriodicWorkRequest` de 6h, requiere red
 - [ ] Para cada plantación activa:
   1. Carga todas las plantas (`PlantType`) y acciones pendientes
@@ -364,7 +381,8 @@ Descarga modelo Gemma
 | 5 — Weather Open-Meteo | Alertas y recomendaciones | M | ✅ Completada (v0.9.0) |
 | 6 — Deuda técnica | Release pública | M | ✅ Completada (v0.11.0) |
 | 7 — Bugs críticos + análisis de fotos | IA funcional y útil | M | ✅ Completada (v0.12.0) |
-| 7.5 — Correcciones análisis + calendario | Flujo de IA usable de principio a fin | M | ⬜ Pendiente |
+| 7.5 — Correcciones análisis + calendario | Flujo de IA usable de principio a fin | M | ✅ Completada (v0.13.0) |
+| 7.6 — Correcciones de UI y tema | Status bar claro + cabecera compacta + revisión manual | S | ⬜ Pendiente |
 | 8 — Home mejorado + meteorología | Utilidad diaria | S | ⬜ Pendiente |
 | 9 — Acciones manuales + IA background | Automatización agrícola | L | ⬜ Pendiente |
 | 10 — Informes de plantación | Visibilidad histórica | S | ⬜ Pendiente |
