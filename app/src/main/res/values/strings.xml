@@ -66,7 +66,6 @@
     <string name="analysis_title">Photo Analysis</string>
     <string name="analysis_take_photo">Take Photo</string>
     <string name="analysis_choose_gallery">Choose from Gallery</string>
-    <string name="analysis_select_plantation">Select plantation</string>
     <string name="analysis_analyzing">Analyzing with Gemma…</string>
     <string name="analysis_suggestions">Suggestions</string>
     <string name="analysis_schedule_calendar">Schedule in Calendar</string>
@@ -116,6 +115,7 @@
     <string name="model_not_downloaded">Not downloaded</string>
     <string name="model_active">Active</string>
     <string name="model_recommended">Recommended</string>
+    <string name="model_supports_vision">Photo Analysis</string>
     <string name="model_coming_soon">Coming soon</string>
     <string name="model_download">Download</string>
     <string name="model_activate">Set as active</string>
@@ -254,6 +254,24 @@
     <string name="analysis_species">Species:</string>
     <string name="analysis_condition">Condition:</string>
     <string name="analysis_issues">Detected issues:</string>
+    <string name="analysis_select_plantation">Select plantation</string>
+    <string name="analysis_select_plant_type">Select plant type</string>
+    <string name="analysis_question_label">Your question (optional)</string>
+    <string name="analysis_question_hint">e.g. Is the tomato ready to harvest?</string>
+    <string name="analysis_analyze_btn">Analyze photo</string>
+    <string name="analysis_select_required_hint">Select a plantation and plant type to include context in the analysis</string>
+    <string name="analysis_btn_disabled_hint">Select a plantation and plant type before analyzing</string>
+    <string name="analysis_suggested_date">Suggested: %s</string>
+
+    <!-- Plant actions -->
+    <string name="plant_analyze">Analyze</string>
+    <string name="plant_edit">Edit plant</string>
+    <string name="plant_delete">Delete plant</string>
+    <string name="plant_delete_confirm_title">Delete plant?</string>
+    <string name="plant_delete_confirm_body">This plant type will be removed from the plantation.</string>
+    <string name="cd_analyze_plant">Analyze this plant</string>
+    <string name="cd_edit_plant">Edit this plant</string>
+    <string name="cd_delete_plant">Delete this plant</string>
 
     <!-- Model download log -->
     <string name="model_download_log">Download log</string>
@@ -334,6 +352,18 @@
     <string name="onboarding_start">Get Started</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_accept">I Accept</string>
+
+    <!-- Onboarding — Legal &amp; AI disclaimer -->
+    <string name="onboarding_disclaimer_title">Legal &amp; AI Notice</string>
+    <string name="onboarding_disclaimer_intro">AgroAI uses local artificial intelligence (Gemma) to analyze photos and suggest agricultural treatments. All AI processing happens on your device — no data is sent to any server.</string>
+    <string name="onboarding_disclaimer_important_label">⚠ Important</string>
+    <string name="onboarding_disclaimer_responsibility">AI suggestions are informational only. The app developer is not responsible for decisions made based on AI recommendations. Always consult a qualified agricultural professional before applying treatments, pesticides, or making significant changes to your crops.</string>
+    <string name="onboarding_disclaimer_acknowledge_title">By continuing, you acknowledge that:</string>
+    <string name="onboarding_disclaimer_point1">AI results may be inaccurate or incomplete and must not replace expert agronomic advice.</string>
+    <string name="onboarding_disclaimer_point2">Weather data comes from third-party services (Open-Meteo) and may not be precise for your exact location.</string>
+    <string name="onboarding_disclaimer_point3">The developer assumes no liability for crop damage, economic losses, or any harm resulting from the use of this application.</string>
+    <string name="onboarding_disclaimer_accept_label">I have read and accept the terms. I understand that AI suggestions are informational only.</string>
 
     <!-- Accessibility -->
     <string name="cd_navigate_back">Navigate back</string>

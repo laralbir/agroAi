@@ -13,7 +13,7 @@ interface OpenMeteoApiService {
         @Query("current") current: String = "temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m,apparent_temperature,weather_code",
         @Query("daily") daily: String = "temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code,wind_speed_10m_max,uv_index_max",
         @Query("timezone") timezone: String = "auto",
-        @Query("forecast_days") forecastDays: Int = 7
+        @Query("forecast_days") forecastDays: Int = 15
     ): OpenMeteoResponse
 }
 

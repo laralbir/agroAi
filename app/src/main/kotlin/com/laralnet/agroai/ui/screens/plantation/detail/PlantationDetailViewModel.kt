@@ -2,7 +2,10 @@ package com.laralnet.agroai.ui.screens.plantation.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.laralnet.agroai.plantation.application.command.UpdatePlantationCommand
+import com.laralnet.agroai.plantation.application.handler.UpdatePlantationHandler
 import com.laralnet.agroai.plantation.domain.model.Plantation
+import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.repository.TreatmentRepository
@@ -25,7 +28,8 @@ class PlantationDetailViewModel @Inject constructor(
     private val plantationRepository: PlantationRepository,
     private val treatmentRepository: TreatmentRepository,
     private val observeWeatherQuery: ObserveWeatherQuery,
-    private val refreshWeatherHandler: RefreshWeatherHandler
+    private val refreshWeatherHandler: RefreshWeatherHandler,
+    private val updatePlantationHandler: UpdatePlantationHandler
 ) : ViewModel() {
 
     private val plantationId = MutableStateFlow<String?>(null)
@@ -57,5 +61,41 @@ class PlantationDetailViewModel @Inject constructor(
         if (p.location.hasCoordinates) {
             refreshWeatherHandler.handle(p.location.latitude!!, p.location.longitude!!)
         }
+    }
+
+    fun updatePlantType(updated: PlantType) = viewModelScope.launch {
+        val p = _plantation.value ?: return@launch
+        val newPlants = p.plants.map { if (it.id == updated.id) updated else it }
+        updatePlantationHandler.handle(
+            UpdatePlantationCommand(
+                id = p.id,
+                name = p.name,
+                type = p.type,
+                location = p.location,
+                areaSqMeters = p.areaSqMeters,
+                plants = newPlants,
+                notes = p.notes,
+                googleAccountEmail = p.googleAccountEmail
+            )
+        )
+        _plantation.value = plantationRepository.findById(p.id)
+    }
+
+    fun deletePlantType(plantTypeId: String) = viewModelScope.launch {
+        val p = _plantation.value ?: return@launch
+        val newPlants = p.plants.filter { it.id != plantTypeId }
+        updatePlantationHandler.handle(
+            UpdatePlantationCommand(
+                id = p.id,
+                name = p.name,
+                type = p.type,
+                location = p.location,
+                areaSqMeters = p.areaSqMeters,
+                plants = newPlants,
+                notes = p.notes,
+                googleAccountEmail = p.googleAccountEmail
+            )
+        )
+        _plantation.value = plantationRepository.findById(p.id)
     }
 }

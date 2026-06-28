@@ -61,10 +61,16 @@ sealed class Screen(val route: String) {
         fun route(id: String) = "plantation/$id/edit"
     }
     data object LocationPicker : Screen("location_picker")
-    data object PhotoAnalysis : Screen("analysis?plantationId={plantationId}") {
+    data object PhotoAnalysis : Screen("analysis?plantationId={plantationId}&plantTypeId={plantTypeId}") {
         val routeBase = "analysis"
-        fun route(plantationId: String? = null) =
-            if (plantationId != null) "analysis?plantationId=$plantationId" else "analysis"
+        fun route(plantationId: String? = null, plantTypeId: String? = null) = buildString {
+            append("analysis")
+            val params = listOfNotNull(
+                plantationId?.let { "plantationId=$it" },
+                plantTypeId?.let { "plantTypeId=$it" }
+            )
+            if (params.isNotEmpty()) append("?${params.joinToString("&")}")
+        }
     }
     data object Calendar : Screen("calendar")
     data object Settings : Screen("settings")
@@ -230,6 +236,9 @@ fun AgroAINavGraph(
                     onNavigateToAnalysis = {
                         navController.navigate(Screen.PhotoAnalysis.route(id))
                     },
+                    onNavigateToAnalysisWithPlant = { pId, ptId ->
+                        navController.navigate(Screen.PhotoAnalysis.route(pId, ptId))
+                    },
                     onNavigateToEdit = {
                         navController.navigate(Screen.PlantationEdit.route(id))
                     },
@@ -325,6 +334,11 @@ fun AgroAINavGraph(
                 route = Screen.PhotoAnalysis.route,
                 arguments = listOf(
                     navArgument("plantationId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                    navArgument("plantTypeId") {
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null

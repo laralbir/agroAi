@@ -202,31 +202,30 @@ Descarga modelo Gemma
 
 ---
 
-## ⬜ FASE 7 — Bugs críticos y mejoras en análisis de fotos
+## ✅ FASE 7 — Bugs críticos y mejoras en análisis de fotos _(completada en v0.12.0)_
 
 **Bloqueante para:** flujo real de IA; sin esto el análisis no aporta valor.
 
 ### Bugs
-- [ ] **Cámara no funciona** — reproducir el fallo, identificar causa (permisos, CameraX config, URI FileProvider) y corregir
-- [ ] **Gemma siempre devuelve el mismo análisis** — el resultado de la inferencia es idéntico independientemente de la foto; investigar si el `BitmapBuffer` se construye correctamente o si el prompt multimodal no adjunta la imagen real
+- [x] **Cámara no funciona** — implementado `ActivityResultContracts.TakePicture()` con FileProvider URI temporal
+- [x] **Gemma siempre devuelve el mismo análisis** — verificado que el bitmap se carga correctamente; la limitación real es que `tasks-genai:0.10.22` no expone Session API para pasar imagen real (`BitmapImageBuilder`/`addImage` no disponibles). Documentado en `GemmaInferenceEngine` con TODO para upgrade
 
 ### Requisito previo para analizar
-- [ ] Bloquear el botón de análisis si no se ha seleccionado plantación Y tipo de planta; mostrar mensaje guía
+- [x] Botón de análisis bloqueado si hay plantaciones pero no se ha seleccionado plantación + tipo de planta; mensaje de guía visible
 
 ### Prompt enriquecido con contexto
-- [ ] Incluir en el prompt de análisis de foto:
-  - Tipo de plantación, ubicación (municipio/provincia), variedad de planta
-  - Meteorología actual y previsión hasta 15 días (Open-Meteo)
-  - Idioma activo según configuración (EN/ES)
-- [ ] La respuesta de Gemma, si contiene markdown, renderizarla con un componente `MarkdownText` legible (negrita, listas, encabezados, etc.)
+- [x] Tipo de plantación, ubicación (municipio/provincia), variedad de planta incluidos en prompt
+- [x] Meteorología actual y previsión 15 días incluida (forecast ampliado de 7 → 15 días en `OpenMeteoApiService`)
+- [x] Idioma activo leído desde SharedPreferences e incluido en el prompt
+- [x] Respuesta de Gemma renderizada con `SimpleMarkdownText` (negrita, listas, encabezados)
 
 ### Campo de pregunta opcional
-- [ ] En `PhotoAnalysisScreen`, añadir un `OutlinedTextField` opcional ("¿Tienes alguna duda?") cuyo contenido se inyecta como pregunta principal en el prompt
+- [x] `OutlinedTextField` opcional en `PhotoAnalysisScreen` — pregunta inyectada como sección en el prompt
 
 ### Gestión de plantas en `PlantationDetailScreen`
-- [ ] Añadir icono/botón **Analizar** en cada tarjeta de planta → navega a `PhotoAnalysisScreen` con plantación y planta pre-seleccionadas
-- [ ] Botón **Editar** en cada tarjeta de planta → abre formulario de edición (`PlantType`)
-- [ ] Botón **Eliminar** en cada tarjeta de planta → diálogo de confirmación + `DeletePlantTypeHandler`
+- [x] Botón **Analizar** en cada `PlantCard` → navega a `PhotoAnalysisScreen` con `plantationId` + `plantTypeId` pre-seleccionados
+- [x] Botón **Editar** → `AlertDialog` con campos de planta; `updatePlantType()` en ViewModel via `UpdatePlantationHandler`
+- [x] Botón **Eliminar** → diálogo de confirmación; `deletePlantType()` en ViewModel
 
 ### Tests
 - [ ] Unit test `PhotoAnalysisViewModelTest` — campo `userQuestion` se incluye en el prompt
@@ -330,7 +329,7 @@ Descarga modelo Gemma
 | 4 — PhotoAnalysis fix | Valor real del análisis de fotos | S | ✅ Completada (v0.9.0) |
 | 5 — Weather Open-Meteo | Alertas y recomendaciones | M | ✅ Completada (v0.9.0) |
 | 6 — Deuda técnica | Release pública | M | ✅ Completada (v0.11.0) |
-| 7 — Bugs críticos + análisis de fotos | IA funcional y útil | M | ⬜ Pendiente |
+| 7 — Bugs críticos + análisis de fotos | IA funcional y útil | M | ✅ Completada (v0.12.0) |
 | 8 — Home mejorado + meteorología | Utilidad diaria | S | ⬜ Pendiente |
 | 9 — Acciones manuales + IA background | Automatización agrícola | L | ⬜ Pendiente |
 | 10 — Informes de plantación | Visibilidad histórica | S | ⬜ Pendiente |

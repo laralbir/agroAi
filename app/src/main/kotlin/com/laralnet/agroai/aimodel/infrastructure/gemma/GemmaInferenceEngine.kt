@@ -7,15 +7,17 @@ import android.net.Uri
 import com.google.ai.edge.litertlm.Backend
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
+import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInference.LlmInferenceOptions
+import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
+import com.google.mediapipe.tasks.genai.llminference.VisionModelOptions
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
-import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,16 +40,16 @@ data class PhotoAnalysisResult(
 class GemmaInferenceEngine @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    // MediaPipe engine — for .task files (Gemma 3)
+    // MediaPipe engine — for .task files (Gemma 3 / Gemma 3n)
     private var mediaPipeEngine: LlmInference? = null
+
+    // true when the MediaPipe engine was loaded with VisionModelOptions (image support enabled)
+    private var mediaPipeVisionEnabled: Boolean = false
 
     // LiteRT-LM engine — for .litertlm files (Gemma 4)
     private var liteRtEngine: Engine? = null
 
     private var currentModelPath: String? = null
-
-    private val isLiteRtModel: Boolean
-        get() = currentModelPath?.endsWith(".litertlm") == true
 
     suspend fun loadModel(modelPath: String) = withContext(Dispatchers.Default) {
         if (currentModelPath == modelPath && (mediaPipeEngine != null || liteRtEngine != null)) return@withContext
@@ -63,24 +65,14 @@ class GemmaInferenceEngine @Inject constructor(
             engine.initialize()
             liteRtEngine = engine
         } else {
-            // Use the new LiteRT CPU path explicitly. DEFAULT (legacy CPU) rejects newer model
-            // signatures; GPU can cause unrecoverable native crashes on some devices/models.
-            mediaPipeEngine = try {
-                LlmInference.createFromOptions(
-                    context, LlmInferenceOptions.builder()
-                        .setModelPath(modelPath)
-                        .setMaxTokens(1024)
-                        .setPreferredBackend(LlmInference.Backend.CPU)
-                        .build()
-                )
-            } catch (_: Exception) {
-                LlmInference.createFromOptions(
-                    context, LlmInferenceOptions.builder()
-                        .setModelPath(modelPath)
-                        .setMaxTokens(1024)
-                        .setPreferredBackend(LlmInference.Backend.DEFAULT)
-                        .build()
-                )
+            // Try loading with vision support first (Gemma 3n multimodal models)
+            val visionEngine = tryLoadWithVision(modelPath)
+            if (visionEngine != null) {
+                mediaPipeEngine = visionEngine
+                mediaPipeVisionEnabled = true
+            } else {
+                mediaPipeEngine = loadTextOnly(modelPath)
+                mediaPipeVisionEnabled = false
             }
         }
         currentModelPath = modelPath
@@ -88,21 +80,63 @@ class GemmaInferenceEngine @Inject constructor(
 
     fun isModelLoaded(): Boolean = mediaPipeEngine != null || liteRtEngine != null
 
+    fun supportsImageAnalysis(): Boolean = mediaPipeVisionEnabled
+
+    /**
+     * Analyze a photo using the loaded model.
+     * - Gemma 3n (.task with vision): real image bytes passed via LlmInferenceSession.addImage()
+     * - Gemma 3 text-only (.task without vision): text-only analysis (image not sent)
+     * - Gemma 4 (.litertlm): LiteRT-LM 0.13.1 is text-only; image not sent
+     */
     fun analyzePhoto(imageUri: Uri, systemPrompt: String, userPrompt: String): Flow<String> =
         callbackFlow {
-            val engine = mediaPipeEngine ?: run {
-                close(IllegalStateException("Photo analysis only supported for Gemma 3 (.task) models"))
+            if (mediaPipeEngine == null && liteRtEngine == null) {
+                close(IllegalStateException("No AI model loaded"))
                 return@callbackFlow
             }
+
+            var sessionToClose: LlmInferenceSession? = null
+
             withContext(Dispatchers.Default) {
-                val bitmap = loadBitmapFromUri(imageUri)
-                val fullPrompt = buildMultimodalPrompt(systemPrompt, userPrompt, bitmap != null)
-                engine.generateResponseAsync(fullPrompt) { response, done ->
-                    trySend(response)
-                    if (done) close()
+                val prompt = buildTextPrompt(systemPrompt, userPrompt)
+
+                when {
+                    mediaPipeEngine != null -> {
+                        val session = LlmInferenceSession.createFromOptions(
+                            mediaPipeEngine!!,
+                            LlmInferenceSession.LlmInferenceSessionOptions.builder().build()
+                        )
+                        sessionToClose = session
+
+                        if (mediaPipeVisionEnabled) {
+                            val bitmap = loadAndScaleBitmap(imageUri, maxDimension = 768)
+                            if (bitmap != null) {
+                                runCatching {
+                                    session.addImage(BitmapImageBuilder(bitmap).build())
+                                }
+                            }
+                        }
+
+                        session.addQueryChunk(prompt)
+                        session.generateResponseAsync { response, done ->
+                            trySend(response)
+                            if (done) close()
+                        }
+                    }
+
+                    liteRtEngine != null -> {
+                        // LiteRT-LM 0.13.1 — text-only (no image API available)
+                        liteRtEngine!!.createConversation().use { conversation ->
+                            conversation.sendMessageAsync(prompt).collect { chunk ->
+                                trySend(chunk.toString())
+                            }
+                        }
+                        close()
+                    }
                 }
             }
-            awaitClose()
+
+            awaitClose { sessionToClose?.close() }
         }
 
     suspend fun generateText(prompt: String): Result<String> = withContext(Dispatchers.Default) {
@@ -123,32 +157,66 @@ class GemmaInferenceEngine @Inject constructor(
         }
     }
 
-    private fun buildMultimodalPrompt(
-        systemContext: String,
-        userContent: String,
-        hasImage: Boolean
-    ): String = buildString {
+    // ── private helpers ──────────────────────────────────────────────────────
+
+    private fun tryLoadWithVision(modelPath: String): LlmInference? = runCatching {
+        LlmInference.createFromOptions(
+            context, LlmInferenceOptions.builder()
+                .setModelPath(modelPath)
+                .setMaxTokens(1024)
+                .setVisionModelOptions(VisionModelOptions.builder().build())
+                .setPreferredBackend(LlmInference.Backend.CPU)
+                .build()
+        )
+    }.getOrNull()
+
+    private fun loadTextOnly(modelPath: String): LlmInference =
+        try {
+            LlmInference.createFromOptions(
+                context, LlmInferenceOptions.builder()
+                    .setModelPath(modelPath)
+                    .setMaxTokens(1024)
+                    .setPreferredBackend(LlmInference.Backend.CPU)
+                    .build()
+            )
+        } catch (_: Exception) {
+            LlmInference.createFromOptions(
+                context, LlmInferenceOptions.builder()
+                    .setModelPath(modelPath)
+                    .setMaxTokens(1024)
+                    .setPreferredBackend(LlmInference.Backend.DEFAULT)
+                    .build()
+            )
+        }
+
+    private fun buildTextPrompt(systemContext: String, userContent: String): String = buildString {
         if (systemContext.isNotBlank()) {
             append("<start_of_turn>system\n")
             append(systemContext)
             append("\n<end_of_turn>\n")
         }
         append("<start_of_turn>user\n")
-        if (hasImage) append("[IMAGE]\n")
         append(userContent)
         append("\n<end_of_turn>\n")
         append("<start_of_turn>model\n")
     }
 
-    private fun loadBitmapFromUri(uri: Uri): Bitmap? = runCatching {
-        context.contentResolver.openInputStream(uri)?.use { stream ->
-            BitmapFactory.decodeStream(stream)
-        }
-    }.getOrNull()
+    private fun loadAndScaleBitmap(uri: Uri, maxDimension: Int): Bitmap? {
+        val raw = runCatching {
+            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
+        }.getOrNull() ?: return null
+
+        val w = raw.width
+        val h = raw.height
+        if (w <= maxDimension && h <= maxDimension) return raw
+        val scale = maxDimension.toFloat() / maxOf(w, h)
+        return Bitmap.createScaledBitmap(raw, (w * scale).toInt(), (h * scale).toInt(), true)
+    }
 
     private fun releaseAll() {
         mediaPipeEngine?.close()
         mediaPipeEngine = null
+        mediaPipeVisionEnabled = false
         liteRtEngine?.close()
         liteRtEngine = null
         currentModelPath = null

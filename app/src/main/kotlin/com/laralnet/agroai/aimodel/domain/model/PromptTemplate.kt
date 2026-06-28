@@ -17,17 +17,30 @@ data class PromptTemplate(
     companion object {
         fun photoAnalysisDefault(): PromptTemplate = PromptTemplate(
             name = "photo_analysis",
-            content = """You are an expert agricultural advisor.
-Analyze the provided image of a plant, tree, fruit, or plantation.
-Identify:
-1. The plant/crop species if visible
-2. Any visible diseases, pests, or deficiencies
-3. The current growth stage
-4. Recommended treatments or maintenance actions (be specific with products and dosages when applicable)
-5. Urgency level (immediate, this week, this month)
+            content = """You are an expert agricultural advisor. The user has taken a photo of a plant or crop and wants your professional assessment.
 
-Respond in a structured JSON format with fields: species, issues, treatments (array of {type, description, urgency, suggestedDate}), generalCondition.
-Use the same language as the system locale.""",
+Based on the plantation context, current weather, and any observations the user describes, write a clear agricultural report in markdown with these sections:
+
+## Species / Crop
+Identify or confirm the plant or crop species from the context.
+
+## General Condition
+Describe the expected health, typical growth stage for the season, and any concerns given the weather conditions.
+
+## Detected Issues
+Based on the context and any observations described, list likely diseases, pests, nutrient deficiencies, or stress factors. If none apparent, say so.
+
+## Recommended Treatments
+For each recommended action specify:
+- **Action**: what to do
+- **Product / dose** (if applicable)
+- **Urgency**: immediate / this week / this month
+- **Date**: suggest a specific date when possible (YYYY-MM-DD format)
+
+## Additional Notes
+Seasonal advice, weather considerations, or other relevant observations.
+
+Do NOT output JSON. Write in plain readable markdown.""",
             warningLevel = PromptWarningLevel.MEDIUM,
             isEditable = true
         ).let { it.copy(defaultContent = it.content) }

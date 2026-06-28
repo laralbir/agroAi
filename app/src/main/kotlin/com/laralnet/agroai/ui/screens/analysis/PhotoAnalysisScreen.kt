@@ -1,5 +1,6 @@
 package com.laralnet.agroai.ui.screens.analysis
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,14 +17,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.laralnet.agroai.R
-import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
+import com.laralnet.agroai.ui.components.SimpleMarkdownText
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,22 +36,29 @@ fun PhotoAnalysisScreen(
     viewModel: PhotoAnalysisViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.scheduleEvent.collect { event ->
-            onNavigateToScheduleTreatment?.invoke(
-                event.plantationId,
-                event.suggestion.type,
-                event.suggestion.type,
-                event.suggestion.description,
-                event.rawAnalysis
-            )
-        }
-    }
+    val context = LocalContext.current
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> uri?.let { viewModel.analyzePhoto(it) } }
+
+    // Camera capture — TakePicture writes to a cached file and returns Boolean success
+    var cameraUri by remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success -> if (success) cameraUri?.let { viewModel.analyzePhoto(it) } }
+
+    fun launchCamera() {
+        val photoFile = File(context.cacheDir, "photos").also { it.mkdirs() }
+            .let { File(it, "photo_${System.currentTimeMillis()}.jpg") }
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            photoFile
+        )
+        cameraUri = uri
+        cameraLauncher.launch(uri)
+    }
 
     Scaffold(
         topBar = {
@@ -56,7 +66,10 @@ fun PhotoAnalysisScreen(
                 title = { Text(stringResource(R.string.analysis_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_navigate_back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_navigate_back)
+                        )
                     }
                 }
             )
@@ -74,6 +87,7 @@ fun PhotoAnalysisScreen(
                 return@Column
             }
 
+            // ---- Photo preview ----
             uiState.imageUri?.let { uri ->
                 AsyncImage(
                     model = uri,
@@ -83,8 +97,9 @@ fun PhotoAnalysisScreen(
                 )
             } ?: PhotoPlaceholder(modifier = Modifier.fillMaxWidth().height(240.dp))
 
+            // ---- Camera / gallery buttons ----
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
@@ -96,7 +111,7 @@ fun PhotoAnalysisScreen(
                     Text(stringResource(R.string.analysis_choose_gallery))
                 }
                 Button(
-                    onClick = { /* launch camera */ },
+                    onClick = { launchCamera() },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -105,85 +120,123 @@ fun PhotoAnalysisScreen(
                 }
             }
 
+            // ---- Plantation & plant type selectors ----
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                PlantationDropdown(
+                    plantations = uiState.plantations,
+                    selectedId = uiState.selectedPlantationId,
+                    onSelect = viewModel::selectPlantation
+                )
+
+                val selectedPlantation = uiState.plantations
+                    .firstOrNull { it.id == uiState.selectedPlantationId }
+                if (selectedPlantation != null && selectedPlantation.plants.isNotEmpty()) {
+                    PlantTypeDropdown(
+                        plants = selectedPlantation.plants,
+                        selectedId = uiState.selectedPlantTypeId,
+                        onSelect = viewModel::selectPlantType
+                    )
+                }
+
+                if (uiState.selectedPlantationId == null && uiState.plantations.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.analysis_select_required_hint),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            // ---- Optional user question ----
+            OutlinedTextField(
+                value = uiState.userQuestion,
+                onValueChange = viewModel::setUserQuestion,
+                label = { Text(stringResource(R.string.analysis_question_label)) },
+                placeholder = { Text(stringResource(R.string.analysis_question_hint)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                minLines = 2,
+                maxLines = 4
+            )
+
+            // ---- Analyze button ----
+            val canAnalyze = uiState.imageUri != null && !uiState.isAnalyzing &&
+                (uiState.plantations.isEmpty() ||
+                    (uiState.selectedPlantationId != null && uiState.selectedPlantTypeId != null))
+            Button(
+                onClick = { uiState.imageUri?.let { viewModel.analyzePhoto(it) } },
+                enabled = canAnalyze,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                Text(stringResource(R.string.analysis_analyze_btn))
+            }
+            if (uiState.imageUri != null && !canAnalyze && !uiState.isAnalyzing &&
+                uiState.plantations.isNotEmpty()
+            ) {
+                Text(
+                    stringResource(R.string.analysis_btn_disabled_hint),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            // ---- Progress / streaming ----
             if (uiState.isAnalyzing) {
                 Column(
-                    modifier = Modifier.padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     CircularProgressIndicator()
-                    Spacer(Modifier.height(16.dp))
                     Text(stringResource(R.string.analysis_analyzing))
                     if (uiState.streamingText.isNotBlank()) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = uiState.streamingText,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Card(modifier = Modifier.fillMaxWidth()) {
+                            SimpleMarkdownText(
+                                text = uiState.streamingText,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
                 }
             }
 
+            // ---- Analysis result ----
             uiState.analysisResult?.let { result ->
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (result.species.isNotBlank() || result.generalCondition.isNotBlank() || result.issues.isNotEmpty()) {
+                    if (result.rawResponse.isNotBlank()) {
                         Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                if (result.species.isNotBlank()) {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
-                                            stringResource(R.string.analysis_species),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            result.species,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                    }
-                                }
-                                if (result.generalCondition.isNotBlank()) {
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
-                                            stringResource(R.string.analysis_condition),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(result.generalCondition, style = MaterialTheme.typography.bodyMedium)
-                                    }
-                                }
-                                if (result.issues.isNotEmpty()) {
-                                    Text(
-                                        stringResource(R.string.analysis_issues),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    result.issues.forEach { issue ->
-                                        Text("• $issue", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                }
-                            }
+                            SimpleMarkdownText(
+                                text = result.rawResponse,
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
                     }
 
-                    if (result.suggestions.isNotEmpty()) {
-                        Text(
-                            stringResource(R.string.analysis_suggestions),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        result.suggestions.forEach { suggestion ->
-                            SuggestionCard(
-                                suggestion = suggestion,
-                                canSchedule = viewModel.plantationId != null,
-                                onSchedule = { viewModel.scheduleSuggestion(suggestion) }
-                            )
+                    val pid = viewModel.plantationId
+                    if (pid != null && onNavigateToScheduleTreatment != null) {
+                        Button(
+                            onClick = {
+                                onNavigateToScheduleTreatment.invoke(
+                                    pid,
+                                    "OTRO",
+                                    "AI Analysis",
+                                    result.rawResponse.take(400),
+                                    result.rawResponse.take(3000)
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.analysis_schedule_calendar))
                         }
                     }
                 }
@@ -202,6 +255,72 @@ fun PhotoAnalysisScreen(
     }
 }
 
+// ---- Plantation dropdown ----
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlantationDropdown(
+    plantations: List<com.laralnet.agroai.plantation.domain.model.Plantation>,
+    selectedId: String?,
+    onSelect: (String) -> Unit
+) {
+    if (plantations.isEmpty()) return
+    var expanded by remember { mutableStateOf(false) }
+    val selected = plantations.firstOrNull { it.id == selectedId }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = selected?.name ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.analysis_select_plantation)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            plantations.forEach { p ->
+                DropdownMenuItem(
+                    text = { Text(p.name) },
+                    onClick = { onSelect(p.id); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+// ---- Plant type dropdown ----
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlantTypeDropdown(
+    plants: List<com.laralnet.agroai.plantation.domain.model.PlantType>,
+    selectedId: String?,
+    onSelect: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selected = plants.firstOrNull { it.id == selectedId }
+    val selectedLabel = selected?.let {
+        if (it.variety.isNotBlank()) "${it.name} · ${it.variety}" else it.name
+    } ?: ""
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.analysis_select_plant_type)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            plants.forEach { pt ->
+                val label = if (pt.variety.isNotBlank()) "${pt.name} · ${pt.variety}" else pt.name
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = { onSelect(pt.id); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+// ---- Supporting composables (unchanged from before, except SuggestionCard date string) ----
 @Composable
 private fun PhotoPlaceholder(modifier: Modifier = Modifier) {
     Box(
@@ -224,58 +343,6 @@ private fun PhotoPlaceholder(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun SuggestionCard(
-    suggestion: TreatmentSuggestion,
-    canSchedule: Boolean,
-    onSchedule: () -> Unit
-) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(suggestion.type, style = MaterialTheme.typography.titleSmall)
-                SuggestionUrgencyChip(urgency = suggestion.urgency)
-            }
-            Text(suggestion.description, style = MaterialTheme.typography.bodyMedium)
-            suggestion.suggestedDate?.let { date ->
-                Text(
-                    "Suggested: $date",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            if (canSchedule) {
-                Button(onClick = onSchedule, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.analysis_schedule_calendar))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SuggestionUrgencyChip(urgency: String) {
-    val (containerColor, contentColor) = when (urgency.lowercase()) {
-        "immediate" -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-        "this week" -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Surface(shape = MaterialTheme.shapes.small, color = containerColor) {
-        Text(
-            urgency,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = contentColor
-        )
-    }
-}
 
 @Composable
 private fun NoModelWarning(modifier: Modifier = Modifier) {

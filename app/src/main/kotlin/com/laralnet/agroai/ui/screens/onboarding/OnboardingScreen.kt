@@ -10,7 +10,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CameraAlt
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,9 +36,15 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.laralnet.agroai.R
 
+// Pages: 0 = Welcome, 1 = Legal/AI Disclaimer, 2 = Permissions, 3 = Ready
+private const val TOTAL_PAGES = 4
+private const val DISCLAIMER_PAGE = 1
+private const val LAST_PAGE = TOTAL_PAGES - 1
+
 @Composable
 fun OnboardingScreen(onCompleted: () -> Unit) {
     var page by remember { mutableIntStateOf(0) }
+    var disclaimerAccepted by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -53,7 +62,11 @@ fun OnboardingScreen(onCompleted: () -> Unit) {
         ) { targetPage ->
             when (targetPage) {
                 0 -> WelcomePage()
-                1 -> PermissionsPage()
+                1 -> DisclaimerPage(
+                    accepted = disclaimerAccepted,
+                    onAcceptedChange = { disclaimerAccepted = it }
+                )
+                2 -> PermissionsPage()
                 else -> ReadyPage()
             }
         }
@@ -68,7 +81,7 @@ fun OnboardingScreen(onCompleted: () -> Unit) {
         ) {
             // Page dots
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                repeat(3) { i ->
+                repeat(TOTAL_PAGES) { i ->
                     Box(
                         modifier = Modifier
                             .size(if (i == page) 10.dp else 7.dp)
@@ -81,16 +94,23 @@ fun OnboardingScreen(onCompleted: () -> Unit) {
                 }
             }
 
-            if (page < 2) {
+            if (page < LAST_PAGE) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = onCompleted) {
-                        Text(stringResource(R.string.onboarding_skip))
+                    // Skip is not shown on the disclaimer page — user must accept
+                    if (page != DISCLAIMER_PAGE) {
+                        TextButton(onClick = onCompleted) {
+                            Text(stringResource(R.string.onboarding_skip))
+                        }
                     }
                     Button(
                         onClick = { page++ },
+                        enabled = page != DISCLAIMER_PAGE || disclaimerAccepted,
                         modifier = Modifier.testTag("onboarding_next_btn")
                     ) {
-                        Text(stringResource(R.string.onboarding_next))
+                        Text(
+                            if (page == DISCLAIMER_PAGE) stringResource(R.string.onboarding_accept)
+                            else stringResource(R.string.onboarding_next)
+                        )
                     }
                 }
             } else {
@@ -114,7 +134,6 @@ private fun WelcomePage() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // App icon placeholder — leaf icon in primary color circle
         Box(
             modifier = Modifier
                 .size(100.dp)
@@ -152,6 +171,126 @@ private fun WelcomePage() {
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun DisclaimerPage(accepted: Boolean, onAcceptedChange: (Boolean) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        // Icon + title
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.errorContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            Text(
+                text = stringResource(R.string.onboarding_disclaimer_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        // Main disclaimer text
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_disclaimer_intro),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Text(
+                    text = stringResource(R.string.onboarding_disclaimer_important_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_disclaimer_responsibility),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        // Bullet points
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = stringResource(R.string.onboarding_disclaimer_acknowledge_title),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+            listOf(
+                R.string.onboarding_disclaimer_point1,
+                R.string.onboarding_disclaimer_point2,
+                R.string.onboarding_disclaimer_point3
+            ).forEach { resId ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("•", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        text = stringResource(resId),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+
+        // Acceptance checkbox
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = if (accepted)
+                    MaterialTheme.colorScheme.secondaryContainer
+                else
+                    MaterialTheme.colorScheme.surfaceVariant
+            ),
+            onClick = { onAcceptedChange(!accepted) }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Checkbox(
+                    checked = accepted,
+                    onCheckedChange = onAcceptedChange
+                )
+                Text(
+                    text = stringResource(R.string.onboarding_disclaimer_accept_label),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 }
 

@@ -405,7 +405,7 @@
     .alert-tip   { background: var(--green-50); border-left: 3px solid var(--green-700); }
     .alert-danger{ background: var(--red-100); border-left: 3px solid var(--red-600); }
 
-    .alert strong { display: block; font-weight: 600; margin-bottom: 2px; }
+    .alert > div > strong { display: block; font-weight: 600; margin-bottom: 2px; }
 
     /* ─── Table ─────────────────────────────────────────────── */
     .table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
@@ -913,8 +913,8 @@
           <div class="step-body">
             <h4 class="lang-es">Analiza una foto</h4>
             <h4 class="lang-en">Analyze a photo</h4>
-            <p class="lang-es">Ve a la pestaña <strong>Análisis</strong>, toma una foto o selecciona una de la galería. Gemma analizará el estado de tus plantas y te ofrecerá sugerencias de tratamiento.</p>
-            <p class="lang-en">Go to the <strong>Analysis</strong> tab, take a photo or choose one from the gallery. Gemma will analyze the condition of your plants and provide treatment suggestions.</p>
+            <p class="lang-es">Abre el detalle de tu plantación, busca la tarjeta de la planta que quieres analizar y pulsa el botón 📸 <strong>Analizar</strong>. La app abrirá la pantalla de análisis con la plantación y la variedad ya seleccionadas. Toma una foto o elige una de la galería y pulsa <em>Analizar</em>.</p>
+            <p class="lang-en">Open your plantation's detail screen, find the plant card you want to analyze, and tap the 📸 <strong>Analyze</strong> button. The app will open the analysis screen with the plantation and variety already selected. Take a photo or pick one from the gallery and tap <em>Analyze</em>.</p>
           </div>
         </div>
       </div>
@@ -1287,47 +1287,67 @@
       </div>
 
       <div class="card lang-es">
-        <p>La pestaña <strong>Análisis</strong> permite fotografiar tus plantas o seleccionar una imagen de la galería. Gemma procesa la imagen localmente y devuelve sugerencias de tratamiento en segundos.</p>
+        <p>La pestaña <strong>Análisis</strong> permite fotografiar tus plantas o seleccionar una imagen de la galería. Gemma procesa la imagen localmente y devuelve un diagnóstico detallado con sugerencias de tratamiento. Para obtener el mejor resultado, vincula siempre el análisis a una plantación y un tipo de planta concretos.</p>
       </div>
       <div class="card lang-en">
-        <p>The <strong>Analysis</strong> tab lets you photograph your plants or select an image from the gallery. Gemma processes the image locally and returns treatment suggestions in seconds.</p>
+        <p>The <strong>Analysis</strong> tab lets you photograph your plants or select an image from the gallery. Gemma processes the image locally and returns a detailed diagnosis with treatment suggestions. For best results, always link the analysis to a specific plantation and plant type.</p>
       </div>
 
       <div class="steps">
         <div class="step">
           <div class="step-left"><div class="step-number">1</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Selecciona la fuente de imagen</h4>
-            <h4 class="lang-en">Select the image source</h4>
-            <p class="lang-es">Pulsa <strong>Tomar Foto</strong> para usar la cámara o <strong>Elegir de Galería</strong> para seleccionar una imagen existente.</p>
-            <p class="lang-en">Tap <strong>Take Photo</strong> to use the camera or <strong>Choose from Gallery</strong> to select an existing image.</p>
+            <h4 class="lang-es">Selecciona plantación y planta (recomendado)</h4>
+            <h4 class="lang-en">Select plantation and plant (recommended)</h4>
+            <p class="lang-es">Elige la plantación y el tipo de planta en los desplegables superiores. Con este contexto, Gemma recibe el tipo de cultivo, municipio/provincia, variedad, meteorología actual y previsión a 15 días — la calidad del análisis mejora notablemente. Si no seleccionas plantación y planta, el botón de análisis permanece desactivado.</p>
+            <p class="lang-en">Choose the plantation and plant type in the top dropdowns. With this context, Gemma receives the crop type, municipality/province, variety, current weather and 15-day forecast — analysis quality improves significantly. If you don't select a plantation and plant, the analysis button stays disabled.</p>
+            <p class="lang-es" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Acceso directo: pulsa el botón 📸 <em>Analizar</em> en la tarjeta de cualquier planta dentro del detalle de plantación — la selección se establece automáticamente.</p>
+            <p class="lang-en" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Shortcut: tap the 📸 <em>Analyze</em> button on any plant card inside the plantation detail — the selection is set automatically.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-left"><div class="step-number">2</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Espera el análisis</h4>
-            <h4 class="lang-en">Wait for the analysis</h4>
-            <p class="lang-es">Aparecerá el indicador <em>"Analizando con Gemma…"</em>. El tiempo varía según el modelo activo (1B es el más rápido).</p>
-            <p class="lang-en">The <em>"Analyzing with Gemma…"</em> indicator will appear. Time varies by active model (1B is fastest).</p>
+            <h4 class="lang-es">Selecciona la fuente de imagen</h4>
+            <h4 class="lang-en">Select the image source</h4>
+            <p class="lang-es">Pulsa <strong>Tomar Foto</strong> para abrir la cámara o <strong>Elegir de Galería</strong> para seleccionar una imagen existente. La foto se guarda temporalmente en el almacenamiento interno de la app y nunca se sube a ningún servidor.</p>
+            <p class="lang-en">Tap <strong>Take Photo</strong> to open the camera or <strong>Choose from Gallery</strong> to select an existing image. The photo is stored temporarily in the app's internal storage and is never uploaded to any server.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-left"><div class="step-number">3</div><div class="step-line"></div></div>
           <div class="step-body">
-            <h4 class="lang-es">Revisa el diagnóstico</h4>
-            <h4 class="lang-en">Review the diagnosis</h4>
-            <p class="lang-es">Aparece una tarjeta con la <strong>especie detectada</strong>, el <strong>estado general</strong> de la planta y los <strong>problemas identificados</strong>. Debajo, la lista de tratamientos recomendados con tipo, descripción y urgencia.</p>
-            <p class="lang-en">A card appears with the <strong>detected species</strong>, the plant's <strong>general condition</strong> and the <strong>identified issues</strong>. Below, the list of recommended treatments with type, description and urgency.</p>
+            <h4 class="lang-es">Añade una pregunta (opcional)</h4>
+            <h4 class="lang-en">Add a question (optional)</h4>
+            <p class="lang-es">Si tienes una duda concreta sobre tus plantas, escríbela en el campo <em>"¿Tienes alguna pregunta…?"</em>. Se incluirá como sección adicional en el prompt enviado a Gemma junto al contexto de la plantación.</p>
+            <p class="lang-en">If you have a specific question about your plants, type it in the <em>"Do you have any question…?"</em> field. It will be included as an additional section in the prompt sent to Gemma alongside the plantation context.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-left"><div class="step-number">4</div><div class="step-line"></div></div>
           <div class="step-body">
+            <h4 class="lang-es">Espera el análisis</h4>
+            <h4 class="lang-en">Wait for the analysis</h4>
+            <p class="lang-es">Aparecerá el indicador <em>"Analizando con Gemma…"</em>. El tiempo varía según el modelo activo (1B es el más rápido, ~10-30 s en Pixel 9 Pro).</p>
+            <p class="lang-en">The <em>"Analyzing with Gemma…"</em> indicator will appear. Time varies by active model (1B is fastest, ~10-30 s on Pixel 9 Pro).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">5</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4 class="lang-es">Revisa el diagnóstico</h4>
+            <h4 class="lang-en">Review the diagnosis</h4>
+            <p class="lang-es">La respuesta de Gemma se muestra con formato enriquecido (negritas, listas, encabezados). También aparece una tarjeta con la <strong>especie detectada</strong>, el <strong>estado general</strong> y los <strong>problemas identificados</strong>, seguida de la lista de tratamientos recomendados con tipo, descripción y urgencia.</p>
+            <p class="lang-en">Gemma's response is shown with rich formatting (bold, lists, headings). A summary card also appears with the <strong>detected species</strong>, the plant's <strong>general condition</strong> and the <strong>identified issues</strong>, followed by the list of recommended treatments with type, description and urgency.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left"><div class="step-number">6</div></div>
+          <div class="step-body">
             <h4 class="lang-es">Agenda el tratamiento</h4>
             <h4 class="lang-en">Schedule the treatment</h4>
-            <p class="lang-es">Pulsa <em>Agendar en Calendario</em> en cualquier sugerencia. La pantalla de programación se abre con el tipo, título y descripción ya rellenos. Elige fecha, hora y (opcionalmente) añade el evento a Google Calendar. El contexto del análisis de Gemma se guarda junto al tratamiento para consulta futura.</p>
-            <p class="lang-en">Tap <em>Schedule in Calendar</em> on any suggestion. The scheduling screen opens with the type, title and description already filled in. Choose the date, time and (optionally) add the event to Google Calendar. Gemma's analysis context is saved with the treatment for future reference.</p>
+            <p class="lang-es">Pulsa <em>Agendar en Calendario</em> en cualquier sugerencia. La pantalla de programación se abre con el tipo, título y descripción ya rellenos. Elige fecha, hora y (opcionalmente) añade el evento a Google Calendar. El contexto del análisis se guarda junto al tratamiento para consulta futura.</p>
+            <p class="lang-en">Tap <em>Schedule in Calendar</em> on any suggestion. The scheduling screen opens with the type, title and description already filled in. Choose the date, time and (optionally) add the event to Google Calendar. The analysis context is saved with the treatment for future reference.</p>
           </div>
         </div>
       </div>
@@ -1335,10 +1355,10 @@
       <div class="alert alert-tip" style="margin-top:16px;">
         <span class="alert-icon">🌿</span>
         <div>
-          <strong class="lang-es">Mejor resultado con plantación vinculada</strong>
-          <strong class="lang-en">Better results with a linked plantation</strong>
-          <span class="lang-es">Si accedes al análisis desde el detalle de una plantación (botón 📸 en la cabecera), el botón <em>Agendar</em> aparece en cada sugerencia. Si entras directamente desde la pestaña Análisis, el botón se oculta porque no hay plantación a la que asociar el tratamiento.</span>
-          <span class="lang-en">If you open the analysis from a plantation's detail screen (📸 button in the header), the <em>Schedule</em> button appears on each suggestion. If you open it directly from the Analysis tab, the button is hidden because there is no plantation to associate the treatment with.</span>
+          <strong class="lang-es">Acceso rápido desde la tarjeta de planta</strong>
+          <strong class="lang-en">Quick access from the plant card</strong>
+          <span class="lang-es">En el detalle de cada plantación, cada tarjeta de planta muestra tres acciones: 📸 <strong>Analizar</strong> (abre el análisis con contexto pre-cargado), ✏️ <strong>Editar</strong> (modifica nombre, variedad y cantidad desde un diálogo) y 🗑️ <strong>Eliminar</strong> (con confirmación). El botón Analizar es la forma más rápida de lanzar un análisis porque carga automáticamente la plantación y la variedad correctas.</span>
+          <span class="lang-en">In each plantation's detail screen, every plant card shows three actions: 📸 <strong>Analyze</strong> (opens analysis with pre-loaded context), ✏️ <strong>Edit</strong> (modify name, variety and count from a dialog) and 🗑️ <strong>Delete</strong> (with confirmation). The Analyze button is the fastest way to start an analysis because it automatically loads the correct plantation and variety.</span>
         </div>
       </div>
 
@@ -1373,8 +1393,8 @@
         <li class="lang-en"><strong>Widget in plantation detail</strong>: current temperature, condition (with emoji), humidity and wind speed/direction</li>
         <li class="lang-es"><strong>Alertas en el detalle de tratamiento</strong>: tarjeta roja de aviso si el día agendado presenta helada, lluvia intensa, tormenta, granizo o nieve</li>
         <li class="lang-en"><strong>Alerts in treatment detail</strong>: red warning card if the scheduled day has frost, heavy rain, storm, hail or snow</li>
-        <li class="lang-es">Predicción diaria para los próximos 7 días con temperatura máx/mín, probabilidad de lluvia y UV</li>
-        <li class="lang-en">Daily forecast for the next 7 days with max/min temperature, rain probability and UV index</li>
+        <li class="lang-es">Predicción diaria para los próximos 15 días con temperatura máx/mín, probabilidad de lluvia y UV (usada también en los prompts de análisis)</li>
+        <li class="lang-en">Daily forecast for the next 15 days with max/min temperature, rain probability and UV index (also used in analysis prompts)</li>
         <li class="lang-es">Caché local en Room — disponible sin conexión tras la primera carga</li>
         <li class="lang-en">Local Room cache — available offline after first load</li>
         <li class="lang-es">Actualización automática cada 6 horas (requiere conexión)</li>

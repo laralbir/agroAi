@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
@@ -25,13 +27,13 @@ import com.laralnet.agroai.plantation.domain.model.PlantType
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
 import com.laralnet.agroai.ui.screens.treatment.resolveLabel
-import com.laralnet.agroai.weather.domain.model.CurrentWeather
 import com.laralnet.agroai.weather.domain.model.WeatherCondition
 import com.laralnet.agroai.weather.domain.model.WeatherData
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import androidx.compose.foundation.text.KeyboardOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +41,7 @@ fun PlantationDetailScreen(
     plantationId: String,
     onNavigateBack: () -> Unit,
     onNavigateToAnalysis: () -> Unit,
+    onNavigateToAnalysisWithPlant: (plantationId: String, plantTypeId: String) -> Unit,
     onNavigateToEdit: () -> Unit,
     onNavigateToScheduleTreatment: (String) -> Unit,
     onNavigateToTreatmentDetail: (String) -> Unit,
@@ -49,6 +52,40 @@ fun PlantationDetailScreen(
     val plantation by viewModel.plantation.collectAsState()
     val treatments by viewModel.treatments.collectAsState()
     val weather by viewModel.weather.collectAsState()
+
+    // Edit plant dialog state
+    var editingPlant by remember { mutableStateOf<PlantType?>(null) }
+    var deletingPlantId by remember { mutableStateOf<String?>(null) }
+
+    editingPlant?.let { plant ->
+        EditPlantDialog(
+            plant = plant,
+            onDismiss = { editingPlant = null },
+            onConfirm = { updated ->
+                viewModel.updatePlantType(updated)
+                editingPlant = null
+            }
+        )
+    }
+
+    deletingPlantId?.let { plantId ->
+        AlertDialog(
+            onDismissRequest = { deletingPlantId = null },
+            title = { Text(stringResource(R.string.plant_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.plant_delete_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deletePlantType(plantId)
+                    deletingPlantId = null
+                }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { deletingPlantId = null }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -105,7 +142,12 @@ fun PlantationDetailScreen(
                         )
                     }
                     items(p.plants, key = { it.id }) { plant ->
-                        PlantCard(plant = plant)
+                        PlantCard(
+                            plant = plant,
+                            onAnalyze = { onNavigateToAnalysisWithPlant(plantationId, plant.id) },
+                            onEdit = { editingPlant = plant },
+                            onDelete = { deletingPlantId = plant.id }
+                        )
                     }
                 }
 
@@ -136,7 +178,7 @@ fun PlantationDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentAlignment = androidx.compose.ui.Alignment.Center
+            contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
@@ -201,27 +243,66 @@ private fun PlantationLocationCard(location: Location) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlantCard(plant: PlantType) {
+private fun PlantCard(
+    plant: PlantType,
+    onAnalyze: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
     val unitsLabel = stringResource(R.string.plantation_units)
     Card(modifier = Modifier.fillMaxWidth()) {
-        ListItem(
-            leadingContent = {
-                Icon(
-                    Icons.Default.Eco,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            headlineContent = {
-                Text(
-                    if (plant.variety.isNotBlank()) "${plant.name} · ${plant.variety}"
-                    else plant.name
-                )
-            },
-            supportingContent = if (plant.count > 0) {
-                { Text("${plant.count} $unitsLabel") }
-            } else null
-        )
+        Column {
+            ListItem(
+                leadingContent = {
+                    Icon(
+                        Icons.Default.Eco,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                headlineContent = {
+                    Text(
+                        if (plant.variety.isNotBlank()) "${plant.name} · ${plant.variety}"
+                        else plant.name
+                    )
+                },
+                supportingContent = if (plant.count > 0) {
+                    { Text("${plant.count} $unitsLabel") }
+                } else null
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onAnalyze) {
+                    Icon(
+                        Icons.Default.CameraAlt,
+                        contentDescription = stringResource(R.string.cd_analyze_plant),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.plant_analyze))
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.cd_edit_plant),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.cd_delete_plant),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -329,4 +410,76 @@ private fun TreatmentCard(treatment: Treatment, onClick: () -> Unit) {
             }
         )
     }
+}
+
+// ---- Edit plant dialog ----
+@Composable
+private fun EditPlantDialog(
+    plant: PlantType,
+    onDismiss: () -> Unit,
+    onConfirm: (PlantType) -> Unit
+) {
+    var name by remember { mutableStateOf(plant.name) }
+    var variety by remember { mutableStateOf(plant.variety) }
+    var countText by remember { mutableStateOf(if (plant.count > 0) plant.count.toString() else "") }
+    var notes by remember { mutableStateOf(plant.notes) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.plant_edit)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.plant_name)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = variety,
+                    onValueChange = { variety = it },
+                    label = { Text(stringResource(R.string.plant_variety)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = countText,
+                    onValueChange = { countText = it.filter { c -> c.isDigit() } },
+                    label = { Text(stringResource(R.string.plant_count)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text(stringResource(R.string.plantation_notes)) },
+                    minLines = 2,
+                    maxLines = 4,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (name.isNotBlank()) {
+                        onConfirm(
+                            plant.copy(
+                                name = name.trim(),
+                                variety = variety.trim(),
+                                count = countText.toIntOrNull() ?: plant.count,
+                                notes = notes.trim()
+                            )
+                        )
+                    }
+                },
+                enabled = name.isNotBlank()
+            ) { Text(stringResource(R.string.btn_save)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
+        }
+    )
 }

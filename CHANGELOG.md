@@ -8,6 +8,27 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-06-28
+
+### Añadido
+- **Cámara funcional**: implementado `ActivityResultContracts.TakePicture()` con URI de FileProvider temporal; la cámara ya abre y guarda la foto correctamente en todos los dispositivos de prueba
+- **Gestión de plantas en detalle de plantación**: cada tarjeta de planta muestra tres botones — 📸 **Analizar** (navega a Análisis con plantación y planta preseleccionadas), ✏️ **Editar** (diálogo inline con campos de nombre, variedad y cantidad) y 🗑️ **Eliminar** (confirmación antes de borrar); `deletePlantType()` y `updatePlantType()` añadidos al ViewModel
+- **Campo de pregunta opcional en análisis**: `OutlinedTextField` en `PhotoAnalysisScreen` que permite añadir una pregunta libre al prompt; la pregunta se inyecta como sección en el prompt enviado a Gemma
+- **Prompts enriquecidos con contexto**: el prompt de análisis ahora incluye tipo de plantación, municipio/provincia, variedad de planta seleccionada, meteorología actual y previsión a 15 días (ampliado de 7 días), e idioma activo; la calidad del análisis mejora notablemente con contexto localizado
+- **Renderizado Markdown en la respuesta de Gemma**: nuevo componente `SimpleMarkdownText` que convierte negritas, listas con viñetas y encabezados a estilos Compose; la respuesta ya no se muestra como texto plano
+- **Análisis bloqueado sin contexto mínimo**: si el usuario entra a la pestaña Análisis sin haber seleccionado una plantación y un tipo de planta, el botón de análisis queda desactivado y aparece un mensaje de guía; el contexto puede seleccionarse con dos dropdowns en la propia pantalla
+- **Soporte multimodal MediaPipe**: añadida dependencia `tasks-genai-core` con `BitmapImageBuilder`/`MPImage` para pasar imágenes reales a los modelos que lo soporten
+
+### Cambiado
+- `OpenMeteoApiService` amplía la previsión diaria de 7 a 15 días (`forecast_days=15`) para alimentar el contexto de los prompts de análisis
+- `PhotoAnalysisViewModel` inyecta `PlantationRepository`, `ObserveWeatherQuery` y `RefreshWeatherHandler`; el estado de UI incluye la lista de plantaciones y los selectores de plantación/planta
+- `GemmaInferenceEngine` refactorizado para intentar pasar `MPImage` cuando el formato del modelo lo permita; documentado el estado actual de soporte de imágenes por formato (`.task` vs `.litertlm`)
+- `AIModel` y `PromptTemplate` actualizados con nuevos campos de soporte multimodal y configuración de contexto
+- `ModelManagementScreen` y `OnboardingScreen` con mejoras menores de UX
+
+### Corregido
+- La cámara en `PhotoAnalysisScreen` fallaba silenciosamente con Intent directo; ahora usa `FileProvider` + `TakePicture` contract con manejo correcto de permisos
+
 ## [0.11.1] - 2026-06-26
 
 ### Corregido

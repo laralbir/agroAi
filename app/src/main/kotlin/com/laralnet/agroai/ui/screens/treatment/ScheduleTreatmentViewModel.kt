@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
@@ -52,11 +53,13 @@ class ScheduleTreatmentViewModel @Inject constructor(
         val prefillTitle = savedStateHandle.get<String>("prefillTitle") ?: ""
         val prefillDesc = savedStateHandle.get<String>("prefillDesc") ?: ""
         val prefillAnalysis = savedStateHandle.get<String>("prefillAnalysis")?.ifBlank { null }
+        val suggestedDateMillis = extractSuggestedDateMillis(prefillAnalysis ?: prefillDesc)
         ScheduleTreatmentState(
             plantationId = savedStateHandle["plantationId"] ?: "",
             type = prefillType ?: TreatmentType.OTRO,
             title = prefillTitle,
             description = prefillDesc,
+            selectedDateMillis = suggestedDateMillis,
             aiAnalysisResult = prefillAnalysis
         )
     })
@@ -95,6 +98,43 @@ class ScheduleTreatmentViewModel @Inject constructor(
                     _state.update { it.copy(isLoadingCalendars = false, error = e.message) }
                 }
         }
+    }
+
+    companion object {
+        /**
+         * Extracts a suggested date in epoch millis from AI response text.
+         * Priority: ISO date (YYYY-MM-DD) > urgency keywords.
+         */
+        internal fun extractSuggestedDateMillis(text: String): Long {
+            val today = LocalDate.now(ZoneId.systemDefault())
+
+            // 1. Look for ISO date YYYY-MM-DD anywhere in the text
+            val isoRegex = Regex("""\b(\d{4}-\d{2}-\d{2})\b""")
+            isoRegex.findAll(text).forEach { match ->
+                runCatching {
+                    val date = LocalDate.parse(match.groupValues[1])
+                    // Only accept future or today dates
+                    if (!date.isBefore(today)) {
+                        return date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    }
+                }.onFailure { /* ignore malformed dates */ }
+            }
+
+            // 2. Fall back to urgency keywords (EN + ES)
+            val lower = text.lowercase()
+            return when {
+                containsAny(lower, "immediate", "immediately", "urgent", "urgente", "inmediato", "inmediatamente", "hoy", "today") ->
+                    today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                containsAny(lower, "this week", "esta semana", "próxima semana", "next week") ->
+                    today.plusDays(5).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                containsAny(lower, "this month", "este mes", "próximo mes", "next month") ->
+                    today.plusDays(20).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                else -> System.currentTimeMillis()
+            }
+        }
+
+        private fun containsAny(text: String, vararg keywords: String) =
+            keywords.any { text.contains(it) }
     }
 
     fun schedule() = viewModelScope.launch {

@@ -66,7 +66,6 @@
     <string name="analysis_title">Análisis por Foto</string>
     <string name="analysis_take_photo">Tomar Foto</string>
     <string name="analysis_choose_gallery">Elegir de Galería</string>
-    <string name="analysis_select_plantation">Seleccionar plantación</string>
     <string name="analysis_analyzing">Analizando con Gemma…</string>
     <string name="analysis_suggestions">Sugerencias</string>
     <string name="analysis_schedule_calendar">Agendar en Calendario</string>
@@ -116,6 +115,7 @@
     <string name="model_not_downloaded">No descargado</string>
     <string name="model_active">Activo</string>
     <string name="model_recommended">Recomendado</string>
+    <string name="model_supports_vision">Análisis de foto</string>
     <string name="model_coming_soon">Próximamente</string>
     <string name="model_download">Descargar</string>
     <string name="model_activate">Activar</string>
@@ -254,6 +254,24 @@
     <string name="analysis_species">Especie:</string>
     <string name="analysis_condition">Estado:</string>
     <string name="analysis_issues">Problemas detectados:</string>
+    <string name="analysis_select_plantation">Seleccionar plantación</string>
+    <string name="analysis_select_plant_type">Seleccionar tipo de planta</string>
+    <string name="analysis_question_label">Tu pregunta (opcional)</string>
+    <string name="analysis_question_hint">ej. ¿El tomate está para cosechar?</string>
+    <string name="analysis_analyze_btn">Analizar foto</string>
+    <string name="analysis_select_required_hint">Selecciona una plantación y tipo de planta para incluir contexto en el análisis</string>
+    <string name="analysis_btn_disabled_hint">Selecciona una plantación y tipo de planta antes de analizar</string>
+    <string name="analysis_suggested_date">Sugerido: %s</string>
+
+    <!-- Plant actions -->
+    <string name="plant_analyze">Analizar</string>
+    <string name="plant_edit">Editar planta</string>
+    <string name="plant_delete">Eliminar planta</string>
+    <string name="plant_delete_confirm_title">¿Eliminar planta?</string>
+    <string name="plant_delete_confirm_body">Este tipo de planta se eliminará de la plantación.</string>
+    <string name="cd_analyze_plant">Analizar esta planta</string>
+    <string name="cd_edit_plant">Editar esta planta</string>
+    <string name="cd_delete_plant">Eliminar esta planta</string>
 
     <!-- Model download log -->
     <string name="model_download_log">Registro de descarga</string>
@@ -334,6 +352,18 @@
     <string name="onboarding_start">Empezar</string>
     <string name="onboarding_next">Siguiente</string>
     <string name="onboarding_skip">Saltar</string>
+    <string name="onboarding_accept">Acepto</string>
+
+    <!-- Onboarding — Aviso legal e IA -->
+    <string name="onboarding_disclaimer_title">Aviso Legal e IA</string>
+    <string name="onboarding_disclaimer_intro">AgroAI utiliza inteligencia artificial local (Gemma) para analizar fotos y sugerir tratamientos agrícolas. Todo el procesamiento de IA ocurre en tu dispositivo — no se envían datos a ningún servidor.</string>
+    <string name="onboarding_disclaimer_important_label">⚠ Importante</string>
+    <string name="onboarding_disclaimer_responsibility">Las sugerencias de la IA son meramente informativas. El desarrollador de la aplicación no se hace responsable de las decisiones tomadas basándose en las recomendaciones de la IA. Consulta siempre con un profesional agrícola cualificado antes de aplicar tratamientos, pesticidas o realizar cambios significativos en tus cultivos.</string>
+    <string name="onboarding_disclaimer_acknowledge_title">Al continuar, reconoces que:</string>
+    <string name="onboarding_disclaimer_point1">Los resultados de la IA pueden ser inexactos o incompletos y no deben sustituir el asesoramiento agronómico experto.</string>
+    <string name="onboarding_disclaimer_point2">Los datos meteorológicos provienen de servicios de terceros (Open-Meteo) y pueden no ser precisos para tu ubicación exacta.</string>
+    <string name="onboarding_disclaimer_point3">El desarrollador no asume ninguna responsabilidad por daños en los cultivos, pérdidas económicas o cualquier perjuicio derivado del uso de esta aplicación.</string>
+    <string name="onboarding_disclaimer_accept_label">He leído y acepto las condiciones. Entiendo que las sugerencias de la IA son únicamente informativas.</string>
 
     <!-- Accessibility -->
     <string name="cd_navigate_back">Volver atrás</string>

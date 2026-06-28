@@ -15,8 +15,8 @@ android {
         applicationId = "com.laralnet.agroai"
         minSdk = 26
         targetSdk = 36
-        versionCode = 13
-        versionName = "0.11.1"
+        versionCode = 14
+        versionName = "0.12.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -127,6 +127,7 @@ dependencies {
 
     // MediaPipe Tasks GenAI (Gemma 3 .task format)
     implementation(libs.mediapipe.tasks.genai)
+    implementation(libs.mediapipe.tasks.core) // BitmapImageBuilder + MPImage for multimodal inference
     // LiteRT-LM (Gemma 4 .litertlm format)
     implementation(libs.litertlm.android)
 
