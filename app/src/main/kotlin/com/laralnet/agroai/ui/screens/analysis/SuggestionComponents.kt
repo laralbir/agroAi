@@ -41,9 +41,14 @@ internal fun SuggestionCard(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 2.dp)) {
                     if (suggestion.urgency.isNotBlank()) {
+                        val urgencyLabel = urgencyLabel(suggestion.urgency)
+                        val urgencyColor = urgencyContainerColor(suggestion.urgency)
                         SuggestionChip(
                             onClick = {},
-                            label = { Text(suggestion.urgency, style = MaterialTheme.typography.labelSmall) }
+                            label = { Text(urgencyLabel, style = MaterialTheme.typography.labelSmall) },
+                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                containerColor = urgencyColor
+                            )
                         )
                     }
                     suggestion.suggestedDate?.let { date ->
@@ -70,6 +75,25 @@ internal fun SuggestionCard(
             }
         }
     }
+}
+
+@Composable
+internal fun urgencyLabel(urgency: String): String = when (urgency.lowercase().trim()) {
+    "immediate" -> stringResource(R.string.urgency_immediate)
+    "this_week" -> stringResource(R.string.urgency_this_week)
+    "this_month" -> stringResource(R.string.urgency_this_month)
+    "high" -> stringResource(R.string.urgency_high)
+    "medium" -> stringResource(R.string.urgency_medium)
+    "low" -> stringResource(R.string.urgency_low)
+    else -> urgency
+}
+
+@Composable
+internal fun urgencyContainerColor(urgency: String) = when (urgency.lowercase().trim()) {
+    "immediate" -> MaterialTheme.colorScheme.errorContainer
+    "this_week", "high" -> MaterialTheme.colorScheme.tertiaryContainer
+    "this_month", "medium" -> MaterialTheme.colorScheme.secondaryContainer
+    else -> MaterialTheme.colorScheme.surfaceVariant
 }
 
 internal fun TreatmentType.emoji() = when (this) {

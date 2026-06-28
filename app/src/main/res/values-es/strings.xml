@@ -402,6 +402,21 @@
     <string name="analysis_stage_treatments">Identificando tratamientos…</string>
     <string name="analysis_stage_recommendations">Elaborando recomendaciones…</string>
 
+    <!-- Niveles de urgencia -->
+    <string name="urgency_immediate">Urgente</string>
+    <string name="urgency_this_week">Esta semana</string>
+    <string name="urgency_this_month">Este mes</string>
+    <string name="urgency_high">Alta prioridad</string>
+    <string name="urgency_medium">Prioridad media</string>
+    <string name="urgency_low">Baja prioridad</string>
+
+    <!-- Informes de análisis por planta -->
+    <string name="plant_view_reports">Informes</string>
+    <string name="analysis_reports_title">Informes de análisis</string>
+    <string name="analysis_delete">Eliminar informe</string>
+    <string name="analysis_delete_confirm_title">¿Eliminar informe?</string>
+    <string name="analysis_delete_confirm_body">Este informe de análisis se eliminará de forma permanente.</string>
+
     <!-- Accessibility -->
     <string name="cd_navigate_back">Volver atrás</string>
     <string name="cd_previous_month">Mes anterior</string>
@@ -413,4 +428,11 @@
     <string name="cd_weather_alert">Alerta meteorológica</string>
     <string name="cd_plantation_location">Ubicación de la plantación</string>
     <string name="cd_plantation_type">Tipo de plantación</string>
+    <string name="cd_view_plant_reports">Ver informes de análisis de esta planta</string>
+
+    <!-- Notificaciones de salud de plantación en segundo plano -->
+    <string name="notif_channel_health_name">Asesor de plantaciones</string>
+    <string name="notif_health_title">Actualización de salud de plantación</string>
+    <string name="notif_health_body_single">Nuevas sugerencias de tratamiento para %s basadas en la previsión meteorológica.</string>
+    <string name="notif_health_body_multiple">Nuevas sugerencias de tratamiento para %d plantaciones basadas en la previsión meteorológica.</string>
 </resources>

@@ -33,6 +33,7 @@ import com.laralnet.agroai.R
 import com.laralnet.agroai.ui.screens.aimodel.ModelManagementScreen
 import com.laralnet.agroai.ui.screens.analysis.AnalysisResultScreen
 import com.laralnet.agroai.ui.screens.analysis.PhotoAnalysisScreen
+import com.laralnet.agroai.ui.screens.analysis.PlantReportsScreen
 import android.net.Uri
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -95,6 +96,10 @@ sealed class Screen(val route: String) {
     }
     data object AnalysisResult : Screen("analysis/result/{analysisId}") {
         fun route(id: String) = "analysis/result/$id"
+    }
+    data object PlantReports : Screen("plantation/{plantationId}/plant/{plantTypeId}/reports") {
+        fun route(plantationId: String, plantTypeId: String) =
+            "plantation/$plantationId/plant/$plantTypeId/reports"
     }
     data object Onboarding : Screen("onboarding")
     /** Silent router — navigates immediately to Onboarding or Home, never shown to the user. */
@@ -243,6 +248,9 @@ fun AgroAINavGraph(
                     onNavigateToAnalysisWithPlant = { pId, ptId ->
                         navController.navigate(Screen.PhotoAnalysis.route(pId, ptId))
                     },
+                    onNavigateToPlantReports = { pId, ptId ->
+                        navController.navigate(Screen.PlantReports.route(pId, ptId))
+                    },
                     onNavigateToEdit = {
                         navController.navigate(Screen.PlantationEdit.route(id))
                     },
@@ -371,6 +379,20 @@ fun AgroAINavGraph(
                         navController.navigate(
                             Screen.ScheduleTreatment.routeWithPrefill(plantationId, type, title, description, rawAnalysis)
                         )
+                    }
+                )
+            }
+            composable(
+                route = Screen.PlantReports.route,
+                arguments = listOf(
+                    navArgument("plantationId") { type = NavType.StringType },
+                    navArgument("plantTypeId") { type = NavType.StringType }
+                )
+            ) {
+                PlantReportsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToResult = { analysisId ->
+                        navController.navigate(Screen.AnalysisResult.route(analysisId))
                     }
                 )
             }

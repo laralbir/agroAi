@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,11 @@ fun AnalysisResultScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Navigate back after deletion
+    LaunchedEffect(Unit) {
+        viewModel.deletedEvent.collect { onNavigateBack() }
+    }
+
     // Forward schedule events to caller
     LaunchedEffect(Unit) {
         viewModel.scheduleEvent.collect { event ->
@@ -41,6 +47,25 @@ fun AnalysisResultScreen(
         }
     }
 
+    // Delete confirmation dialog
+    if (uiState.showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelDelete() },
+            title = { Text(stringResource(R.string.analysis_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.analysis_delete_confirm_body)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.confirmDelete() }) {
+                    Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelDelete() }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -51,6 +76,17 @@ fun AnalysisResultScreen(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.cd_navigate_back)
                         )
+                    }
+                },
+                actions = {
+                    if (!uiState.isLoading && uiState.record != null) {
+                        IconButton(onClick = { viewModel.requestDelete() }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.analysis_delete),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             )
@@ -106,7 +142,7 @@ fun AnalysisResultScreen(
                             verticalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
                             val dateStr = DateTimeFormatter
-                                .ofLocalizedDate(FormatStyle.MEDIUM)
+                                .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
                                 .withZone(ZoneId.systemDefault())
                                 .format(record.createdAt)
                             Text(

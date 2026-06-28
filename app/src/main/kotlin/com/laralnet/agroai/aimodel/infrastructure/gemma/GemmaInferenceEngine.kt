@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +43,9 @@ data class PhotoAnalysisResult(
 class GemmaInferenceEngine @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    // Ensures only one inference runs at a time (foreground or background)
+    private val inferenceMutex = Mutex()
+
     // MediaPipe engine — for .task files (Gemma 3 / Gemma 3n)
     private var mediaPipeEngine: LlmInference? = null
 
@@ -99,40 +104,42 @@ class GemmaInferenceEngine @Inject constructor(
             var sessionToClose: LlmInferenceSession? = null
 
             withContext(Dispatchers.Default) {
-                val prompt = buildTextPrompt(systemPrompt, userPrompt)
+                inferenceMutex.withLock {
+                    val prompt = buildTextPrompt(systemPrompt, userPrompt)
 
-                when {
-                    mediaPipeEngine != null -> {
-                        val session = LlmInferenceSession.createFromOptions(
-                            mediaPipeEngine!!,
-                            LlmInferenceSession.LlmInferenceSessionOptions.builder().build()
-                        )
-                        sessionToClose = session
+                    when {
+                        mediaPipeEngine != null -> {
+                            val session = LlmInferenceSession.createFromOptions(
+                                mediaPipeEngine!!,
+                                LlmInferenceSession.LlmInferenceSessionOptions.builder().build()
+                            )
+                            sessionToClose = session
 
-                        if (mediaPipeVisionEnabled) {
-                            val bitmap = loadAndScaleBitmap(imageUri, maxDimension = 768)
-                            if (bitmap != null) {
-                                runCatching {
-                                    session.addImage(BitmapImageBuilder(bitmap).build())
+                            if (mediaPipeVisionEnabled) {
+                                val bitmap = loadAndScaleBitmap(imageUri, maxDimension = 768)
+                                if (bitmap != null) {
+                                    runCatching {
+                                        session.addImage(BitmapImageBuilder(bitmap).build())
+                                    }
                                 }
                             }
-                        }
 
-                        session.addQueryChunk(prompt)
-                        session.generateResponseAsync { response, done ->
-                            trySend(response)
-                            if (done) close()
-                        }
-                    }
-
-                    liteRtEngine != null -> {
-                        // LiteRT-LM 0.13.1 — text-only (no image API available)
-                        liteRtEngine!!.createConversation().use { conversation ->
-                            conversation.sendMessageAsync(prompt).collect { chunk ->
-                                trySend(chunk.toString())
+                            session.addQueryChunk(prompt)
+                            session.generateResponseAsync { response, done ->
+                                trySend(response)
+                                if (done) close()
                             }
                         }
-                        close()
+
+                        liteRtEngine != null -> {
+                            // LiteRT-LM 0.13.1 — text-only (no image API available)
+                            liteRtEngine!!.createConversation().use { conversation ->
+                                conversation.sendMessageAsync(prompt).collect { chunk ->
+                                    trySend(chunk.toString())
+                                }
+                            }
+                            close()
+                        }
                     }
                 }
             }
@@ -141,20 +148,22 @@ class GemmaInferenceEngine @Inject constructor(
         }
 
     suspend fun generateText(prompt: String): Result<String> = withContext(Dispatchers.Default) {
-        when {
-            liteRtEngine != null -> runCatching {
-                val sb = StringBuilder()
-                liteRtEngine!!.createConversation().use { conversation ->
-                    conversation.sendMessageAsync(prompt).collect { message ->
-                        sb.append(message.toString())
+        inferenceMutex.withLock {
+            when {
+                liteRtEngine != null -> runCatching {
+                    val sb = StringBuilder()
+                    liteRtEngine!!.createConversation().use { conversation ->
+                        conversation.sendMessageAsync(prompt).collect { message ->
+                            sb.append(message.toString())
+                        }
                     }
+                    sb.toString()
                 }
-                sb.toString()
+                mediaPipeEngine != null -> runCatching {
+                    mediaPipeEngine!!.generateResponse(prompt)
+                }
+                else -> Result.failure(IllegalStateException("Model not loaded"))
             }
-            mediaPipeEngine != null -> runCatching {
-                mediaPipeEngine!!.generateResponse(prompt)
-            }
-            else -> Result.failure(IllegalStateException("Model not loaded"))
         }
     }
 

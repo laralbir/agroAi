@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Reglas de Comportamiento
+
+- **NUNCA hacer `git commit` ni `git push` salvo que el usuario lo pida explícitamente en el chat.**
+
 # AgroAI — Guía de Desarrollo para Claude
 
 ## Visión del Proyecto

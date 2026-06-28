@@ -402,6 +402,27 @@
     <string name="analysis_stage_treatments">Identifying treatments…</string>
     <string name="analysis_stage_recommendations">Preparing recommendations…</string>
 
+    <!-- Urgency levels -->
+    <string name="urgency_immediate">Urgent</string>
+    <string name="urgency_this_week">This week</string>
+    <string name="urgency_this_month">This month</string>
+    <string name="urgency_high">High priority</string>
+    <string name="urgency_medium">Medium priority</string>
+    <string name="urgency_low">Low priority</string>
+
+    <!-- Analysis reports per plant -->
+    <string name="plant_view_reports">Reports</string>
+    <string name="analysis_reports_title">Analysis reports</string>
+    <string name="analysis_delete">Delete report</string>
+    <string name="analysis_delete_confirm_title">Delete report?</string>
+    <string name="analysis_delete_confirm_body">This analysis report will be deleted permanently.</string>
+
+    <!-- Background plantation health notifications -->
+    <string name="notif_channel_health_name">Plantation Advisor</string>
+    <string name="notif_health_title">Plantation health update</string>
+    <string name="notif_health_body_single">New treatment suggestions for %s based on the weather forecast.</string>
+    <string name="notif_health_body_multiple">New treatment suggestions for %d plantations based on the weather forecast.</string>
+
     <!-- Accessibility -->
     <string name="cd_navigate_back">Navigate back</string>
     <string name="cd_previous_month">Previous month</string>
@@ -413,4 +434,5 @@
     <string name="cd_weather_alert">Weather alert</string>
     <string name="cd_plantation_location">Plantation location</string>
     <string name="cd_plantation_type">Plantation type</string>
+    <string name="cd_view_plant_reports">View analysis reports for this plant</string>
 </resources>

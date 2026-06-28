@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Eco
@@ -42,6 +43,7 @@ fun PlantationDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAnalysis: () -> Unit,
     onNavigateToAnalysisWithPlant: (plantationId: String, plantTypeId: String) -> Unit,
+    onNavigateToPlantReports: (plantationId: String, plantTypeId: String) -> Unit,
     onNavigateToEdit: () -> Unit,
     onNavigateToScheduleTreatment: (String) -> Unit,
     onNavigateToTreatmentDetail: (String) -> Unit,
@@ -145,6 +147,7 @@ fun PlantationDetailScreen(
                         PlantCard(
                             plant = plant,
                             onAnalyze = { onNavigateToAnalysisWithPlant(plantationId, plant.id) },
+                            onViewReports = { onNavigateToPlantReports(plantationId, plant.id) },
                             onEdit = { editingPlant = plant },
                             onDelete = { deletingPlantId = plant.id }
                         )
@@ -246,6 +249,7 @@ private fun PlantationLocationCard(location: Location) {
 private fun PlantCard(
     plant: PlantType,
     onAnalyze: () -> Unit,
+    onViewReports: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -285,6 +289,15 @@ private fun PlantCard(
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(stringResource(R.string.plant_analyze))
+                }
+                TextButton(onClick = onViewReports) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Article,
+                        contentDescription = stringResource(R.string.cd_view_plant_reports),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.plant_view_reports))
                 }
                 IconButton(onClick = onEdit) {
                     Icon(

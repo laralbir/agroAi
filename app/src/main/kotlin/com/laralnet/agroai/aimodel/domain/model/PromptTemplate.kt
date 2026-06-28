@@ -63,6 +63,49 @@ Rules for the JSON:
             isEditable = true
         ).let { it.copy(defaultContent = it.content) }
 
+        fun plantationHealthDefault(): PromptTemplate = PromptTemplate(
+            name = "plantation_health",
+            content = """You are an expert agricultural advisor. Based on the plantation data and weather forecast below, generate a proactive treatment plan for the next 2 weeks.
+
+Write a concise agricultural report in markdown with these sections:
+
+## Plantation Status
+Brief overview of the plantation's current condition for this time of year.
+
+## Weather Impact
+How the upcoming weather (rain, temperature, wind) will affect the plantation and its plants.
+
+## Recommended Actions
+Actions to take in the next 2 weeks based on weather and seasonal context.
+
+---
+
+After the markdown report, output EXACTLY this JSON block — do not change field names, do not add extra fields:
+
+```json
+{
+  "actions": [
+    {
+      "type": "RIEGO",
+      "title": "Short action title",
+      "description": "One or two sentences describing what to do and why.",
+      "urgency": "immediate",
+      "suggestedDate": "YYYY-MM-DD"
+    }
+  ]
+}
+```
+
+Rules for the JSON:
+- `type` must be one of: RIEGO, PODA, COSECHA, FERTILIZACION, FUMIGACION, INJERTO, TRANSPLANTE, OTRO
+- `urgency` must be one of: immediate, this_week, this_month
+- `suggestedDate` must use the current year in YYYY-MM-DD format (never a past year)
+- Order actions chronologically by `suggestedDate`
+- Include 1 to 5 actions maximum""",
+            warningLevel = PromptWarningLevel.MEDIUM,
+            isEditable = true
+        ).let { it.copy(defaultContent = it.content) }
+
         fun weatherAdjustmentDefault(): PromptTemplate = PromptTemplate(
             name = "weather_adjustment",
             content = """You are an agricultural planning assistant.

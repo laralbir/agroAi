@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.laralnet.agroai.aimodel.infrastructure.gemma.PhotoAnalysisResult
 import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
+import com.laralnet.agroai.photoanalysis.application.handler.DeleteAnalysisHandler
 import com.laralnet.agroai.photoanalysis.application.query.GetAnalysisQuery
 import com.laralnet.agroai.photoanalysis.domain.model.AnalysisRecord
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,13 +22,15 @@ data class AnalysisResultUiState(
     val record: AnalysisRecord? = null,
     val parsedResult: PhotoAnalysisResult? = null,
     val isLoading: Boolean = true,
-    val error: String? = null
+    val error: String? = null,
+    val showDeleteConfirm: Boolean = false
 )
 
 @HiltViewModel
 class AnalysisResultViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getAnalysisQuery: GetAnalysisQuery
+    private val getAnalysisQuery: GetAnalysisQuery,
+    private val deleteAnalysisHandler: DeleteAnalysisHandler
 ) : ViewModel() {
 
     private val analysisId: String = checkNotNull(savedStateHandle["analysisId"])
@@ -37,6 +40,9 @@ class AnalysisResultViewModel @Inject constructor(
 
     private val _scheduleEvent = Channel<ScheduleNavEvent>(Channel.BUFFERED)
     val scheduleEvent = _scheduleEvent.receiveAsFlow()
+
+    private val _deletedEvent = Channel<Unit>(Channel.BUFFERED)
+    val deletedEvent = _deletedEvent.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -59,6 +65,22 @@ class AnalysisResultViewModel @Inject constructor(
                     rawAnalysis = rawResponse.take(3000).ifBlank { null }
                 )
             )
+        }
+    }
+
+    fun requestDelete() {
+        _uiState.update { it.copy(showDeleteConfirm = true) }
+    }
+
+    fun cancelDelete() {
+        _uiState.update { it.copy(showDeleteConfirm = false) }
+    }
+
+    fun confirmDelete() {
+        _uiState.update { it.copy(showDeleteConfirm = false) }
+        viewModelScope.launch {
+            deleteAnalysisHandler.handle(analysisId)
+            _deletedEvent.send(Unit)
         }
     }
 }
