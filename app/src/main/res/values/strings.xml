@@ -395,6 +395,13 @@
     <string name="analysis_history_title">Previous analyses</string>
     <string name="analysis_history_empty">No analyses yet</string>
 
+    <!-- Analysis progress stages -->
+    <string name="analysis_stage_starting">Starting analysis…</string>
+    <string name="analysis_stage_analyzing_image">Analyzing image…</string>
+    <string name="analysis_stage_diagnosing">Generating diagnosis…</string>
+    <string name="analysis_stage_treatments">Identifying treatments…</string>
+    <string name="analysis_stage_recommendations">Preparing recommendations…</string>
+
     <!-- Accessibility -->
     <string name="cd_navigate_back">Navigate back</string>
     <string name="cd_previous_month">Previous month</string>

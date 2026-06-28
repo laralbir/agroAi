@@ -326,6 +326,9 @@ private fun AnalysisProgressDialog(
     wordCount: Int,
     onCancel: () -> Unit
 ) {
+    val (stageRes, progressFraction) = analysisStage(wordCount)
+    val percent = (progressFraction * 100).toInt()
+
     Dialog(
         onDismissRequest = {},
         properties = DialogProperties(
@@ -340,28 +343,68 @@ private fun AnalysisProgressDialog(
             shape = MaterialTheme.shapes.large
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 CircularProgressIndicator()
+
                 Text(
-                    stringResource(R.string.analysis_analyzing),
+                    text = stringResource(R.string.analysis_analyzing),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
-                if (wordCount > 0) {
+
+                // Stage description
+                Text(
+                    text = stringResource(stageRes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+
+                // Linear progress bar + percentage
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    LinearProgressIndicator(
+                        progress = { progressFraction },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp),
+                        strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                    )
                     Text(
-                        stringResource(R.string.analysis_words_generated, wordCount),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "$percent%",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
-                OutlinedButton(onClick = onCancel) {
+
+                OutlinedButton(
+                    onClick = onCancel,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(stringResource(R.string.analysis_cancel))
                 }
             }
         }
+    }
+}
+
+private fun analysisStage(wordCount: Int): Pair<Int, Float> {
+    return when {
+        wordCount == 0 -> Pair(R.string.analysis_stage_starting, 0.05f)
+        wordCount < 20 -> Pair(R.string.analysis_stage_analyzing_image, 0.05f + (wordCount / 20f) * 0.20f)
+        wordCount < 60 -> Pair(R.string.analysis_stage_diagnosing, 0.25f + ((wordCount - 20f) / 40f) * 0.25f)
+        wordCount < 120 -> Pair(R.string.analysis_stage_treatments, 0.50f + ((wordCount - 60f) / 60f) * 0.25f)
+        else -> Pair(R.string.analysis_stage_recommendations, minOf(0.75f + ((wordCount - 120f) / 120f) * 0.15f, 0.90f))
     }
 }
 
