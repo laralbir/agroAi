@@ -132,6 +132,7 @@ internal fun TreatmentDetailContent(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(padding)
                     .padding(16.dp)

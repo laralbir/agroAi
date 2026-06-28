@@ -78,6 +78,7 @@ fun PlantationWizardScreen(
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
