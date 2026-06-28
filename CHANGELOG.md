@@ -8,6 +8,33 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ## [Unreleased]
 
+---
+
+## [0.13.0] - 2026-06-28
+
+### Añadido
+- **Google Calendar en onboarding**: nueva página 3 (`CalendarSetupPage`) para vincular cuenta antes de empezar
+- **Selector de cuenta en Ajustes**: sección "Google Calendar" con email, Guardar y Desvincular
+- **Diálogo de cambio de cuenta** (3 opciones): Cancelar / Cambiar y perder / Migrar tratamientos
+- **`MigrateCalendarAccountHandler`**: migra eventos de calendario al cambiar de cuenta; actualiza `calendarEventId` y `calendarAccountEmail` en los tratamientos
+- **Pre-relleno automático en ScheduleTreatment**: lee la cuenta guardada y activa "Añadir al calendario" automáticamente
+
+### Corregido
+- **Auto-análisis eliminado**: la selección de imagen (cámara/galería) ya no lanza el análisis; requiere pulsar el botón *Analizar*
+- **`analyzePhoto()` sin URI**: si no hay imagen seleccionada, no hace nada (evita crash)
+- **Prompt con validación de imagen**: instrucción de validación al inicio del prompt; bloque JSON `{actions:[...]}` al final
+- **`PhotoAnalysisParser` reescrito**: busca `{actions:[...]}` en bloque markdown o texto libre; sugerencias con `type`, `title`, `description`, `urgency`, `suggestedDate`
+
+### Añadido (UI)
+- **Banner de advertencia de visión**: si el modelo activo no soporta análisis de imagen (Gemma 3n requerido), se muestra aviso
+- **`SuggestionCard`**: cada acción sugerida muestra emoji por tipo, título, chip de urgencia, chip de fecha y botón de agendar individual
+- Strings EN/ES: `analysis_vision_not_supported`, sección `settings_calendar_*`, sección `onboarding_calendar_*`
+
+### Tests
+- `PhotoAnalysisParserTest` (5 tests): nuevo formato `{actions:[...]}`
+- `PhotoAnalysisViewModelTest` actualizado: `setImageUri`, `analyzePhoto()`, `supportsVision`, `userQuestion`
+- `PlantationDetailViewModelTest` (nuevo): `deletePlantType`, `updatePlantType`
+
 ## [0.12.0] - 2026-06-28
 
 ### Añadido

@@ -1,5 +1,7 @@
 package com.laralnet.agroai.ui.screens.treatment
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,10 +10,13 @@ import com.laralnet.agroai.calendar.domain.model.GoogleCalendar
 import com.laralnet.agroai.treatment.application.command.ScheduleTreatmentCommand
 import com.laralnet.agroai.treatment.application.handler.ScheduleTreatmentHandler
 import com.laralnet.agroai.treatment.domain.model.TreatmentType
+import com.laralnet.agroai.ui.screens.settings.SettingsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -42,6 +47,7 @@ data class ScheduleTreatmentState(
 @HiltViewModel
 class ScheduleTreatmentViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val dataStore: DataStore<Preferences>,
     private val scheduleTreatmentHandler: ScheduleTreatmentHandler,
     private val getCalendarsQuery: GetCalendarsQuery
 ) : ViewModel() {
@@ -64,6 +70,18 @@ class ScheduleTreatmentViewModel @Inject constructor(
         )
     })
     val state: StateFlow<ScheduleTreatmentState> = _state.asStateFlow()
+
+    init {
+        // Pre-fill the Google Calendar account if the user has configured one and none was passed via nav args
+        viewModelScope.launch {
+            val savedEmail = dataStore.data
+                .map { it[SettingsViewModel.KEY_SELECTED_ACCOUNT]?.ifBlank { null } }
+                .first()
+            if (savedEmail != null && _state.value.calendarEmail.isBlank()) {
+                _state.update { it.copy(calendarEmail = savedEmail, addToCalendar = true) }
+            }
+        }
+    }
 
     fun setType(type: TreatmentType) = _state.update { s ->
         s.copy(type = type, title = if (s.title.isBlank()) type.name else s.title)

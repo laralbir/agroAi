@@ -23,6 +23,7 @@ import javax.inject.Singleton
 
 data class TreatmentSuggestion(
     val type: String,
+    val title: String = "",
     val description: String,
     val urgency: String,
     val suggestedDate: String?

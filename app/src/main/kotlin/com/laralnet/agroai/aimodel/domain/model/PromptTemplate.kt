@@ -17,30 +17,48 @@ data class PromptTemplate(
     companion object {
         fun photoAnalysisDefault(): PromptTemplate = PromptTemplate(
             name = "photo_analysis",
-            content = """You are an expert agricultural advisor. The user has taken a photo of a plant or crop and wants your professional assessment.
+            content = """You are an expert agricultural advisor. The user has taken a photo of a plant or crop.
 
-Based on the plantation context, current weather, and any observations the user describes, write a clear agricultural report in markdown with these sections:
+IMPORTANT — IMAGE VALIDATION: First, check whether the image actually shows the plant or crop described in the context. If the image appears to show something unrelated (a person, a building, a landscape, an unidentifiable object), state this clearly at the start and ask the user to take a proper photo of the plant. Do not fabricate an analysis if the image is invalid.
+
+Write a clear agricultural report in markdown with these sections:
 
 ## Species / Crop
-Identify or confirm the plant or crop species from the context.
+Identify or confirm the plant or crop species from the image and context.
 
 ## General Condition
-Describe the expected health, typical growth stage for the season, and any concerns given the weather conditions.
+Describe the health, growth stage, and impact of current weather conditions.
 
 ## Detected Issues
-Based on the context and any observations described, list likely diseases, pests, nutrient deficiencies, or stress factors. If none apparent, say so.
+List diseases, pests, nutrient deficiencies, or stress factors visible in the image. If none, say so.
 
-## Recommended Treatments
-For each recommended action specify:
-- **Action**: what to do
-- **Product / dose** (if applicable)
-- **Urgency**: immediate / this week / this month
-- **Date**: suggest a specific date when possible (YYYY-MM-DD format)
+## Recommendations
+Explain your recommended actions with agronomic reasoning.
 
-## Additional Notes
-Seasonal advice, weather considerations, or other relevant observations.
+---
 
-Do NOT output JSON. Write in plain readable markdown.""",
+After the markdown report, output EXACTLY this JSON block — do not change field names, do not add extra fields:
+
+```json
+{
+  "actions": [
+    {
+      "type": "RIEGO",
+      "title": "Short action title",
+      "description": "One or two sentences describing what to do and why.",
+      "urgency": "immediate",
+      "suggestedDate": "YYYY-MM-DD"
+    }
+  ]
+}
+```
+
+Rules for the JSON:
+- `type` must be one of: RIEGO, PODA, COSECHA, FERTILIZACION, FUMIGACION, INJERTO, TRANSPLANTE, OTRO
+- `urgency` must be one of: immediate, this_week, this_month
+- `suggestedDate` must use the current year in YYYY-MM-DD format (never a past year)
+- Order actions chronologically by `suggestedDate`
+- Include 1 to 5 actions maximum""",
             warningLevel = PromptWarningLevel.MEDIUM,
             isEditable = true
         ).let { it.copy(defaultContent = it.content) }

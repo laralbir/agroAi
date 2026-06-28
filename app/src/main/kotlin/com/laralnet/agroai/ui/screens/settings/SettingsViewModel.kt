@@ -14,6 +14,7 @@ import com.laralnet.agroai.aimodel.domain.repository.HuggingFaceAuthRepository
 import com.laralnet.agroai.aimodel.infrastructure.oauth.HuggingFaceOAuthCallbackChannel
 import com.laralnet.agroai.aimodel.infrastructure.oauth.PkceHelper
 import com.laralnet.agroai.aimodel.infrastructure.repository.DataStoreHuggingFaceAuthRepository
+import com.laralnet.agroai.treatment.application.handler.MigrateCalendarAccountHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
@@ -34,7 +35,8 @@ class SettingsViewModel @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     private val hfAuthRepository: HuggingFaceAuthRepository,
     private val oauthCallbackChannel: HuggingFaceOAuthCallbackChannel,
-    private val observeModels: ObserveModelsQuery
+    private val observeModels: ObserveModelsQuery,
+    private val migrateCalendarAccountHandler: MigrateCalendarAccountHandler
 ) : ViewModel() {
 
     companion object {
@@ -61,6 +63,10 @@ class SettingsViewModel @Inject constructor(
     val hfCredential = hfAuthRepository.observeCredential()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    val calendarAccount = dataStore.data
+        .map { prefs -> prefs[KEY_SELECTED_ACCOUNT]?.ifBlank { null } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     val hfOAuthError: Flow<String?> =
         (hfAuthRepository as? DataStoreHuggingFaceAuthRepository)?.oauthError
             ?: kotlinx.coroutines.flow.flowOf(null)
@@ -79,6 +85,20 @@ class SettingsViewModel @Inject constructor(
             .edit()
             .putString(LOCALE_KEY, mode.name)
             .apply()
+    }
+
+    fun setCalendarAccount(email: String) = viewModelScope.launch {
+        dataStore.edit { it[KEY_SELECTED_ACCOUNT] = email.trim() }
+    }
+
+    fun clearCalendarAccount() = viewModelScope.launch {
+        dataStore.edit { it.remove(KEY_SELECTED_ACCOUNT) }
+    }
+
+    /** Migrate calendar events from [oldEmail] to [newEmail], then update the stored account. */
+    fun migrateAndSetCalendarAccount(oldEmail: String, newEmail: String) = viewModelScope.launch {
+        migrateCalendarAccountHandler.handle(oldEmail, newEmail)
+        dataStore.edit { it[KEY_SELECTED_ACCOUNT] = newEmail.trim() }
     }
 
     fun connectHuggingFace() {

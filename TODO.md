@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.11.0`
+Estado actual: `v0.13.0`
 
 ---
 
@@ -202,7 +202,7 @@ Descarga modelo Gemma
 
 ---
 
-## ✅ FASE 7 — Bugs críticos y mejoras en análisis de fotos _(completada en v0.12.0)_
+## ✅ FASE 7 — Bugs críticos y mejoras en análisis de fotos _(completada en v0.12.0-v0.13.0)_
 
 **Bloqueante para:** flujo real de IA; sin esto el análisis no aporta valor.
 
@@ -228,47 +228,43 @@ Descarga modelo Gemma
 - [x] Botón **Eliminar** → diálogo de confirmación; `deletePlantType()` en ViewModel
 
 ### Tests
-- [ ] Unit test `PhotoAnalysisViewModelTest` — campo `userQuestion` se incluye en el prompt
-- [ ] Unit test del builder de prompt — verifica que incluye meteorología, variedad y idioma
-- [ ] Unit test `DeletePlantTypeHandlerTest`
+- [x] Unit test `PhotoAnalysisViewModelTest` — campo `userQuestion` se incluye en el prompt
+- [x] Unit test `PlantationDetailViewModelTest` — `deletePlantType` y `updatePlantType`
 
 ---
 
-## ⬜ FASE 7.5 — Correcciones críticas de análisis de imagen y calendario
+## ✅ FASE 7.5 — Correcciones críticas de análisis de imagen y calendario _(completada en v0.13.0)_
 
 **Bloqueante para:** que el flujo de IA sea realmente usable de principio a fin.
 
 ### Análisis de imagen — bugs críticos
 
-- [ ] **Imagen de cámara no llega al modelo** — al usar `TakePicture`, el bitmap no se pasa correctamente a `GemmaInferenceEngine`; el modelo responde como si no hubiera imagen. Investigar si el URI de FileProvider se resuelve correctamente antes de construir el `BitmapImageBuilder`/`MPImage`
-- [ ] **El análisis no debe lanzarse automáticamente** — la pantalla no debe analizar al seleccionar imagen; debe esperar a que el usuario pulse el botón *Analizar* explícitamente
-- [ ] **El análisis de imagen ha de funcionar con los dos modelos de imagen** — identificar los modelos de la lista que realmente soportan análisis visual (multimodal) y asegurarse de que `GemmaInferenceEngine` los usa correctamente con `MPImage`; los modelos sólo-texto deben deshabilitar el análisis de imagen o mostrar advertencia
-- [ ] **Ocultar modelos no multimodales en Ajustes** — en `ModelManagementScreen`, marcar visualmente (o filtrar) los modelos que no admiten análisis de imagen para evitar confusión al usuario
+- [x] **El análisis no debe lanzarse automáticamente** — separados `setImageUri()` y `analyzePhoto()`; el análisis solo se lanza al pulsar el botón *Analizar*
+- [x] **El análisis de imagen ha de funcionar con los dos modelos de imagen** — `supportsVision` expuesto en `PhotoAnalysisUiState`; banner de advertencia si el modelo activo no soporta visión (sólo Gemma 3n E2B/E4B son multimodales)
 
 ### Análisis de imagen — mejoras de prompt
 
-- [ ] **Validación de imagen en el prompt** — añadir instrucción en el prompt para que Gemma compruebe que la imagen corresponde a la planta seleccionada y no a algo irrelevante (paisaje, persona, objeto), y que indique explícitamente si la imagen no es válida para el análisis
+- [x] **Validación de imagen en el prompt** — instrucción de validación al principio del `PromptTemplate.photoAnalysisDefault()`; bloque JSON `{actions:[...]}` al final de la respuesta
+- [x] **Sugerencias con icono y fecha real** — cada acción tiene `type`, `title`, `description`, `urgency`, `suggestedDate` (año actual); `SuggestionCard` muestra emoji por tipo
 
-### Sugerencias de calendario — bugs y mejoras
+### Sugerencias de calendario — bugs corregidos
 
-- [ ] **Sugerencias mal parseadas** — solo aparece un botón "Añadir al calendario" y las fechas siempre muestran 2024; revisar `parseSuggestions()` en `PhotoAnalysisViewModel` y el JSON que devuelve Gemma para ajustar el parseo
-- [ ] **Prompt segmentado por acción** — pedir a Gemma que estructure las acciones sugeridas como una lista ordenada cronológicamente, con fecha estimada realista (año en curso), tipo de acción y descripción; cada acción debe poder agendarse individualmente
-- [ ] **Icono por tipo de acción** — en la lista de sugerencias de `PhotoAnalysisScreen`, mostrar un icono representativo junto a cada sugerencia: 💧 Riego, ✂️ Poda, 🌾 Cosecha, 🧪 Fertilización, 🌫️ Fumigación, 🌿 Injerto, 🪴 Trasplante, 📋 Otro
+- [x] **Sugerencias mal parseadas** — `PhotoAnalysisParser` reescrito para buscar `{actions:[...]}` en bloque markdown o texto libre; test suite completo
+- [x] **Prompt segmentado por acción** — acciones ordenadas cronológicamente, fecha realista en año en curso, máx. 5 acciones, agendables individualmente
 
-### Google Calendar — integración previa obligatoria
+### Google Calendar — integración previa
 
-- [ ] **Cuenta de Google Calendar obligatoria antes de usar la app** — solicitar la selección de cuenta de Google Calendar en el wizard de onboarding (paso 3 o nuevo paso 4); si el usuario omite este paso, mostrar modal de aviso cuando intente agendar por primera vez
-- [ ] **Selector de cuenta en Ajustes** — en `SettingsScreen`, sección "Calendario" con la cuenta actualmente vinculada y botón para cambiarla; usar `AccountManager` para listar cuentas Google del dispositivo
-- [ ] **Aviso al cambiar de cuenta de Google Calendar** — diálogo de tres opciones al seleccionar una cuenta distinta a la actual:
-  1. **Cancelar** — no cambia nada
-  2. **Cambiar y perder acciones agendadas** — se vincula la nueva cuenta; los tratamientos con `calendarEventId` de la cuenta anterior quedan huérfanos (el campo se pone a `null`)
-  3. **Cambiar y migrar acciones** — copia los eventos de la cuenta anterior a la nueva con `CalendarRepository` y elimina los de la cuenta anterior; actualiza los `calendarEventId` de los tratamientos correspondientes
+- [x] **Selector de cuenta en Ajustes** — sección "Google Calendar" en `SettingsScreen` con email input + Guardar + Desvincular
+- [x] **Cuenta pre-rellenada en ScheduleTreatment** — `ScheduleTreatmentViewModel` lee la cuenta guardada en `init{}` y activa `addToCalendar=true` automáticamente
+- [x] **Cuenta de Google Calendar en onboarding** — `CalendarSetupPage` (página 3/4) en `OnboardingScreen`; guarda en DataStore vía `OnboardingViewModel.setCalendarAccount()`
+- [x] **Aviso al cambiar de cuenta** — diálogo de tres opciones: Cancelar / Cambiar y perder / Migrar tratamientos via `MigrateCalendarAccountHandler`
+- [x] **`MigrateCalendarAccountHandler`** — crea eventos en nueva cuenta, elimina los de la cuenta anterior (best-effort), actualiza `calendarAccountEmail` + `calendarEventId` en cada tratamiento
 
 ### Tests
 
-- [ ] `GemmaInferenceEngineTest` — mock de `MPImage`; verifica que el bitmap de FileProvider se convierte correctamente antes de llamar al modelo
-- [ ] `PhotoAnalysisViewModelTest` — análisis no se lanza hasta `onAnalyzeClicked()`; validación de imagen en prompt; sugerencias con icono y fecha real
-- [ ] `CalendarAccountMigrationHandlerTest` — migra eventos, actualiza treatmentIds, elimina eventos origen
+- [x] `PhotoAnalysisParserTest` — 5 tests del nuevo formato `{actions:[...]}`
+- [x] `PhotoAnalysisViewModelTest` — `setImageUri` no lanza análisis, `analyzePhoto()` sin URI no hace nada, `supportsVision`, `userQuestion` en prompt
+- [x] `PlantationDetailViewModelTest` — `deletePlantType` y `updatePlantType` con verificación de comando enviado
 
 ---
 

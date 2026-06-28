@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -31,20 +32,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
 
-// Pages: 0 = Welcome, 1 = Legal/AI Disclaimer, 2 = Permissions, 3 = Ready
-private const val TOTAL_PAGES = 4
+// Pages: 0 = Welcome, 1 = Disclaimer, 2 = Permissions, 3 = Calendar, 4 = Ready
+private const val TOTAL_PAGES = 5
 private const val DISCLAIMER_PAGE = 1
 private const val LAST_PAGE = TOTAL_PAGES - 1
 
 @Composable
-fun OnboardingScreen(onCompleted: () -> Unit) {
+fun OnboardingScreen(
+    onCompleted: () -> Unit,
+    viewModel: OnboardingViewModel = hiltViewModel()
+) {
     var page by remember { mutableIntStateOf(0) }
     var disclaimerAccepted by remember { mutableStateOf(false) }
+    val savedCalendarAccount by viewModel.savedCalendarAccount.collectAsState()
 
     Column(
         modifier = Modifier
@@ -67,6 +74,10 @@ fun OnboardingScreen(onCompleted: () -> Unit) {
                     onAcceptedChange = { disclaimerAccepted = it }
                 )
                 2 -> PermissionsPage()
+                3 -> CalendarSetupPage(
+                    savedAccount = savedCalendarAccount,
+                    onSave = { email -> viewModel.setCalendarAccount(email) }
+                )
                 else -> ReadyPage()
             }
         }
@@ -487,5 +498,104 @@ private fun FeatureItem(icon: androidx.compose.ui.graphics.vector.ImageVector, t
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Text(text, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun CalendarSetupPage(
+    savedAccount: String?,
+    onSave: (String) -> Unit
+) {
+    var emailInput by remember(savedAccount) { mutableStateOf(savedAccount ?: "") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.CalendarMonth,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(44.dp)
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            text = stringResource(R.string.onboarding_calendar_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.onboarding_calendar_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        if (savedAccount != null) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
+                    Text(savedAccount, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            TextButton(onClick = { emailInput = ""; onSave("") }) {
+                Text(stringResource(R.string.onboarding_calendar_change))
+            }
+        } else {
+            OutlinedTextField(
+                value = emailInput,
+                onValueChange = { emailInput = it },
+                label = { Text(stringResource(R.string.onboarding_calendar_email_label)) },
+                placeholder = { Text(stringResource(R.string.onboarding_calendar_email_hint)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = { onSave(emailInput.trim()) },
+                enabled = emailInput.contains("@"),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.onboarding_calendar_save))
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.onboarding_calendar_skip_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
     }
 }

@@ -46,6 +46,7 @@ data class PhotoAnalysisUiState(
     val rawResponse: String = "",
     val error: String? = null,
     val modelLoaded: Boolean = false,
+    val supportsVision: Boolean = false,
     val plantations: List<Plantation> = emptyList(),
     val selectedPlantationId: String? = null,
     val selectedPlantTypeId: String? = null,
@@ -144,10 +145,19 @@ class PhotoAnalysisViewModel @Inject constructor(
         val loaded = activeModel?.filePath != null && gemmaEngine.isModelLoaded()
         if (!loaded && activeModel?.filePath != null) {
             runCatching { gemmaEngine.loadModel(activeModel.filePath!!) }
-                .onSuccess { _uiState.update { it.copy(modelLoaded = true) } }
-                .onFailure { _uiState.update { it.copy(modelLoaded = false) } }
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(modelLoaded = true, supportsVision = gemmaEngine.supportsImageAnalysis())
+                    }
+                }
+                .onFailure { _uiState.update { it.copy(modelLoaded = false, supportsVision = false) } }
         } else {
-            _uiState.update { it.copy(modelLoaded = loaded) }
+            _uiState.update {
+                it.copy(
+                    modelLoaded = loaded,
+                    supportsVision = if (loaded) gemmaEngine.supportsImageAnalysis() else false
+                )
+            }
         }
     }
 
@@ -164,9 +174,18 @@ class PhotoAnalysisViewModel @Inject constructor(
         _userQuestion.value = text
     }
 
-    fun analyzePhoto(uri: Uri) = viewModelScope.launch {
+    /** Store the URI from camera/gallery without triggering analysis. */
+    fun setImageUri(uri: Uri) {
         _uiState.update {
-            it.copy(imageUri = uri, isAnalyzing = true, analysisResult = null, error = null, streamingText = "")
+            it.copy(imageUri = uri, analysisResult = null, error = null, streamingText = "", rawResponse = "")
+        }
+    }
+
+    /** Start analysis using the stored imageUri. Must be called from the Analyze button. */
+    fun analyzePhoto() = viewModelScope.launch {
+        val uri = _uiState.value.imageUri ?: return@launch
+        _uiState.update {
+            it.copy(isAnalyzing = true, analysisResult = null, error = null, streamingText = "")
         }
 
         val plantation = selectedPlantation.value
@@ -190,6 +209,7 @@ class PhotoAnalysisViewModel @Inject constructor(
 
         runCatching {
             gemmaEngine.analyzePhoto(uri, baseTemplate.systemContext, enrichedPrompt)
+
                 .collect { chunk ->
                     responseBuilder.append(chunk)
                     _uiState.update { it.copy(streamingText = responseBuilder.toString()) }

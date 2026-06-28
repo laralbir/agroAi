@@ -1,18 +1,25 @@
 package com.laralnet.agroai.ui.screens.analysis
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.laralnet.agroai.aimodel.domain.model.AIModel
 import com.laralnet.agroai.aimodel.domain.model.DownloadState
 import com.laralnet.agroai.aimodel.domain.model.ModelVariant
-import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
 import com.laralnet.agroai.aimodel.infrastructure.gemma.GemmaInferenceEngine
 import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
+import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
+import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
+import com.laralnet.agroai.weather.application.handler.RefreshWeatherHandler
+import com.laralnet.agroai.weather.application.query.ObserveWeatherQuery
 import com.laralnet.agroai.util.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.just
+import io.mockk.Runs
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -25,104 +32,77 @@ import org.junit.Test
 class PhotoAnalysisParserTest {
 
     @Test
-    fun `parsePhotoAnalysisResponse parses valid flat JSON`() {
-        val json = """
-            {
-                "species": "Solanum lycopersicum",
-                "generalCondition": "Good",
-                "issues": ["aphids", "leaf curl"],
-                "treatments": [
-                    {"type": "FUMIGACION", "description": "Apply neem oil", "urgency": "this week"}
-                ]
-            }
+    fun `parsePhotoAnalysisResponse extracts actions from JSON block`() {
+        val response = """
+            ## Analysis
+            The plant shows aphid infestation.
+            ---
+            ```json
+            {"actions":[{"type":"FUMIGACION","title":"Apply neem oil","description":"Spray with diluted neem oil","urgency":"HIGH","suggestedDate":"2026-07-10"}]}
+            ```
         """.trimIndent()
 
-        val result = parsePhotoAnalysisResponse(json)
+        val result = parsePhotoAnalysisResponse(response)
 
-        assertEquals("Solanum lycopersicum", result.species)
-        assertEquals("Good", result.generalCondition)
-        assertEquals(listOf("aphids", "leaf curl"), result.issues)
         assertEquals(1, result.suggestions.size)
         assertEquals("FUMIGACION", result.suggestions[0].type)
-        assertEquals("Apply neem oil", result.suggestions[0].description)
-        assertEquals("this week", result.suggestions[0].urgency)
+        assertEquals("Apply neem oil", result.suggestions[0].title)
+        assertEquals("Spray with diluted neem oil", result.suggestions[0].description)
+        assertEquals("HIGH", result.suggestions[0].urgency)
+        assertEquals("2026-07-10", result.suggestions[0].suggestedDate)
     }
 
     @Test
-    fun `parsePhotoAnalysisResponse parses JSON inside markdown json code fence`() {
-        val response = """
-            Here is my analysis:
-            ```json
-            {
-                "species": "Prunus persica",
-                "generalCondition": "Fair",
-                "issues": [],
-                "treatments": []
-            }
-            ```
-            Hope this helps!
-        """.trimIndent()
+    fun `parsePhotoAnalysisResponse returns empty suggestions when no actions block`() {
+        val response = "I cannot analyze this image. Please try again with better lighting."
 
         val result = parsePhotoAnalysisResponse(response)
 
-        assertEquals("Prunus persica", result.species)
-        assertEquals("Fair", result.generalCondition)
-        assertTrue(result.issues.isEmpty())
         assertTrue(result.suggestions.isEmpty())
-    }
-
-    @Test
-    fun `parsePhotoAnalysisResponse parses JSON embedded in plain prose`() {
-        val response = """
-            Based on my analysis, the plant shows signs of stress.
-            {"species": "Olea europaea", "generalCondition": "Poor", "issues": ["root rot"], "treatments": []}
-            Please treat promptly.
-        """.trimIndent()
-
-        val result = parsePhotoAnalysisResponse(response)
-
-        assertEquals("Olea europaea", result.species)
-        assertEquals("Poor", result.generalCondition)
-        assertEquals(listOf("root rot"), result.issues)
-    }
-
-    @Test
-    fun `parsePhotoAnalysisResponse falls back to raw response when no JSON present`() {
-        val response = "I cannot analyze this image. The photo is too blurry."
-
-        val result = parsePhotoAnalysisResponse(response)
-
-        assertEquals("", result.species)
-        assertEquals("", result.generalCondition)
-        assertEquals(1, result.suggestions.size)
-        assertEquals("OTRO", result.suggestions[0].type)
-        assertTrue(result.suggestions[0].description.contains("blurry"))
         assertEquals(response, result.rawResponse)
     }
 
     @Test
-    fun `parsePhotoAnalysisResponse handles missing optional suggestedDate`() {
-        val json = """
-            {"species":"x","generalCondition":"ok","issues":[],
-             "treatments":[{"type":"RIEGO","description":"Water","urgency":"immediate"}]}
+    fun `parsePhotoAnalysisResponse handles multiple actions`() {
+        val response = """
+            Some analysis text.
+            ```json
+            {"actions":[
+              {"type":"RIEGO","title":"Irrigation","description":"Water deeply","urgency":"MEDIUM","suggestedDate":"2026-07-05"},
+              {"type":"PODA","title":"Pruning","description":"Remove dead branches","urgency":"LOW","suggestedDate":null}
+            ]}
+            ```
         """.trimIndent()
 
-        val result = parsePhotoAnalysisResponse(json)
+        val result = parsePhotoAnalysisResponse(response)
 
-        assertNull(result.suggestions[0].suggestedDate)
-        assertEquals("immediate", result.suggestions[0].urgency)
+        assertEquals(2, result.suggestions.size)
+        assertEquals("RIEGO", result.suggestions[0].type)
+        assertEquals("PODA", result.suggestions[1].type)
+        assertNull(result.suggestions[1].suggestedDate)
     }
 
     @Test
-    fun `parsePhotoAnalysisResponse preserves suggestedDate when present`() {
-        val json = """
-            {"species":"x","generalCondition":"ok","issues":[],
-             "treatments":[{"type":"PODA","description":"Prune","urgency":"this week","suggestedDate":"2026-07-15"}]}
+    fun `parsePhotoAnalysisResponse normalizes type to uppercase`() {
+        val response = """
+            ```json
+            {"actions":[{"type":"fumigacion","title":"Spray","description":"Apply","urgency":"low"}]}
+            ```
         """.trimIndent()
 
-        val result = parsePhotoAnalysisResponse(json)
+        val result = parsePhotoAnalysisResponse(response)
 
-        assertEquals("2026-07-15", result.suggestions[0].suggestedDate)
+        assertEquals("FUMIGACION", result.suggestions[0].type)
+    }
+
+    @Test
+    fun `parsePhotoAnalysisResponse finds actions block without markdown fence`() {
+        val response = """Some text {"actions":[{"type":"OTRO","title":"Check","description":"Monitor","urgency":"LOW"}]} more text"""
+
+        val result = parsePhotoAnalysisResponse(response)
+
+        assertEquals(1, result.suggestions.size)
+        assertEquals("OTRO", result.suggestions[0].type)
     }
 }
 
@@ -135,128 +115,126 @@ class PhotoAnalysisViewModelTest {
 
     private val gemmaEngine: GemmaInferenceEngine = mockk(relaxed = true)
     private val modelRepository: AIModelRepository = mockk(relaxed = true)
+    private val plantationRepository: PlantationRepository = mockk(relaxed = true)
+    private val observeWeatherQuery: ObserveWeatherQuery = mockk(relaxed = true)
+    private val refreshWeatherHandler: RefreshWeatherHandler = mockk(relaxed = true)
+    private val context: Context = mockk(relaxed = true)
+    private val sharedPrefs: SharedPreferences = mockk(relaxed = true)
 
     private fun viewModel(plantationId: String? = null): PhotoAnalysisViewModel {
+        every { context.getSharedPreferences(any(), any()) } returns sharedPrefs
+        every { sharedPrefs.getString(any(), any()) } returns "ENGLISH"
+        every { plantationRepository.observeAll() } returns flowOf(emptyList())
+        coEvery { observeWeatherQuery.invoke(any(), any()) } returns flowOf(null)
+        coEvery { refreshWeatherHandler.handle(any(), any()) } just Runs
+
         val handle = if (plantationId != null)
             SavedStateHandle(mapOf("plantationId" to plantationId))
         else
             SavedStateHandle()
-        return PhotoAnalysisViewModel(handle, gemmaEngine, modelRepository)
+        return PhotoAnalysisViewModel(
+            savedStateHandle = handle,
+            context = context,
+            gemmaEngine = gemmaEngine,
+            modelRepository = modelRepository,
+            plantationRepository = plantationRepository,
+            observeWeatherQuery = observeWeatherQuery,
+            refreshWeatherHandler = refreshWeatherHandler
+        )
     }
 
-    private fun activeModel(filePath: String = "/data/models/gemma3_1b.task") = AIModel(
+    private fun activeModel() = AIModel(
         id = "m1",
         variant = ModelVariant.GEMMA3_1B,
         version = ModelVariant.GEMMA3_1B.gemmaVersion,
         downloadState = DownloadState.DOWNLOADED,
-        filePath = filePath,
+        filePath = "/data/models/gemma3_1b.task",
         isActive = true
     )
 
     @Test
-    fun `scheduleSuggestion emits ScheduleNavEvent when plantationId is set`() = runTest {
-        coEvery { modelRepository.findActive() } returns null
-        val vm = viewModel(plantationId = "plant-42")
-        advanceUntilIdle()
-
-        val suggestion = TreatmentSuggestion("RIEGO", "Water regularly", "immediate", null)
-
-        vm.scheduleEvent.test {
-            vm.scheduleSuggestion(suggestion)
-            val event = awaitItem()
-            assertEquals("plant-42", event.plantationId)
-            assertEquals(suggestion, event.suggestion)
-            assertNull(event.rawAnalysis) // no analysis performed yet
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `scheduleSuggestion does nothing when plantationId is null`() = runTest {
-        coEvery { modelRepository.findActive() } returns null
-        val vm = viewModel(plantationId = null)
-        advanceUntilIdle()
-
-        val suggestion = TreatmentSuggestion("RIEGO", "Water", "low", null)
-
-        vm.scheduleEvent.test {
-            vm.scheduleSuggestion(suggestion)
-            advanceUntilIdle()
-            expectNoEvents()
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `modelLoaded is false when no active model exists`() = runTest {
+    fun `setImageUri stores URI without triggering analysis`() = runTest {
         coEvery { modelRepository.findActive() } returns null
         val vm = viewModel()
+        val uri = mockk<Uri>()
+
+        vm.setImageUri(uri)
         advanceUntilIdle()
 
-        assertFalse(vm.uiState.value.modelLoaded)
+        assertEquals(uri, vm.uiState.value.imageUri)
+        assertFalse(vm.uiState.value.isAnalyzing)
+        assertNull(vm.uiState.value.analysisResult)
     }
 
     @Test
-    fun `modelLoaded is true when active model is already loaded in engine`() = runTest {
-        coEvery { modelRepository.findActive() } returns activeModel()
-        every { gemmaEngine.isModelLoaded() } returns true
-        val vm = viewModel()
-        advanceUntilIdle()
-
-        assertTrue(vm.uiState.value.modelLoaded)
-    }
-
-    @Test
-    fun `analyzePhoto sets analysisResult and clears streamingText after completion`() = runTest {
+    fun `setImageUri clears previous analysis result`() = runTest {
         coEvery { modelRepository.findActive() } returns activeModel()
         every { gemmaEngine.isModelLoaded() } returns true
         coEvery { modelRepository.findPromptTemplate(any()) } returns null
-        val responseJson = """{"species":"Vitis vinifera","generalCondition":"Healthy","issues":[],"treatments":[]}"""
-        every { gemmaEngine.analyzePhoto(any(), any(), any()) } returns flowOf(responseJson)
+        every { gemmaEngine.analyzePhoto(any(), any(), any()) } returns flowOf(
+            """{"actions":[{"type":"RIEGO","title":"Water","description":"Irrigate","urgency":"LOW"}]}"""
+        )
 
         val vm = viewModel(plantationId = "p1")
         advanceUntilIdle()
 
         val uri = mockk<Uri>()
-        vm.analyzePhoto(uri)
+        vm.setImageUri(uri)
+        vm.analyzePhoto()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.analysisResult)
+
+        // Setting a new URI should wipe the result
+        vm.setImageUri(mockk())
+        assertNull(vm.uiState.value.analysisResult)
+    }
+
+    @Test
+    fun `analyzePhoto does nothing when no imageUri is set`() = runTest {
+        coEvery { modelRepository.findActive() } returns activeModel()
+        every { gemmaEngine.isModelLoaded() } returns true
+
+        val vm = viewModel()
+        advanceUntilIdle()
+
+        vm.analyzePhoto()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isAnalyzing)
+        assertNull(vm.uiState.value.analysisResult)
+    }
+
+    @Test
+    fun `analyzePhoto parses actions block and populates suggestions`() = runTest {
+        coEvery { modelRepository.findActive() } returns activeModel()
+        every { gemmaEngine.isModelLoaded() } returns true
+        coEvery { modelRepository.findPromptTemplate(any()) } returns null
+        val responseWithActions = """
+            ## Analysis
+            The vine looks healthy overall.
+            ```json
+            {"actions":[{"type":"RIEGO","title":"Water weekly","description":"Deep irrigation","urgency":"LOW","suggestedDate":"2026-07-20"}]}
+            ```
+        """.trimIndent()
+        every { gemmaEngine.analyzePhoto(any(), any(), any()) } returns flowOf(responseWithActions)
+
+        val vm = viewModel(plantationId = "p1")
+        advanceUntilIdle()
+
+        vm.setImageUri(mockk<Uri>())
+        vm.analyzePhoto()
         advanceUntilIdle()
 
         with(vm.uiState.value) {
             assertFalse(isAnalyzing)
             assertNotNull(analysisResult)
-            assertEquals("Vitis vinifera", analysisResult!!.species)
-            assertEquals("Healthy", analysisResult!!.generalCondition)
+            assertEquals(1, analysisResult!!.suggestions.size)
+            assertEquals("RIEGO", analysisResult!!.suggestions[0].type)
+            assertEquals("Water weekly", analysisResult!!.suggestions[0].title)
+            assertEquals("2026-07-20", analysisResult!!.suggestions[0].suggestedDate)
             assertEquals("", streamingText)
             assertNull(error)
         }
-    }
-
-    @Test
-    fun `analyzePhoto resets previous result before starting new analysis`() = runTest {
-        coEvery { modelRepository.findActive() } returns activeModel()
-        every { gemmaEngine.isModelLoaded() } returns true
-        coEvery { modelRepository.findPromptTemplate(any()) } returns null
-        every { gemmaEngine.analyzePhoto(any(), any(), any()) } returns flowOf(
-            """{"species":"Citrus","generalCondition":"ok","issues":[],"treatments":[]}"""
-        )
-
-        val vm = viewModel(plantationId = "p1")
-        advanceUntilIdle()
-
-        val uri = mockk<Uri>()
-        vm.analyzePhoto(uri)
-        advanceUntilIdle()
-        assertNotNull(vm.uiState.value.analysisResult)
-
-        // Start a new analysis — result should be cleared while analyzing
-        every { gemmaEngine.analyzePhoto(any(), any(), any()) } returns flowOf(
-            """{"species":"Olea","generalCondition":"good","issues":[],"treatments":[]}"""
-        )
-        vm.analyzePhoto(uri)
-        // After completion, new result is set
-        advanceUntilIdle()
-
-        assertEquals("Olea", vm.uiState.value.analysisResult?.species)
     }
 
     @Test
@@ -269,11 +247,98 @@ class PhotoAnalysisViewModelTest {
         val vm = viewModel(plantationId = "p1")
         advanceUntilIdle()
 
-        val uri = mockk<Uri>()
-        vm.analyzePhoto(uri)
+        vm.setImageUri(mockk<Uri>())
+        vm.analyzePhoto()
         advanceUntilIdle()
 
         assertNotNull(vm.uiState.value.error)
         assertFalse(vm.uiState.value.isAnalyzing)
+    }
+
+    @Test
+    fun `supportsVision is false when no model is loaded`() = runTest {
+        coEvery { modelRepository.findActive() } returns null
+        val vm = viewModel()
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.supportsVision)
+        assertFalse(vm.uiState.value.modelLoaded)
+    }
+
+    @Test
+    fun `supportsVision reflects engine capability when model is loaded`() = runTest {
+        coEvery { modelRepository.findActive() } returns activeModel()
+        every { gemmaEngine.isModelLoaded() } returns true
+        every { gemmaEngine.supportsImageAnalysis() } returns true
+
+        val vm = viewModel()
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.modelLoaded)
+        assertTrue(vm.uiState.value.supportsVision)
+    }
+
+    @Test
+    fun `scheduleSuggestion emits ScheduleNavEvent when plantationId is set`() = runTest {
+        coEvery { modelRepository.findActive() } returns null
+        val vm = viewModel(plantationId = "plant-42")
+        advanceUntilIdle()
+
+        val suggestion = TreatmentSuggestion("RIEGO", "Water regularly", "Deep irrigation", "immediate", null)
+
+        vm.scheduleEvent.test {
+            vm.scheduleSuggestion(suggestion)
+            val event = awaitItem()
+            assertEquals("plant-42", event.plantationId)
+            assertEquals(suggestion, event.suggestion)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `scheduleSuggestion does nothing when plantationId is null`() = runTest {
+        coEvery { modelRepository.findActive() } returns null
+        val vm = viewModel(plantationId = null)
+        advanceUntilIdle()
+
+        val suggestion = TreatmentSuggestion("RIEGO", "Water", "Irrigate", "low", null)
+
+        vm.scheduleEvent.test {
+            vm.scheduleSuggestion(suggestion)
+            advanceUntilIdle()
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `userQuestion is included in enriched prompt`() = runTest {
+        coEvery { modelRepository.findActive() } returns activeModel()
+        every { gemmaEngine.isModelLoaded() } returns true
+        coEvery { modelRepository.findPromptTemplate(any()) } returns null
+
+        var capturedPrompt: String? = null
+        every { gemmaEngine.analyzePhoto(any(), any(), capture(capturedPrompt?.let { io.mockk.slot() } ?: io.mockk.slot<String>().also { capturedPrompt = "" })) } answers {
+            flowOf("")
+        }
+        // Simpler: capture the prompt via every block
+        every { gemmaEngine.analyzePhoto(any(), any(), any()) } answers {
+            capturedPrompt = thirdArg<String>()
+            flowOf("""{"actions":[]}""")
+        }
+
+        val vm = viewModel(plantationId = "p1")
+        advanceUntilIdle()
+
+        vm.setUserQuestion("Is the tomato ready to harvest?")
+        vm.setImageUri(mockk<Uri>())
+        vm.analyzePhoto()
+        advanceUntilIdle()
+
+        assertNotNull(capturedPrompt)
+        assertTrue(
+            "Expected user question in prompt but got: $capturedPrompt",
+            capturedPrompt!!.contains("Is the tomato ready to harvest?")
+        )
     }
 }

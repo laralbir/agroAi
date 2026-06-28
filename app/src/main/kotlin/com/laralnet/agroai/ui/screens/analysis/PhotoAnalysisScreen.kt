@@ -1,6 +1,5 @@
 package com.laralnet.agroai.ui.screens.analysis
 
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,8 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,12 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.laralnet.agroai.R
+import com.laralnet.agroai.aimodel.infrastructure.gemma.TreatmentSuggestion
+import com.laralnet.agroai.treatment.domain.model.TreatmentType
 import com.laralnet.agroai.ui.components.SimpleMarkdownText
 import java.io.File
 
@@ -40,13 +44,13 @@ fun PhotoAnalysisScreen(
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let { viewModel.analyzePhoto(it) } }
+    ) { uri: Uri? -> uri?.let { viewModel.setImageUri(it) } }
 
-    // Camera capture — TakePicture writes to a cached file and returns Boolean success
+    // Camera capture — TakePicture writes to a cached file via FileProvider
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
-    ) { success -> if (success) cameraUri?.let { viewModel.analyzePhoto(it) } }
+    ) { success -> if (success) cameraUri?.let { viewModel.setImageUri(it) } }
 
     fun launchCamera() {
         val photoFile = File(context.cacheDir, "photos").also { it.mkdirs() }
@@ -85,6 +89,36 @@ fun PhotoAnalysisScreen(
             if (!uiState.modelLoaded) {
                 NoModelWarning(modifier = Modifier.fillMaxSize().padding(32.dp))
                 return@Column
+            }
+
+            // ---- Vision warning ----
+            if (!uiState.supportsVision) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            stringResource(R.string.analysis_vision_not_supported),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
             }
 
             // ---- Photo preview ----
@@ -168,7 +202,7 @@ fun PhotoAnalysisScreen(
                 (uiState.plantations.isEmpty() ||
                     (uiState.selectedPlantationId != null && uiState.selectedPlantTypeId != null))
             Button(
-                onClick = { uiState.imageUri?.let { viewModel.analyzePhoto(it) } },
+                onClick = { viewModel.analyzePhoto() },
                 enabled = canAnalyze,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,30 +247,63 @@ fun PhotoAnalysisScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (result.rawResponse.isNotBlank()) {
+                    // Full markdown response (strips the JSON block visually)
+                    val displayText = result.rawResponse
+                        .substringBefore("```json").trimEnd()
+                        .ifBlank { result.rawResponse }
+                    if (displayText.isNotBlank()) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             SimpleMarkdownText(
-                                text = result.rawResponse,
+                                text = displayText,
                                 modifier = Modifier.padding(16.dp)
                             )
                         }
                     }
 
-                    val pid = viewModel.plantationId
-                    if (pid != null && onNavigateToScheduleTreatment != null) {
-                        Button(
-                            onClick = {
-                                onNavigateToScheduleTreatment.invoke(
-                                    pid,
-                                    "OTRO",
-                                    "AI Analysis",
-                                    result.rawResponse.take(400),
-                                    result.rawResponse.take(3000)
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(stringResource(R.string.analysis_schedule_calendar))
+                    // Structured action cards
+                    if (result.suggestions.isNotEmpty()) {
+                        Text(
+                            stringResource(R.string.analysis_suggestions),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                        result.suggestions.forEach { suggestion ->
+                            SuggestionCard(
+                                suggestion = suggestion,
+                                onSchedule = if (viewModel.plantationId != null &&
+                                    onNavigateToScheduleTreatment != null
+                                ) {
+                                    {
+                                        onNavigateToScheduleTreatment.invoke(
+                                            viewModel.plantationId!!,
+                                            suggestion.type,
+                                            suggestion.title.ifBlank { suggestion.type },
+                                            suggestion.description,
+                                            result.rawResponse.take(3000)
+                                        )
+                                    }
+                                } else null
+                            )
+                        }
+                    } else {
+                        // Fallback: single schedule button when model didn't produce structured actions
+                        val pid = viewModel.plantationId
+                        if (pid != null && onNavigateToScheduleTreatment != null) {
+                            OutlinedButton(
+                                onClick = {
+                                    onNavigateToScheduleTreatment.invoke(
+                                        pid, "OTRO", "AI Analysis",
+                                        result.rawResponse.take(400),
+                                        result.rawResponse.take(3000)
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text(stringResource(R.string.analysis_schedule_calendar))
+                            }
                         }
                     }
                 }
@@ -253,6 +320,76 @@ fun PhotoAnalysisScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+// ---- Suggestion card ----
+@Composable
+private fun SuggestionCard(
+    suggestion: TreatmentSuggestion,
+    onSchedule: (() -> Unit)?
+) {
+    val type = TreatmentType.entries.firstOrNull { it.name == suggestion.type } ?: TreatmentType.OTRO
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(type.emoji(), style = MaterialTheme.typography.titleLarge)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                val titleText = suggestion.title.ifBlank {
+                    type.name.lowercase().replaceFirstChar { it.uppercaseChar() }
+                }
+                Text(titleText, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                if (suggestion.description.isNotBlank()) {
+                    Text(
+                        suggestion.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 2.dp)) {
+                    if (suggestion.urgency.isNotBlank()) {
+                        SuggestionChip(
+                            onClick = {},
+                            label = { Text(suggestion.urgency, style = MaterialTheme.typography.labelSmall) }
+                        )
+                    }
+                    suggestion.suggestedDate?.let { date ->
+                        SuggestionChip(
+                            onClick = {},
+                            label = { Text("📅 $date", style = MaterialTheme.typography.labelSmall) }
+                        )
+                    }
+                }
+                if (onSchedule != null) {
+                    OutlinedButton(
+                        onClick = onSchedule,
+                        modifier = Modifier.padding(top = 2.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.analysis_schedule_calendar),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun TreatmentType.emoji() = when (this) {
+    TreatmentType.RIEGO -> "💧"
+    TreatmentType.PODA -> "✂️"
+    TreatmentType.COSECHA -> "🌾"
+    TreatmentType.FERTILIZACION -> "🧪"
+    TreatmentType.FUMIGACION -> "🌫️"
+    TreatmentType.INJERTO -> "🌿"
+    TreatmentType.TRANSPLANTE -> "🪴"
+    TreatmentType.OTRO -> "📋"
 }
 
 // ---- Plantation dropdown ----
@@ -320,7 +457,6 @@ private fun PlantTypeDropdown(
     }
 }
 
-// ---- Supporting composables (unchanged from before, except SuggestionCard date string) ----
 @Composable
 private fun PhotoPlaceholder(modifier: Modifier = Modifier) {
     Box(
@@ -342,7 +478,6 @@ private fun PhotoPlaceholder(modifier: Modifier = Modifier) {
         }
     }
 }
-
 
 @Composable
 private fun NoModelWarning(modifier: Modifier = Modifier) {

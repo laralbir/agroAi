@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.laralnet.agroai.ui.screens.settings.SettingsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -26,6 +27,16 @@ class OnboardingViewModel @Inject constructor(
     val onboardingDone = dataStore.data
         .map { it[KEY_ONBOARDING_DONE] ?: false }
         .stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = null)
+
+    val savedCalendarAccount = dataStore.data
+        .map { it[SettingsViewModel.KEY_SELECTED_ACCOUNT]?.ifBlank { null } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    fun setCalendarAccount(email: String) = viewModelScope.launch {
+        if (email.isNotBlank()) {
+            dataStore.edit { it[SettingsViewModel.KEY_SELECTED_ACCOUNT] = email.trim() }
+        }
+    }
 
     fun markDone() {
         viewModelScope.launch {

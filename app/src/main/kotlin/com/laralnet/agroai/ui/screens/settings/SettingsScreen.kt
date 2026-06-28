@@ -5,9 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,8 +32,11 @@ fun SettingsScreen(
     val themeMode by viewModel.themeMode.collectAsState()
     val hfCredential by viewModel.hfCredential.collectAsState()
     val activeModel by viewModel.activeModel.collectAsState()
+    val calendarAccount by viewModel.calendarAccount.collectAsState()
     val context = LocalContext.current
     var showHfDisconnectDialog by remember { mutableStateOf(false) }
+    var showCalendarChangeDialog by remember { mutableStateOf<String?>(null) } // pending new email
+    var calendarEmailInput by remember { mutableStateOf("") }
 
     // Launch Chrome Custom Tab when the ViewModel requests it
     LaunchedEffect(Unit) {
@@ -96,6 +101,31 @@ fun SettingsScreen(
 
             Divider(modifier = Modifier.padding(vertical = 12.dp))
 
+            // Google Calendar account
+            SettingsSectionTitle(text = stringResource(R.string.settings_calendar))
+            CalendarAccountItem(
+                account = calendarAccount,
+                emailInput = calendarEmailInput,
+                onEmailInputChange = { calendarEmailInput = it },
+                onSave = {
+                    val newEmail = calendarEmailInput.trim()
+                    if (newEmail.isNotBlank()) {
+                        if (calendarAccount != null && calendarAccount != newEmail) {
+                            showCalendarChangeDialog = newEmail
+                        } else {
+                            viewModel.setCalendarAccount(newEmail)
+                            calendarEmailInput = ""
+                        }
+                    }
+                },
+                onClear = {
+                    viewModel.clearCalendarAccount()
+                    calendarEmailInput = ""
+                }
+            )
+
+            Divider(modifier = Modifier.padding(vertical = 12.dp))
+
             // Prompt editor
             SettingsSectionTitle(text = stringResource(R.string.settings_ai_prompts))
             SettingsItem(
@@ -143,6 +173,41 @@ fun SettingsScreen(
                     Text(stringResource(R.string.btn_cancel))
                 }
             }
+        )
+    }
+
+    // Calendar account change dialog (3 options)
+    showCalendarChangeDialog?.let { newEmail ->
+        AlertDialog(
+            onDismissRequest = { showCalendarChangeDialog = null },
+            icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
+            title = { Text(stringResource(R.string.settings_calendar_change_title)) },
+            text = { Text(stringResource(R.string.settings_calendar_change_body, calendarAccount ?: "", newEmail)) },
+            confirmButton = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Button(
+                        onClick = {
+                            viewModel.migrateAndSetCalendarAccount(calendarAccount ?: "", newEmail)
+                            calendarEmailInput = ""
+                            showCalendarChangeDialog = null
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.settings_calendar_change_migrate)) }
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.setCalendarAccount(newEmail)
+                            calendarEmailInput = ""
+                            showCalendarChangeDialog = null
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.settings_calendar_change_lose)) }
+                    TextButton(
+                        onClick = { showCalendarChangeDialog = null },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.btn_cancel)) }
+                }
+            },
+            dismissButton = {}
         )
     }
 
@@ -200,6 +265,67 @@ private fun HuggingFaceConnectionItem(
         },
         modifier = Modifier.fillMaxWidth()
     )
+}
+
+@Composable
+private fun CalendarAccountItem(
+    account: String?,
+    emailInput: String,
+    onEmailInputChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onClear: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.settings_calendar_account)) },
+            supportingContent = {
+                Text(
+                    if (account != null)
+                        stringResource(R.string.settings_calendar_connected_as, account)
+                    else
+                        stringResource(R.string.settings_calendar_not_connected),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            leadingContent = {
+                Icon(
+                    Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    tint = if (account != null) MaterialTheme.colorScheme.primary
+                           else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            trailingContent = {
+                if (account != null) {
+                    TextButton(onClick = onClear) {
+                        Text(stringResource(R.string.settings_calendar_disconnect))
+                    }
+                }
+            }
+        )
+        if (account == null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = emailInput,
+                    onValueChange = onEmailInputChange,
+                    placeholder = { Text(stringResource(R.string.settings_calendar_email_hint)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = onSave,
+                    enabled = emailInput.contains("@")
+                ) { Text(stringResource(R.string.settings_calendar_save)) }
+            }
+        }
+    }
 }
 
 @Composable

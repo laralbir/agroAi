@@ -262,6 +262,7 @@
     <string name="analysis_select_required_hint">Selecciona una plantación y tipo de planta para incluir contexto en el análisis</string>
     <string name="analysis_btn_disabled_hint">Selecciona una plantación y tipo de planta antes de analizar</string>
     <string name="analysis_suggested_date">Sugerido: %s</string>
+    <string name="analysis_vision_not_supported">El modelo activo no soporta análisis de imagen. Descarga Gemma 3n (E2B o E4B) en Ajustes → Modelos de IA para analizar fotos reales.</string>
 
     <!-- Plant actions -->
     <string name="plant_analyze">Analizar</string>
@@ -276,6 +277,28 @@
     <!-- Model download log -->
     <string name="model_download_log">Registro de descarga</string>
     <string name="model_download_log_error">Error — registro completo</string>
+
+    <!-- Settings — Google Calendar -->
+    <string name="settings_calendar">Google Calendar</string>
+    <string name="settings_calendar_account">Cuenta de calendario</string>
+    <string name="settings_calendar_not_connected">Sin cuenta vinculada</string>
+    <string name="settings_calendar_connected_as">Vinculado como %s</string>
+    <string name="settings_calendar_email_hint">tu@google.com</string>
+    <string name="settings_calendar_save">Guardar</string>
+    <string name="settings_calendar_disconnect">Desvincular</string>
+    <string name="settings_calendar_change_title">¿Cambiar cuenta de calendario?</string>
+    <string name="settings_calendar_change_body">Cambias de %1$s a %2$s. ¿Qué quieres hacer con los tratamientos programados?</string>
+    <string name="settings_calendar_change_migrate">Migrar tratamientos a la nueva cuenta</string>
+    <string name="settings_calendar_change_lose">Cambiar cuenta (los tratamientos se quedan en el calendario anterior)</string>
+
+    <!-- Onboarding — Página de Calendario -->
+    <string name="onboarding_calendar_title">Google Calendar (opcional)</string>
+    <string name="onboarding_calendar_subtitle">Introduce tu cuenta de Google para añadir automáticamente los tratamientos programados a tu calendario.</string>
+    <string name="onboarding_calendar_email_label">Correo de tu cuenta Google</string>
+    <string name="onboarding_calendar_email_hint">tu@gmail.com</string>
+    <string name="onboarding_calendar_save">Guardar cuenta</string>
+    <string name="onboarding_calendar_change">Usar una cuenta diferente</string>
+    <string name="onboarding_calendar_skip_hint">Puedes omitir este paso y configurarlo más tarde en Ajustes.</string>
 
     <!-- Settings -->
     <string name="settings_ai_prompts">Prompts de IA</string>

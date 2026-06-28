@@ -262,6 +262,7 @@
     <string name="analysis_select_required_hint">Select a plantation and plant type to include context in the analysis</string>
     <string name="analysis_btn_disabled_hint">Select a plantation and plant type before analyzing</string>
     <string name="analysis_suggested_date">Suggested: %s</string>
+    <string name="analysis_vision_not_supported">The active model does not support image analysis. Download Gemma 3n (E2B or E4B) in Settings → AI Models for real photo analysis.</string>
 
     <!-- Plant actions -->
     <string name="plant_analyze">Analyze</string>
@@ -276,6 +277,28 @@
     <!-- Model download log -->
     <string name="model_download_log">Download log</string>
     <string name="model_download_log_error">Error — full log</string>
+
+    <!-- Settings — Google Calendar -->
+    <string name="settings_calendar">Google Calendar</string>
+    <string name="settings_calendar_account">Calendar account</string>
+    <string name="settings_calendar_not_connected">No account configured</string>
+    <string name="settings_calendar_connected_as">Connected as %s</string>
+    <string name="settings_calendar_email_hint">your@google.com</string>
+    <string name="settings_calendar_save">Save</string>
+    <string name="settings_calendar_disconnect">Disconnect</string>
+    <string name="settings_calendar_change_title">Change calendar account?</string>
+    <string name="settings_calendar_change_body">You are switching from %1$s to %2$s. What would you like to do with the scheduled treatments?</string>
+    <string name="settings_calendar_change_migrate">Migrate treatments to new account</string>
+    <string name="settings_calendar_change_lose">Switch account (treatments stay in old calendar)</string>
+
+    <!-- Onboarding — Calendar page -->
+    <string name="onboarding_calendar_title">Google Calendar (optional)</string>
+    <string name="onboarding_calendar_subtitle">Enter your Google account email to automatically add scheduled treatments to your calendar.</string>
+    <string name="onboarding_calendar_email_label">Google account email</string>
+    <string name="onboarding_calendar_email_hint">your@gmail.com</string>
+    <string name="onboarding_calendar_save">Save account</string>
+    <string name="onboarding_calendar_change">Use a different account</string>
+    <string name="onboarding_calendar_skip_hint">You can skip this step and configure it later in Settings.</string>
 
     <!-- Settings -->
     <string name="settings_ai_prompts">AI Prompts</string>
