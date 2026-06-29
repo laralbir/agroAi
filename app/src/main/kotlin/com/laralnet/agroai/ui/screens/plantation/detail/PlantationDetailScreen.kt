@@ -3,6 +3,8 @@ package com.laralnet.agroai.ui.screens.plantation.detail
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -11,6 +13,8 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,15 +30,23 @@ import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.Location
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.plantation.domain.model.PlantType
+import com.laralnet.agroai.action.domain.model.ActionStatus
+import com.laralnet.agroai.action.domain.model.PlantationAction
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
+import com.laralnet.agroai.ui.screens.action.actionTypeEmoji
+import com.laralnet.agroai.ui.screens.action.actionTypeLabel
 import com.laralnet.agroai.ui.screens.treatment.resolveLabel
+import com.laralnet.agroai.weather.domain.model.DailyForecast
 import com.laralnet.agroai.weather.domain.model.WeatherCondition
 import com.laralnet.agroai.weather.domain.model.WeatherData
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.util.Locale
 import androidx.compose.foundation.text.KeyboardOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +60,8 @@ fun PlantationDetailScreen(
     onNavigateToEdit: () -> Unit,
     onNavigateToScheduleTreatment: (String) -> Unit,
     onNavigateToTreatmentDetail: (String) -> Unit,
+    onNavigateToActionList: (String) -> Unit,
+    onNavigateToActionDetail: (String) -> Unit,
     viewModel: PlantationDetailViewModel = hiltViewModel()
 ) {
     LaunchedEffect(plantationId) { viewModel.load(plantationId) }
@@ -55,6 +69,7 @@ fun PlantationDetailScreen(
     val plantation by viewModel.plantation.collectAsState()
     val treatments by viewModel.treatments.collectAsState()
     val weather by viewModel.weather.collectAsState()
+    val actions by viewModel.actions.collectAsState()
 
     // Edit plant dialog state
     var editingPlant by remember { mutableStateOf<PlantType?>(null) }
@@ -134,6 +149,9 @@ fun PlantationDetailScreen(
 
                 weather?.let { w ->
                     item { WeatherCard(weather = w) }
+                    if (w.forecast.isNotEmpty()) {
+                        item { ForecastSection(forecast = w.forecast) }
+                    }
                 }
 
                 if (p.plants.isNotEmpty()) {
@@ -175,6 +193,38 @@ fun PlantationDetailScreen(
                             treatment = treatment,
                             onClick = { onNavigateToTreatmentDetail(treatment.id) }
                         )
+                    }
+                }
+
+                // Actions section
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            stringResource(R.string.action_section_title),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        TextButton(onClick = { onNavigateToActionList(plantationId) }) {
+                            Text(stringResource(R.string.action_see_all))
+                        }
+                    }
+                }
+                val pendingActions = actions.filter { it.status == ActionStatus.PENDING }.take(3)
+                if (pendingActions.isEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.action_empty_pending),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    items(pendingActions, key = { "action_${it.id}" }) { action ->
+                        ActionSummaryCard(action = action, onClick = { onNavigateToActionDetail(action.id) })
                     }
                 }
             }
@@ -321,6 +371,80 @@ private fun PlantCard(
 }
 
 @Composable
+private fun ForecastSection(forecast: List<DailyForecast>) {
+    var expanded by remember { mutableStateOf(false) }
+    val locale = Locale.getDefault()
+
+    Card(modifier = Modifier.fillMaxWidth().testTag("forecast_section")) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    stringResource(R.string.plantation_forecast_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Icon(
+                    if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (expanded) {
+                HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                forecast.take(15).forEach { day ->
+                    ForecastDayRow(day = day, locale = locale)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ForecastDayRow(day: DailyForecast, locale: Locale) {
+    val zone = ZoneId.systemDefault()
+    val date = LocalDate.ofInstant(day.date, zone)
+    val dayLabel = date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale) +
+        " " + date.dayOfMonth
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            day.condition.toLabel(),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.width(32.dp)
+        )
+        Text(
+            dayLabel,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.width(56.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            "${day.maxTempCelsius.toInt()}° / ${day.minTempCelsius.toInt()}°",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f)
+        )
+        if (day.precipitationProbability > 0) {
+            Text(
+                "💧 ${day.precipitationProbability}%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
 private fun WeatherCard(weather: WeatherData) {
     val current = weather.current ?: return
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -421,6 +545,27 @@ private fun TreatmentCard(treatment: Treatment, onClick: () -> Unit) {
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
+            }
+        )
+    }
+}
+
+// ---- Action summary card ----
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ActionSummaryCard(action: PlantationAction, onClick: () -> Unit) {
+    val dateStr = remember(action.scheduledAt) {
+        val ldt = LocalDateTime.ofInstant(action.scheduledAt, ZoneId.systemDefault())
+        ldt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT))
+    }
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        ListItem(
+            leadingContent = {
+                Text(actionTypeEmoji(action.actionType), style = MaterialTheme.typography.titleMedium)
+            },
+            headlineContent = { Text(action.title, style = MaterialTheme.typography.titleSmall) },
+            supportingContent = {
+                Text("${actionTypeLabel(action.actionType)} · $dateStr", style = MaterialTheme.typography.bodySmall)
             }
         )
     }

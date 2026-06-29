@@ -5,14 +5,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.aimodel.infrastructure.worker.PlantationHealthWorker
 import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.ui.screens.home.HomeViewModel
@@ -25,10 +28,21 @@ fun PlantationListScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val plantations by viewModel.plantations.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
-            AppTopBar(title = { Text(stringResource(R.string.plantation_title)) })
+            AppTopBar(
+                title = { Text(stringResource(R.string.plantation_title)) },
+                actions = {
+                    IconButton(onClick = { PlantationHealthWorker.scheduleOneTime(context) }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.plantation_review_now)
+                        )
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onNavigateToWizard) {

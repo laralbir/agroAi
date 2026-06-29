@@ -247,6 +247,8 @@
     <!-- Plantation detail -->
     <string name="plantation_detail_treatments">Tratamientos</string>
     <string name="plantation_detail_no_treatments">Sin tratamientos programados</string>
+    <string name="plantation_forecast_title">Previsión 15 días</string>
+    <string name="plantation_review_now">Revisar ahora</string>
     <string name="plantation_units">unidades</string>
 
     <!-- Analysis -->
@@ -348,6 +350,10 @@
     <string name="treatment_delete_confirm_body">Esta acción no se puede deshacer.</string>
     <string name="treatment_in_calendar">Añadido a Google Calendar</string>
     <string name="home_upcoming_treatments">Próximos tratamientos</string>
+    <string name="home_today_treatments">Hoy</string>
+    <string name="home_no_today_treatments">No hay tareas para hoy</string>
+    <string name="date_tomorrow">Mañana</string>
+    <string name="date_in_n_days">En %d días</string>
     <string name="treatment_load_calendars">Cargar</string>
     <string name="treatment_select_calendar">Seleccionar calendario</string>
     <string name="treatment_no_calendars">No se encontraron calendarios para esta cuenta</string>
@@ -439,4 +445,67 @@
     <string name="notif_health_title">Actualización de salud de plantación</string>
     <string name="notif_health_body_single">Nuevas sugerencias de tratamiento para %s basadas en la previsión meteorológica.</string>
     <string name="notif_health_body_multiple">Nuevas sugerencias de tratamiento para %d plantaciones basadas en la previsión meteorológica.</string>
+
+    <!-- Notificaciones de acciones (canal agroai_actions) -->
+    <string name="notif_channel_actions_name">Acciones de plantación</string>
+    <string name="notif_actions_title">Nuevas acciones sugeridas</string>
+    <string name="notif_actions_body_single">%1$s · %2$s</string>
+    <string name="notif_actions_body_multiple">Se han programado %d nuevas acciones para tus plantaciones.</string>
+    <string name="notif_actions_view">Ver</string>
+
+    <!-- Pantalla de acciones de plantación -->
+    <string name="action_list_title">Acciones</string>
+    <string name="action_section_title">Acciones</string>
+    <string name="action_see_all">Ver todas</string>
+    <string name="action_create">Nueva acción</string>
+    <string name="action_detail_title">Detalle de acción</string>
+    <string name="action_empty">Sin acciones. Pulsa + para añadir una.</string>
+    <string name="action_empty_pending">Sin acciones pendientes.</string>
+    <string name="action_mark_done">Marcar como hecha</string>
+    <string name="action_delete">Eliminar acción</string>
+    <string name="action_delete_title">Eliminar acción</string>
+    <string name="action_delete_body">Esta acción se eliminará. Si fue añadida a tu calendario, el evento también se borrará.</string>
+    <string name="action_complete_title">Completar acción</string>
+    <string name="action_complete_notes_hint">Notas (opcional)</string>
+    <string name="action_synced_calendar">Sincronizado con %s</string>
+    <string name="action_source_ai">Sugerida por IA</string>
+
+    <!-- Filtros de acciones -->
+    <string name="action_filter_all">Todas</string>
+    <string name="action_filter_pending">Pendientes</string>
+    <string name="action_filter_done">Completadas</string>
+    <string name="action_filter_skipped">Omitidas</string>
+
+    <!-- Estados de acción -->
+    <string name="action_status_pending">Pendiente</string>
+    <string name="action_status_done">Completada</string>
+    <string name="action_status_skipped">Omitida</string>
+
+    <!-- Tipos de acción -->
+    <string name="action_type_label">Tipo de acción</string>
+    <string name="action_type_regar">Regar</string>
+    <string name="action_type_podar">Podar</string>
+    <string name="action_type_cavar">Cavar</string>
+    <string name="action_type_fertilizar">Fertilizar</string>
+    <string name="action_type_fumigar">Fumigar</string>
+    <string name="action_type_cosechar">Cosechar</string>
+    <string name="action_type_injertar">Injertar</string>
+    <string name="action_type_trasplantar">Trasplantar</string>
+    <string name="action_type_abonar">Abonar/Compost</string>
+    <string name="action_type_airear">Airear</string>
+    <string name="action_type_aclarar">Aclarar</string>
+    <string name="action_type_otro">Otro</string>
+
+    <!-- Presets de fecha de acción -->
+    <string name="action_title_label">Título</string>
+    <string name="action_notes_label">Notas</string>
+    <string name="action_date_label">Fecha programada</string>
+    <string name="action_date_tomorrow">Mañana</string>
+    <string name="action_date_3days">En 3 días</string>
+    <string name="action_date_7days">En 1 semana</string>
+    <string name="action_date_14days">En 2 semanas</string>
+
+    <!-- Onboarding — permiso de notificaciones -->
+    <string name="onboarding_permission_notifications">Notificaciones</string>
+    <string name="onboarding_permission_notifications_desc">Recibe alertas cuando se sugieran nuevas acciones para tus plantaciones.</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.laralnet.agroai.ui.screens.home
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,10 +22,15 @@ import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
 import com.laralnet.agroai.ui.screens.treatment.resolveLabel
+import com.laralnet.agroai.weather.domain.model.WeatherCondition
+import com.laralnet.agroai.weather.domain.model.WeatherData
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +43,9 @@ fun HomeScreen(
 ) {
     val plantations by viewModel.plantations.collectAsState()
     val hasActiveModel by viewModel.hasActiveModel.collectAsState()
+    val todayTreatments by viewModel.todayTreatments.collectAsState()
     val upcomingTreatments by viewModel.upcomingTreatments.collectAsState()
+    val homeWeather by viewModel.homeWeather.collectAsState()
 
     Scaffold(
         topBar = {
@@ -91,16 +99,42 @@ fun HomeScreen(
                     Spacer(Modifier.height(16.dp))
                 }
 
-                // Upcoming treatments (limited to 3)
-                val preview = upcomingTreatments.take(3)
-                if (preview.isNotEmpty()) {
+                homeWeather?.let { weather ->
+                    item { HomeWeatherWidget(weather = weather) }
+                }
+
+                item {
+                    Text(
+                        stringResource(R.string.home_today_treatments),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                if (todayTreatments.isEmpty()) {
+                    item {
+                        Text(
+                            stringResource(R.string.home_no_today_treatments),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    items(todayTreatments, key = { "today_${it.id}" }) { treatment ->
+                        UpcomingTreatmentCard(
+                            treatment = treatment,
+                            onClick = { onNavigateToTreatmentDetail(treatment.id) }
+                        )
+                    }
+                }
+
+                if (upcomingTreatments.isNotEmpty()) {
                     item {
                         Text(
                             stringResource(R.string.home_upcoming_treatments),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
-                    items(preview, key = { "t_${it.id}" }) { treatment ->
+                    items(upcomingTreatments, key = { "upcoming_${it.id}" }) { treatment ->
                         UpcomingTreatmentCard(
                             treatment = treatment,
                             onClick = { onNavigateToTreatmentDetail(treatment.id) }
@@ -120,6 +154,55 @@ fun HomeScreen(
     }
 }
 
+@Composable
+private fun HomeWeatherWidget(weather: WeatherData) {
+    val current = weather.current ?: return
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(current.condition.toEmoji(), style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "%.1f°C".format(current.temperatureCelsius),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    stringResource(R.string.weather_humidity, current.humidity),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    stringResource(
+                        R.string.weather_wind,
+                        "%.0f".format(current.windSpeedKmh),
+                        current.windDirection
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+                if (current.precipitationMm > 0) {
+                    Text(
+                        stringResource(R.string.weather_precipitation, "%.1f".format(current.precipitationMm)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    )
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun UpcomingTreatmentCard(treatment: Treatment, onClick: () -> Unit) {
@@ -128,15 +211,13 @@ private fun UpcomingTreatmentCard(treatment: Treatment, onClick: () -> Unit) {
         TreatmentStatus.PENDING -> MaterialTheme.colorScheme.secondary
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
-    val dateStr = LocalDateTime.ofInstant(treatment.scheduledAt, ZoneId.systemDefault())
-        .let { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT).format(it) }
 
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         ListItem(
             headlineContent = { Text(treatment.title) },
             supportingContent = {
                 Text(
-                    "${treatment.type.resolveLabel(context)} · $dateStr",
+                    "${treatment.type.resolveLabel(context)} · ${relativeDate(treatment.scheduledAt, context)}",
                     style = MaterialTheme.typography.bodySmall
                 )
             },
@@ -157,16 +238,41 @@ private fun UpcomingTreatmentCard(treatment: Treatment, onClick: () -> Unit) {
     }
 }
 
+private fun relativeDate(scheduledAt: Instant, context: Context): String {
+    val zone = ZoneId.systemDefault()
+    val today = LocalDate.now(zone)
+    val date = scheduledAt.atZone(zone).toLocalDate()
+    val time = LocalDateTime.ofInstant(scheduledAt, zone)
+        .format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+    return when (val days = ChronoUnit.DAYS.between(today, date).toInt()) {
+        0 -> time
+        1 -> "${context.getString(R.string.date_tomorrow)} · $time"
+        in 2..13 -> "${context.getString(R.string.date_in_n_days, days)} · $time"
+        else -> LocalDateTime.ofInstant(scheduledAt, zone)
+            .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT))
+    }
+}
+
+private fun WeatherCondition.toEmoji() = when (this) {
+    WeatherCondition.CLEAR -> "☀️"
+    WeatherCondition.PARTLY_CLOUDY -> "⛅"
+    WeatherCondition.CLOUDY -> "🌥️"
+    WeatherCondition.OVERCAST -> "☁️"
+    WeatherCondition.LIGHT_RAIN -> "🌦️"
+    WeatherCondition.MODERATE_RAIN -> "🌧️"
+    WeatherCondition.HEAVY_RAIN -> "🌧️"
+    WeatherCondition.STORM -> "⛈️"
+    WeatherCondition.SNOW -> "❄️"
+    WeatherCondition.FROST -> "🌨️"
+    WeatherCondition.FOG -> "🌫️"
+    WeatherCondition.HAIL -> "🌩️"
+    WeatherCondition.WINDY -> "💨"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlantationSummaryCard(
-    plantation: Plantation,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+private fun PlantationSummaryCard(plantation: Plantation, onClick: () -> Unit) {
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -179,10 +285,7 @@ private fun PlantationSummaryCard(
                 modifier = Modifier.padding(end = 16.dp)
             )
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = plantation.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Text(text = plantation.name, style = MaterialTheme.typography.titleMedium)
                 Text(
                     text = "${plantation.areaSqMeters.toInt()} m²  •  ${plantation.plants.size} plant types",
                     style = MaterialTheme.typography.bodySmall,
@@ -206,9 +309,7 @@ private fun NoModelBanner(onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Row(
             modifier = Modifier

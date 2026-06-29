@@ -1,5 +1,6 @@
 package com.laralnet.agroai.ui.screens.plantation
 
+import com.laralnet.agroai.action.application.query.ObserveActionsByPlantationQuery
 import com.laralnet.agroai.plantation.application.command.UpdatePlantationCommand
 import com.laralnet.agroai.plantation.application.handler.UpdatePlantationHandler
 import com.laralnet.agroai.plantation.domain.model.Location
@@ -36,13 +37,15 @@ class PlantationDetailViewModelTest {
     private val observeWeatherQuery: ObserveWeatherQuery = mockk(relaxed = true)
     private val refreshWeatherHandler: RefreshWeatherHandler = mockk(relaxed = true)
     private val updatePlantationHandler: UpdatePlantationHandler = mockk(relaxed = true)
+    private val observeActionsQuery: ObserveActionsByPlantationQuery = mockk(relaxed = true)
 
     private fun viewModel() = PlantationDetailViewModel(
         plantationRepository = plantationRepository,
         treatmentRepository = treatmentRepository,
         observeWeatherQuery = observeWeatherQuery,
         refreshWeatherHandler = refreshWeatherHandler,
-        updatePlantationHandler = updatePlantationHandler
+        updatePlantationHandler = updatePlantationHandler,
+        observeActionsQuery = observeActionsQuery
     )
 
     private fun plantation(plants: List<PlantType> = emptyList()) = Plantation.reconstitute(

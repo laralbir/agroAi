@@ -47,6 +47,8 @@ import com.laralnet.agroai.ui.screens.plantation.list.PlantationListScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.LocationPickerScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardViewModel
+import com.laralnet.agroai.ui.screens.action.ActionDetailScreen
+import com.laralnet.agroai.ui.screens.action.ActionListScreen
 import com.laralnet.agroai.ui.screens.settings.SettingsScreen
 import com.laralnet.agroai.ui.screens.calendar.CalendarScreen
 import com.laralnet.agroai.ui.screens.treatment.ScheduleTreatmentScreen
@@ -93,6 +95,12 @@ sealed class Screen(val route: String) {
     }
     data object TreatmentDetail : Screen("treatment/{treatmentId}") {
         fun route(id: String) = "treatment/$id"
+    }
+    data object ActionList : Screen("plantation/{plantationId}/actions") {
+        fun route(plantationId: String) = "plantation/$plantationId/actions"
+    }
+    data object ActionDetail : Screen("action/{actionId}") {
+        fun route(id: String) = "action/$id"
     }
     data object AnalysisResult : Screen("analysis/result/{analysisId}") {
         fun route(id: String) = "analysis/result/$id"
@@ -259,6 +267,12 @@ fun AgroAINavGraph(
                     },
                     onNavigateToTreatmentDetail = { tId ->
                         navController.navigate(Screen.TreatmentDetail.route(tId))
+                    },
+                    onNavigateToActionList = { pId ->
+                        navController.navigate(Screen.ActionList.route(pId))
+                    },
+                    onNavigateToActionDetail = { aId ->
+                        navController.navigate(Screen.ActionDetail.route(aId))
                     }
                 )
             }
@@ -436,6 +450,27 @@ fun AgroAINavGraph(
                 arguments = listOf(navArgument("treatmentId") { type = NavType.StringType })
             ) {
                 TreatmentDetailScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.ActionList.route,
+                arguments = listOf(navArgument("plantationId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val plantationId = backStackEntry.arguments?.getString("plantationId") ?: return@composable
+                ActionListScreen(
+                    plantationId = plantationId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToDetail = { actionId ->
+                        navController.navigate(Screen.ActionDetail.route(actionId))
+                    }
+                )
+            }
+            composable(
+                route = Screen.ActionDetail.route,
+                arguments = listOf(navArgument("actionId") { type = NavType.StringType })
+            ) {
+                ActionDetailScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

@@ -30,7 +30,7 @@ class DownloadModelHandlerTest {
     private val eventBus: EventBus = mockk(relaxed = true)
     private val handler = DownloadModelHandler(repository, downloader, eventBus)
 
-    private val command = DownloadModelCommand(variant = ModelVariant.GEMMA3_1B)
+    private val command = DownloadModelCommand(variant = ModelVariant.GEMMA3N_E2B)
 
     @Test
     fun `handle() saves model with DOWNLOADING state`() = runTest {
@@ -47,7 +47,7 @@ class DownloadModelHandlerTest {
 
         handler.handle(command)
 
-        coVerify { downloader.enqueue(any(), ModelVariant.GEMMA3_1B) }
+        coVerify { downloader.enqueue(any(), ModelVariant.GEMMA3N_E2B) }
     }
 
     @Test
@@ -62,7 +62,7 @@ class DownloadModelHandlerTest {
     @Test
     fun `handle() returns same id if model already DOWNLOADED`() = runTest {
         val existing = model(id = "existing-id", state = DownloadState.DOWNLOADED)
-        coEvery { repository.findByVariant(ModelVariant.GEMMA3_1B) } returns existing
+        coEvery { repository.findByVariant(ModelVariant.GEMMA3N_E2B) } returns existing
 
         val result = handler.handle(command)
 
@@ -74,7 +74,7 @@ class DownloadModelHandlerTest {
     @Test
     fun `handle() reuses existing id if model is FAILED`() = runTest {
         val existing = model(id = "failed-id", state = DownloadState.FAILED)
-        coEvery { repository.findByVariant(ModelVariant.GEMMA3_1B) } returns existing
+        coEvery { repository.findByVariant(ModelVariant.GEMMA3N_E2B) } returns existing
 
         val result = handler.handle(command)
 
@@ -92,5 +92,5 @@ class DownloadModelHandlerTest {
     }
 
     private fun model(id: String = "id", state: DownloadState = DownloadState.NOT_DOWNLOADED) =
-        AIModel(id = id, variant = ModelVariant.GEMMA3_1B, version = ModelVariant.GEMMA3_1B.gemmaVersion, downloadState = state)
+        AIModel(id = id, variant = ModelVariant.GEMMA3N_E2B, version = ModelVariant.GEMMA3N_E2B.gemmaVersion, downloadState = state)
 }

@@ -18,20 +18,6 @@ enum class ModelVariant(
     /** True for models that include a vision encoder and can process real images. */
     val supportsVision: Boolean = false
 ) {
-    GEMMA3_1B(
-        displayName = "Gemma 3 1B",
-        approximateSizeGb = 0.6,
-        requiredRamGb = 2.0,
-        downloadUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
-        gemmaVersion = GemmaVersion.GEMMA_3,
-        infoUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT",
-        localFileName = "gemma3_1b.task",
-        descriptionEs = "Modelo de texto compacto, ideal para dispositivos de gama media. Respuestas rápidas con menor consumo de RAM. Sin análisis de imagen.",
-        descriptionEn = "Compact text model, ideal for mid-range devices. Fast responses with lower RAM usage. No image analysis.",
-        isRecommended = false,
-        supportsVision = false
-    ),
-
     GEMMA3N_E2B(
         displayName = "Gemma 3n E2B",
         approximateSizeGb = 2.0,
@@ -58,20 +44,6 @@ enum class ModelVariant(
         descriptionEn = "High-accuracy multimodal Gemma 3n. Image and text analysis with deeper reasoning. Requires a high-end device.",
         isRecommended = false,
         supportsVision = true
-    ),
-
-    GEMMA4_E2B(
-        displayName = "Gemma 4 E2B",
-        approximateSizeGb = 2.5,
-        requiredRamGb = 4.0,
-        downloadUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",
-        gemmaVersion = GemmaVersion.GEMMA_4,
-        infoUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm",
-        localFileName = "gemma4_e2b.litertlm",
-        descriptionEs = "Última generación de Gemma. Mayor precisión en diagnósticos agrícolas y mejor comprensión del contexto. Sin análisis de imagen.",
-        descriptionEn = "Latest Gemma generation. Higher accuracy for agricultural diagnostics and better context understanding. No image analysis.",
-        isRecommended = false,
-        supportsVision = false
     )
 }
 

@@ -2,6 +2,7 @@ package com.laralnet.agroai.ui.screens.onboarding
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -324,6 +325,13 @@ private fun PermissionsPage() {
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
         )
     }
+    var notificationsGranted by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            else true
+        )
+    }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         cameraGranted = it
@@ -335,6 +343,9 @@ private fun PermissionsPage() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         calendarGranted = results[Manifest.permission.READ_CALENDAR] == true
+    }
+    val notificationsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        notificationsGranted = it
     }
 
     Column(
@@ -383,6 +394,18 @@ private fun PermissionsPage() {
                 )
             }
         )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Spacer(Modifier.height(16.dp))
+            PermissionRow(
+                icon = { Icon(Icons.Default.WbCloudy, contentDescription = null) },
+                title = stringResource(R.string.onboarding_permission_notifications),
+                description = stringResource(R.string.onboarding_permission_notifications_desc),
+                granted = notificationsGranted,
+                onGrant = {
+                    notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            )
+        }
     }
 }
 

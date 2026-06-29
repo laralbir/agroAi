@@ -656,6 +656,11 @@
         <span class="lang-es">Tratamientos</span>
         <span class="lang-en">Treatments</span>
       </a>
+      <a class="sidebar-link" href="#actions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span class="lang-es">Acciones</span>
+        <span class="lang-en">Actions</span>
+      </a>
       <a class="sidebar-link" href="#ai-models">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10H12z"/><circle cx="12" cy="12" r="3"/><path d="M12 22a10 10 0 0 1 0-20"/></svg>
         <span class="lang-es">Modelos de IA</span>
@@ -1113,6 +1118,145 @@
           <strong class="lang-en">Quick view on home</strong>
           <span class="lang-es">La pantalla de inicio muestra tus 3 próximos tratamientos pendientes. Tócalos para ir directamente al detalle.</span>
           <span class="lang-en">The home screen shows your 3 next pending treatments. Tap them to go directly to the detail view.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ACTIONS ──────────────────────────────── -->
+    <section class="section" id="actions">
+      <div class="section-header">
+        <div class="section-icon">⚡</div>
+        <h2 class="lang-es">Acciones de Plantación</h2>
+        <h2 class="lang-en">Plantation Actions</h2>
+      </div>
+
+      <div class="card lang-es">
+        <p>Las <strong>Acciones</strong> son tareas concretas que la IA sugiere automáticamente para cada plantación tras analizar una foto o durante el ciclo de supervisión en background. También puedes crearlas manualmente. Cada acción tiene un tipo, estado y fecha sugerida.</p>
+      </div>
+      <div class="card lang-en">
+        <p><strong>Actions</strong> are concrete tasks that the AI automatically suggests for each plantation after analyzing a photo or during the background health cycle. You can also create them manually. Each action has a type, status, and suggested date.</p>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:24px;">
+        <table>
+          <thead>
+            <tr>
+              <th class="lang-es">Tipo</th>
+              <th class="lang-en">Type</th>
+              <th class="lang-es">Descripción</th>
+              <th class="lang-en">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>💧 <span class="lang-es">Regar</span><span class="lang-en">Water</span></td>
+              <td class="lang-es">Riego programado según la humedad detectada</td>
+              <td class="lang-en">Scheduled watering based on detected moisture</td>
+            </tr>
+            <tr>
+              <td>✂️ <span class="lang-es">Podar</span><span class="lang-en">Prune</span></td>
+              <td class="lang-es">Poda de mantenimiento o formación</td>
+              <td class="lang-en">Maintenance or formative pruning</td>
+            </tr>
+            <tr>
+              <td>🌾 <span class="lang-es">Cosechar</span><span class="lang-en">Harvest</span></td>
+              <td class="lang-es">Recogida en ventana óptima de madurez</td>
+              <td class="lang-en">Harvest at optimal ripeness window</td>
+            </tr>
+            <tr>
+              <td>🧪 <span class="lang-es">Fertilizar</span><span class="lang-en">Fertilize</span></td>
+              <td class="lang-es">Aporte de nutrientes al cultivo</td>
+              <td class="lang-en">Nutrient application to the crop</td>
+            </tr>
+            <tr>
+              <td>🌫️ <span class="lang-es">Fumigar</span><span class="lang-en">Fumigate</span></td>
+              <td class="lang-es">Tratamiento fitosanitario preventivo o curativo</td>
+              <td class="lang-en">Preventive or curative phytosanitary treatment</td>
+            </tr>
+            <tr>
+              <td>🌿 <span class="lang-es">Injertar</span><span class="lang-en">Graft</span></td>
+              <td class="lang-es">Injerto según temporada</td>
+              <td class="lang-en">Grafting based on season</td>
+            </tr>
+            <tr>
+              <td>🪴 <span class="lang-es">Trasplantar</span><span class="lang-en">Transplant</span></td>
+              <td class="lang-es">Cambio de ubicación de plántulas</td>
+              <td class="lang-en">Seedling relocation</td>
+            </tr>
+            <tr>
+              <td>👁️ <span class="lang-es">Supervisar</span><span class="lang-en">Supervise</span></td>
+              <td class="lang-es">Inspección visual periódica</td>
+              <td class="lang-en">Periodic visual inspection</td>
+            </tr>
+            <tr>
+              <td>💊 <span class="lang-es">Tratar</span><span class="lang-en">Treat</span></td>
+              <td class="lang-es">Aplicar tratamiento específico detectado</td>
+              <td class="lang-en">Apply specific detected treatment</td>
+            </tr>
+            <tr>
+              <td>🔍 <span class="lang-es">Observar</span><span class="lang-en">Observe</span></td>
+              <td class="lang-es">Seguimiento visual sin intervención</td>
+              <td class="lang-en">Visual monitoring without intervention</td>
+            </tr>
+            <tr>
+              <td>🔧 <span class="lang-es">Reparar</span><span class="lang-en">Repair</span></td>
+              <td class="lang-es">Reparación de estructura o sistema de riego</td>
+              <td class="lang-en">Structure or irrigation system repair</td>
+            </tr>
+            <tr>
+              <td>📋 <span class="lang-es">Otro</span><span class="lang-en">Other</span></td>
+              <td class="lang-es">Cualquier tarea personalizada</td>
+              <td class="lang-en">Any custom task</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="steps" style="margin-bottom:24px;">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Acciones generadas automáticamente</h4>
+            <h4 class="lang-en">Automatically generated actions</h4>
+            <p class="lang-es">El worker de salud analiza tus plantaciones cada 6 horas en background. Cuando detecta algo que atender, crea acciones sugeridas y envía una notificación.</p>
+            <p class="lang-en">The health worker analyses your plantations every 6 hours in the background. When it detects something to address, it creates suggested actions and sends a notification.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Ver y filtrar en la lista de acciones</h4>
+            <h4 class="lang-en">View and filter in the action list</h4>
+            <p class="lang-es">Desde el detalle de la plantación, toca <em>"Ver todas"</em> en la sección Acciones. Usa los chips <strong>Todas / Pendientes / Hechas</strong> para filtrar.</p>
+            <p class="lang-en">From the plantation detail, tap <em>"See all"</em> in the Actions section. Use the <strong>All / Pending / Done</strong> chips to filter.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-number">3</div>
+          </div>
+          <div class="step-body">
+            <h4 class="lang-es">Marcar como hecha u omitir</h4>
+            <h4 class="lang-en">Mark as done or skip</h4>
+            <p class="lang-es">Toca una acción para ver su detalle. Pulsa <em>"Hecha"</em> para registrar la ejecución o <em>"Eliminar"</em> para descartarla.</p>
+            <p class="lang-en">Tap an action to see its detail. Tap <em>"Done"</em> to record completion or <em>"Delete"</em> to discard it.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">🔔</span>
+        <div>
+          <strong class="lang-es">Notificaciones de acciones (Android 13+)</strong>
+          <strong class="lang-en">Action notifications (Android 13+)</strong>
+          <span class="lang-es">En Android 13 o superior la app solicita permiso de notificaciones durante el onboarding. Sin este permiso el worker sigue funcionando pero no envía notificaciones.</span>
+          <span class="lang-en">On Android 13 or higher the app requests the notification permission during onboarding. Without this permission the worker still runs but won't send notifications.</span>
         </div>
       </div>
     </section>

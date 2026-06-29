@@ -57,7 +57,7 @@ class ModelManagementViewModelTest {
     )
 
     private fun model(
-        variant: ModelVariant = ModelVariant.GEMMA3_1B,
+        variant: ModelVariant = ModelVariant.GEMMA3N_E2B,
         state: DownloadState = DownloadState.NOT_DOWNLOADED,
         isActive: Boolean = false,
         progress: Int = 0
@@ -88,7 +88,7 @@ class ModelManagementViewModelTest {
         val vm = viewModel()
 
         vm.uiState.test {
-            val row = awaitItem().rows.first { it.variant == ModelVariant.GEMMA3_1B }
+            val row = awaitItem().rows.first { it.variant == ModelVariant.GEMMA3N_E2B }
             assertEquals(DownloadState.DOWNLOADED, row.downloadState)
             cancelAndIgnoreRemainingEvents()
         }
@@ -102,7 +102,7 @@ class ModelManagementViewModelTest {
         val vm = viewModel()
         advanceUntilIdle()
 
-        vm.onDownloadClick(ModelVariant.GEMMA3_1B)
+        vm.onDownloadClick(ModelVariant.GEMMA3N_E2B)
         advanceUntilIdle()
 
         coVerify { downloadHandler.handle(any()) }
@@ -154,7 +154,7 @@ class ModelManagementViewModelTest {
         val vm = viewModel()
         advanceUntilIdle()
 
-        vm.onDownloadClick(ModelVariant.GEMMA3_1B)
+        vm.onDownloadClick(ModelVariant.GEMMA3N_E2B)
         advanceUntilIdle()
 
         assertNotNull(vm.uiState.value.error)
@@ -169,7 +169,7 @@ class ModelManagementViewModelTest {
         val vm = viewModel()
         advanceUntilIdle()
 
-        vm.onDownloadClick(ModelVariant.GEMMA3_1B)
+        vm.onDownloadClick(ModelVariant.GEMMA3N_E2B)
         advanceUntilIdle()
         assertNotNull(vm.uiState.value.error)
 
@@ -187,7 +187,7 @@ class ModelManagementViewModelTest {
 
         assertEquals(
             DownloadState.NOT_DOWNLOADED,
-            vm.uiState.value.rows.first { it.variant == ModelVariant.GEMMA3_1B }.downloadState
+            vm.uiState.value.rows.first { it.variant == ModelVariant.GEMMA3N_E2B }.downloadState
         )
 
         flow.value = listOf(model(state = DownloadState.DOWNLOADED))
@@ -195,7 +195,7 @@ class ModelManagementViewModelTest {
 
         assertEquals(
             DownloadState.DOWNLOADED,
-            vm.uiState.value.rows.first { it.variant == ModelVariant.GEMMA3_1B }.downloadState
+            vm.uiState.value.rows.first { it.variant == ModelVariant.GEMMA3N_E2B }.downloadState
         )
     }
 
@@ -205,7 +205,7 @@ class ModelManagementViewModelTest {
         val vm = viewModel()
 
         vm.uiState.test {
-            val row = awaitItem().rows.firstOrNull { it.variant == ModelVariant.GEMMA4_E2B }
+            val row = awaitItem().rows.firstOrNull { it.variant == ModelVariant.GEMMA3N_E4B }
             assertNotNull(row)
             cancelAndIgnoreRemainingEvents()
         }

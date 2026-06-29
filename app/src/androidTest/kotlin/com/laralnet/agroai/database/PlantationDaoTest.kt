@@ -88,7 +88,7 @@ class PlantationDaoTest {
         dao.insertPlantation(entity("p1", "Huerta"))
         dao.insertPlantation(entity("p2", "Viñedo", PlantationType.VIÑEDO))
 
-        dao.deletePlantation("p1")
+        dao.delete("p1")
 
         val list = dao.observeAll().first()
         assertEquals(1, list.size)
@@ -116,10 +116,10 @@ class PlantationDaoTest {
     }
 
     @Test
-    fun count_returnsCorrectNumber() = runBlocking {
-        assertEquals(0, dao.count())
+    fun observeAll_emptyDb_returnsEmptyList() = runBlocking {
+        assertEquals(0, dao.observeAll().first().size)
         dao.insertPlantation(entity("p1"))
         dao.insertPlantation(entity("p2"))
-        assertEquals(2, dao.count())
+        assertEquals(2, dao.observeAll().first().size)
     }
 }

@@ -52,56 +52,56 @@ class ModelManagementScreenTest {
 
     @Test
     fun `shows variant card for each row`() {
-        val row = row(ModelVariant.GEMMA3_1B, DownloadState.NOT_DOWNLOADED)
+        val row = row(ModelVariant.GEMMA3N_E2B, DownloadState.NOT_DOWNLOADED)
         setContent(ModelManagementViewModel.UiState(rows = listOf(row)))
         composeRule
-            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3_1B.name}")
+            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3N_E2B.name}")
             .assertIsDisplayed()
     }
 
     @Test
     fun `shows variant card in DOWNLOADING state`() {
         val row = ModelManagementViewModel.ModelRowState(
-            variant = ModelVariant.GEMMA3_1B,
+            variant = ModelVariant.GEMMA3N_E2B,
             model = fakeModel(DownloadState.DOWNLOADING),
             downloadProgress = 55
         )
         setContent(ModelManagementViewModel.UiState(rows = listOf(row)))
         composeRule
-            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3_1B.name}")
+            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3N_E2B.name}")
             .assertIsDisplayed()
     }
 
     @Test
     fun `shows variant card in DOWNLOADED state`() {
-        val row = row(ModelVariant.GEMMA3_1B, DownloadState.DOWNLOADED)
+        val row = row(ModelVariant.GEMMA3N_E2B, DownloadState.DOWNLOADED)
         setContent(ModelManagementViewModel.UiState(rows = listOf(row)))
         composeRule
-            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3_1B.name}")
+            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3N_E2B.name}")
             .assertIsDisplayed()
     }
 
     @Test
     fun `shows variant card in FAILED state`() {
         val row = ModelManagementViewModel.ModelRowState(
-            variant = ModelVariant.GEMMA3_1B,
+            variant = ModelVariant.GEMMA3N_E2B,
             model = fakeModel(DownloadState.FAILED).copy(lastError = "Download failed")
         )
         setContent(ModelManagementViewModel.UiState(rows = listOf(row)))
         composeRule
-            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3_1B.name}")
+            .onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3N_E2B.name}")
             .assertIsDisplayed()
     }
 
     @Test
     fun `shows multiple variant cards`() {
         val rows = listOf(
-            row(ModelVariant.GEMMA3_1B, DownloadState.NOT_DOWNLOADED),
-            row(ModelVariant.GEMMA4_E2B, DownloadState.DOWNLOADED)
+            row(ModelVariant.GEMMA3N_E2B, DownloadState.NOT_DOWNLOADED),
+            row(ModelVariant.GEMMA3N_E4B, DownloadState.DOWNLOADED)
         )
         setContent(ModelManagementViewModel.UiState(rows = rows))
-        composeRule.onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3_1B.name}").assertIsDisplayed()
-        composeRule.onNodeWithTag("model_variant_card_${ModelVariant.GEMMA4_E2B.name}").assertIsDisplayed()
+        composeRule.onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3N_E2B.name}").assertIsDisplayed()
+        composeRule.onNodeWithTag("model_variant_card_${ModelVariant.GEMMA3N_E4B.name}").assertIsDisplayed()
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
@@ -113,8 +113,8 @@ class ModelManagementScreenTest {
         )
 
     private fun fakeModel(state: DownloadState) = AIModel(
-        variant = ModelVariant.GEMMA3_1B,
-        version = GemmaVersion.GEMMA_3,
+        variant = ModelVariant.GEMMA3N_E2B,
+        version = GemmaVersion.GEMMA_3N,
         downloadState = state
     )
 

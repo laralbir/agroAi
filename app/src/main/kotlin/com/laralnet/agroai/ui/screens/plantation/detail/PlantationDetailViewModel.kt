@@ -2,6 +2,8 @@ package com.laralnet.agroai.ui.screens.plantation.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.laralnet.agroai.action.application.query.ObserveActionsByPlantationQuery
+import com.laralnet.agroai.action.domain.model.PlantationAction
 import com.laralnet.agroai.plantation.application.command.UpdatePlantationCommand
 import com.laralnet.agroai.plantation.application.handler.UpdatePlantationHandler
 import com.laralnet.agroai.plantation.domain.model.Plantation
@@ -29,7 +31,8 @@ class PlantationDetailViewModel @Inject constructor(
     private val treatmentRepository: TreatmentRepository,
     private val observeWeatherQuery: ObserveWeatherQuery,
     private val refreshWeatherHandler: RefreshWeatherHandler,
-    private val updatePlantationHandler: UpdatePlantationHandler
+    private val updatePlantationHandler: UpdatePlantationHandler,
+    private val observeActionsQuery: ObserveActionsByPlantationQuery
 ) : ViewModel() {
 
     private val plantationId = MutableStateFlow<String?>(null)
@@ -41,6 +44,13 @@ class PlantationDetailViewModel @Inject constructor(
         .flatMapLatest { id ->
             if (id == null) flowOf(emptyList())
             else treatmentRepository.observeByPlantation(id)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val actions: StateFlow<List<PlantationAction>> = plantationId
+        .flatMapLatest { id ->
+            if (id == null) flowOf(emptyList())
+            else observeActionsQuery(id)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

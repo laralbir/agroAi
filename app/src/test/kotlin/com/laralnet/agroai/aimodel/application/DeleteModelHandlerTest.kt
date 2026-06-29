@@ -76,5 +76,5 @@ class DeleteModelHandlerTest {
     }
 
     private fun model(id: String, state: DownloadState) =
-        AIModel(id = id, variant = ModelVariant.GEMMA3_1B, version = ModelVariant.GEMMA3_1B.gemmaVersion, downloadState = state)
+        AIModel(id = id, variant = ModelVariant.GEMMA3N_E2B, version = ModelVariant.GEMMA3N_E2B.gemmaVersion, downloadState = state)
 }

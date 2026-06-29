@@ -1,18 +1,19 @@
 package com.laralnet.agroai.ui.plantation
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.laralnet.agroai.plantation.domain.model.PlantationType
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardState
+import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardViewModel
 import com.laralnet.agroai.ui.theme.AgroAITheme
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,105 +24,87 @@ class PlantationWizardScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
 
-    private fun setWizardContent(
+    private fun fakeViewModel(
         state: PlantationWizardState = PlantationWizardState(),
-        currentStep: Int = 0,
-        onNameChange: (String) -> Unit = {},
-        onTypeChange: (PlantationType) -> Unit = {},
-        onNext: () -> Unit = {},
-        onBack: () -> Unit = {},
-        onOpenMapPicker: () -> Unit = {},
-        onFinish: () -> Unit = {}
+        step: Int = 0
+    ): PlantationWizardViewModel = mockk(relaxed = true) {
+        every { this@mockk.uiState } returns MutableStateFlow(state)
+        every { this@mockk.currentStep } returns MutableStateFlow(step)
+    }
+
+    private fun setContent(
+        viewModel: PlantationWizardViewModel = fakeViewModel(),
+        onOpenMapPicker: () -> Unit = {}
     ) {
         composeRule.setContent {
             AgroAITheme {
                 PlantationWizardScreen(
-                    state = state,
-                    currentStep = currentStep,
-                    onNameChange = onNameChange,
-                    onTypeChange = onTypeChange,
-                    onAreaChange = {},
-                    onNotesChange = {},
-                    onNext = onNext,
-                    onBack = onBack,
+                    onNavigateBack = {},
+                    onPlantationSaved = {},
                     onOpenMapPicker = onOpenMapPicker,
-                    onMunicipalityChange = {},
-                    onProvinceChange = {},
-                    onMunicipalityCodeChange = {},
-                    onAddPlant = {},
-                    onRemovePlant = {},
-                    onUpdatePlant = {},
-                    onFinish = onFinish
+                    viewModel = viewModel
                 )
             }
         }
     }
 
     @Test
-    fun wizardStep0_nameField_isDisplayed() {
-        setWizardContent(currentStep = 0)
-        composeRule.onNodeWithTag("wizard_name_field").assertIsDisplayed()
+    fun `step 0 shows plantation name field`() {
+        setContent(fakeViewModel(step = 0))
+        composeRule.onNodeWithText("Plantation name").assertIsDisplayed()
     }
 
     @Test
-    fun wizardStep0_withEmptyName_nextButtonIsDisabled() {
-        setWizardContent(state = PlantationWizardState(name = ""), currentStep = 0)
-        composeRule.onNodeWithTag("wizard_next_button").assertIsNotEnabled()
+    fun `step 0 shows Next button`() {
+        setContent(fakeViewModel(step = 0))
+        composeRule.onNodeWithText("Next").assertIsDisplayed()
     }
 
     @Test
-    fun wizardStep0_withName_nextButtonIsEnabled() {
-        setWizardContent(state = PlantationWizardState(name = "Mi plantación"), currentStep = 0)
-        composeRule.onNodeWithTag("wizard_next_button").assertIsEnabled()
+    fun `step 0 does not show Back button`() {
+        setContent(fakeViewModel(step = 0))
+        composeRule.onNodeWithText("Back").assertIsNotDisplayed()
     }
 
     @Test
-    fun wizardStep0_nextButtonClick_callsOnNext() {
-        var clicked = false
-        setWizardContent(
-            state = PlantationWizardState(name = "Mi plantación"),
-            currentStep = 0,
-            onNext = { clicked = true }
-        )
-        composeRule.onNodeWithTag("wizard_next_button").performClick()
-        assert(clicked)
+    fun `step 1 shows Back button`() {
+        setContent(fakeViewModel(step = 1))
+        composeRule.onNodeWithText("Back").assertIsDisplayed()
     }
 
     @Test
-    fun wizardStep1_typeSelector_isDisplayed() {
-        setWizardContent(currentStep = 1)
-        composeRule.onNodeWithTag("wizard_type_selector").assertIsDisplayed()
+    fun `clicking Next calls viewModel nextStep`() {
+        val vm = fakeViewModel(step = 0)
+        setContent(vm)
+
+        composeRule.onNodeWithText("Next").performClick()
+
+        verify { vm.nextStep() }
     }
 
     @Test
-    fun wizardStep2_mapPickerButton_isDisplayed() {
-        setWizardContent(currentStep = 2)
-        composeRule.onNodeWithTag("wizard_map_picker_button").assertIsDisplayed()
+    fun `clicking Back calls viewModel previousStep`() {
+        val vm = fakeViewModel(step = 1)
+        setContent(vm)
+
+        composeRule.onNodeWithText("Back").performClick()
+
+        verify { vm.previousStep() }
     }
 
     @Test
-    fun wizardStep2_mapPickerButton_callsOnOpenMapPicker() {
-        var opened = false
-        setWizardContent(currentStep = 2, onOpenMapPicker = { opened = true })
-        composeRule.onNodeWithTag("wizard_map_picker_button").performClick()
-        assert(opened)
+    fun `step 2 shows Pick on map button`() {
+        setContent(fakeViewModel(step = 1))
+        composeRule.onNodeWithText("Pick on map").assertIsDisplayed()
     }
 
     @Test
-    fun wizardStep2_withLocationSet_showsLocationSummary() {
-        val state = PlantationWizardState(
-            municipality = "Sevilla",
-            province = "Sevilla",
-            latitude = 37.38,
-            longitude = -5.97
-        )
-        setWizardContent(state = state, currentStep = 2)
-        composeRule.onNodeWithTag("wizard_location_summary").assertIsDisplayed()
-    }
+    fun `clicking map picker button calls onOpenMapPicker`() {
+        var called = false
+        setContent(fakeViewModel(step = 1), onOpenMapPicker = { called = true })
 
-    @Test
-    fun backButton_isDisplayedFromStep1() {
-        setWizardContent(currentStep = 1)
-        composeRule.onNodeWithTag("wizard_back_button").assertIsDisplayed()
+        composeRule.onNodeWithText("Pick on map").performClick()
+
+        assert(called)
     }
 }

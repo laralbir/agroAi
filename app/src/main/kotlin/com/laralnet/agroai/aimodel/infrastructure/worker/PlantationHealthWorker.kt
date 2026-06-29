@@ -6,28 +6,41 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.laralnet.agroai.MainActivity
 import com.laralnet.agroai.R
+import com.laralnet.agroai.action.application.command.ScheduleActionCommand
+import com.laralnet.agroai.action.application.handler.ScheduleActionHandler
+import com.laralnet.agroai.action.domain.model.ActionSource
+import com.laralnet.agroai.action.domain.model.ActionType
+import com.laralnet.agroai.action.domain.repository.PlantationActionRepository
 import com.laralnet.agroai.aimodel.domain.model.PromptTemplate
 import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
 import com.laralnet.agroai.aimodel.infrastructure.gemma.GemmaInferenceEngine
 import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisCommand
 import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisHandler
 import com.laralnet.agroai.plantation.domain.model.Plantation
+import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
+import com.laralnet.agroai.ui.screens.analysis.parsePhotoAnalysisResponse
 import com.laralnet.agroai.weather.domain.model.WeatherData
 import com.laralnet.agroai.weather.domain.repository.WeatherRepository
-import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -40,7 +53,10 @@ class PlantationHealthWorker @AssistedInject constructor(
     private val weatherRepository: WeatherRepository,
     private val aiModelRepository: AIModelRepository,
     private val gemmaEngine: GemmaInferenceEngine,
-    private val saveAnalysisHandler: SaveAnalysisHandler
+    private val saveAnalysisHandler: SaveAnalysisHandler,
+    private val actionRepository: PlantationActionRepository,
+    private val scheduleActionHandler: ScheduleActionHandler,
+    private val dataStore: DataStore<Preferences>
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -55,8 +71,10 @@ class PlantationHealthWorker @AssistedInject constructor(
         val template = aiModelRepository.findPromptTemplate("plantation_health")
             ?: PromptTemplate.plantationHealthDefault()
 
+        val calendarAccount = dataStore.data.first()[KEY_CALENDAR_ACCOUNT]?.ifBlank { null }
+
         val plantations = plantationRepository.observeAll().first()
-        val analyzedNames = mutableListOf<String>()
+        val scheduledActions = mutableListOf<Pair<String, String>>() // plantationName, actionTitle
 
         for (plantation in plantations) {
             if (plantation.plants.isEmpty()) continue
@@ -67,9 +85,11 @@ class PlantationHealthWorker @AssistedInject constructor(
                 .observeCachedWeather(loc.latitude!!, loc.longitude!!)
                 .first() ?: continue
 
-            val prompt = buildHealthPrompt(template.content, plantation, weather)
+            val pendingAiActions = actionRepository.observePendingAiByPlantation(plantation.id).first()
+            val prompt = buildHealthPrompt(template.content, plantation, weather, pendingAiActions.map { it.title })
             val response = gemmaEngine.generateText(prompt).getOrNull() ?: continue
 
+            // Save analysis record for history
             saveAnalysisHandler.handle(
                 SaveAnalysisCommand(
                     plantationId = plantation.id,
@@ -79,11 +99,36 @@ class PlantationHealthWorker @AssistedInject constructor(
                     rawResponse = response
                 )
             )
-            analyzedNames.add(plantation.name)
+
+            // Parse suggestions and create PlantationAction items
+            val result = parsePhotoAnalysisResponse(response)
+            if (result.suggestions.isNotEmpty()) {
+                // Delete previous AI pending actions for this plantation
+                actionRepository.deleteAiPendingByPlantation(plantation.id)
+
+                for (suggestion in result.suggestions.take(5)) {
+                    val actionType = mapToActionType(suggestion.type)
+                    val scheduledAt = parseSuggestedDate(suggestion.suggestedDate)
+
+                    scheduleActionHandler.handle(
+                        ScheduleActionCommand(
+                            plantationId = plantation.id,
+                            actionType = actionType,
+                            title = suggestion.title.ifBlank { actionType.name.lowercase().replaceFirstChar { it.uppercase() } },
+                            notes = suggestion.description,
+                            scheduledAt = scheduledAt,
+                            source = ActionSource.AI,
+                            calendarAccountEmail = calendarAccount
+                        )
+                    ).onSuccess { action ->
+                        scheduledActions.add(plantation.name to action.title)
+                    }
+                }
+            }
         }
 
-        if (analyzedNames.isNotEmpty()) {
-            postNotification(analyzedNames)
+        if (scheduledActions.isNotEmpty()) {
+            postNotification(scheduledActions)
         }
 
         return Result.success()
@@ -92,7 +137,8 @@ class PlantationHealthWorker @AssistedInject constructor(
     private fun buildHealthPrompt(
         baseTemplate: String,
         plantation: Plantation,
-        weather: WeatherData
+        weather: WeatherData,
+        pendingActionTitles: List<String>
     ): String = buildString {
         append(baseTemplate)
         append("\n\nToday's date: ${LocalDate.now(ZoneId.systemDefault())}. All suggestedDate values must use this year or later.\n")
@@ -114,6 +160,11 @@ class PlantationHealthWorker @AssistedInject constructor(
                 if (pt.count > 0) append(", ${pt.count} units")
                 append("\n")
             }
+        }
+
+        if (pendingActionTitles.isNotEmpty()) {
+            append("\n### Already pending actions (do NOT suggest these again)\n")
+            pendingActionTitles.forEach { append("- $it\n") }
         }
 
         append("\n### Current weather\n")
@@ -139,11 +190,11 @@ class PlantationHealthWorker @AssistedInject constructor(
         }
     }
 
-    private fun postNotification(analyzedNames: List<String>) {
+    private fun postNotification(actions: List<Pair<String, String>>) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(
             CHANNEL_ID,
-            context.getString(R.string.notif_channel_health_name),
+            context.getString(R.string.notif_channel_actions_name),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         manager.createNotificationChannel(channel)
@@ -156,19 +207,24 @@ class PlantationHealthWorker @AssistedInject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val body = if (analyzedNames.size == 1) {
-            context.getString(R.string.notif_health_body_single, analyzedNames[0])
+        val body = if (actions.size == 1) {
+            context.getString(R.string.notif_actions_body_single, actions[0].first, actions[0].second)
         } else {
-            context.getString(R.string.notif_health_body_multiple, analyzedNames.size)
+            context.getString(R.string.notif_actions_body_multiple, actions.size)
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle(context.getString(R.string.notif_health_title))
+            .setContentTitle(context.getString(R.string.notif_actions_title))
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .addAction(
+                android.R.drawable.ic_menu_view,
+                context.getString(R.string.notif_actions_view),
+                pendingIntent
+            )
             .build()
 
         manager.notify(NOTIFICATION_ID, notification)
@@ -176,11 +232,13 @@ class PlantationHealthWorker @AssistedInject constructor(
 
     companion object {
         const val WORK_NAME = "plantation_health_daily"
-        private const val CHANNEL_ID = "plantation_health"
+        private const val WORK_NAME_ONETIME = "plantation_health_onetime"
+        const val CHANNEL_ID = "agroai_actions"
         private const val NOTIFICATION_ID = 1002
+        private val KEY_CALENDAR_ACCOUNT = stringPreferencesKey("selected_google_account")
 
         fun schedule(context: Context) {
-            val request = PeriodicWorkRequestBuilder<PlantationHealthWorker>(24, TimeUnit.HOURS)
+            val request = PeriodicWorkRequestBuilder<PlantationHealthWorker>(6, TimeUnit.HOURS)
                 .setConstraints(
                     Constraints.Builder()
                         .setRequiresBatteryNotLow(true)
@@ -193,6 +251,39 @@ class PlantationHealthWorker @AssistedInject constructor(
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
             )
+        }
+
+        fun scheduleOneTime(context: Context) {
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                WORK_NAME_ONETIME,
+                ExistingWorkPolicy.KEEP,
+                OneTimeWorkRequestBuilder<PlantationHealthWorker>().build()
+            )
+        }
+
+        fun mapToActionType(typeStr: String): ActionType {
+            val upper = typeStr.uppercase().trim()
+            // Direct match
+            runCatching { ActionType.valueOf(upper) }.getOrNull()?.let { return it }
+            // Legacy TreatmentType → ActionType mapping
+            return when (upper) {
+                "RIEGO" -> ActionType.REGAR
+                "PODA" -> ActionType.PODAR
+                "COSECHA" -> ActionType.COSECHAR
+                "FERTILIZACION" -> ActionType.FERTILIZAR
+                "FUMIGACION" -> ActionType.FUMIGAR
+                "INJERTO" -> ActionType.INJERTAR
+                "TRANSPLANTE", "TRASPLANTE" -> ActionType.TRASPLANTAR
+                else -> ActionType.OTRO
+            }
+        }
+
+        fun parseSuggestedDate(raw: String?): Instant {
+            val today = LocalDate.now(ZoneId.systemDefault())
+            val date = raw?.let {
+                runCatching { LocalDate.parse(it) }.getOrNull()?.takeIf { d -> !d.isBefore(today) }
+            } ?: today.plusDays(3)
+            return date.atTime(LocalTime.of(9, 0)).atZone(ZoneId.systemDefault()).toInstant()
         }
     }
 }

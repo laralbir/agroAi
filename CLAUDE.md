@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Reglas de Comportamiento
 
 - **NUNCA hacer `git commit` ni `git push` salvo que el usuario lo pida explícitamente en el chat.**
+- **Para pruebas en dispositivo físico (logcat, instalación, depuración)**: usar preferentemente el **Google Pixel 9 Pro XL**; si no está disponible, usar el dispositivo que haya conectado.
 
 # AgroAI — Guía de Desarrollo para Claude
 

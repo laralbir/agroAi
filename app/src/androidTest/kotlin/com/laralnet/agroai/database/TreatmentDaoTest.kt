@@ -57,59 +57,82 @@ class TreatmentDaoTest {
     private fun treatmentEntity(
         id: String = "t1",
         status: TreatmentStatus = TreatmentStatus.PENDING,
-        scheduledDate: Long = now.plusSeconds(3600).toEpochMilli()
+        scheduledAt: Long = now.plusSeconds(3600).toEpochMilli()
     ) = TreatmentEntity(
         id = id,
         plantationId = plantationId,
-        type = TreatmentType.IRRIGATION,
-        status = status,
+        type = TreatmentType.RIEGO,
         title = "Riego programado",
         description = "Riego por goteo",
-        scheduledDate = scheduledDate,
-        completedDate = null,
+        scheduledAt = scheduledAt,
+        status = status,
         calendarEventId = null,
-        aiAnalysisId = null,
+        calendarAccountEmail = null,
+        aiAnalysisResult = null,
         createdAt = now.toEpochMilli()
     )
 
     @Test
     fun insertAndObserveByPlantation_returnsAll() = runBlocking {
-        treatmentDao.insertTreatment(treatmentEntity("t1"))
-        treatmentDao.insertTreatment(treatmentEntity("t2"))
+        treatmentDao.insert(treatmentEntity("t1"))
+        treatmentDao.insert(treatmentEntity("t2"))
 
         val list = treatmentDao.observeByPlantation(plantationId).first()
         assertEquals(2, list.size)
     }
 
     @Test
-    fun observeUpcoming_returnsOnlyPendingFutureTreatments() = runBlocking {
-        val future = now.plusSeconds(3600).toEpochMilli()
-        val past = now.minusSeconds(3600).toEpochMilli()
+    fun observeByPlantation_returnsOnlyMatchingPlantation() = runBlocking {
+        treatmentDao.insert(treatmentEntity("t1"))
+        treatmentDao.insert(treatmentEntity("t2").copy(plantationId = "other-plantation"))
 
-        treatmentDao.insertTreatment(treatmentEntity("t1", TreatmentStatus.PENDING, future))
-        treatmentDao.insertTreatment(treatmentEntity("t2", TreatmentStatus.COMPLETED, future))
-        treatmentDao.insertTreatment(treatmentEntity("t3", TreatmentStatus.PENDING, past))
+        val list = treatmentDao.observeByPlantation(plantationId).first()
+        assertEquals(1, list.size)
+        assertEquals("t1", list.first().id)
+    }
 
-        val upcoming = treatmentDao.observeUpcoming(now.toEpochMilli()).first()
+    @Test
+    fun observeUpcoming_returnsOnlyPendingTreatments() = runBlocking {
+        treatmentDao.insert(treatmentEntity("t1", TreatmentStatus.PENDING))
+        treatmentDao.insert(treatmentEntity("t2", TreatmentStatus.DONE))
+        treatmentDao.insert(treatmentEntity("t3", TreatmentStatus.SKIPPED))
+
+        val upcoming = treatmentDao.observeUpcoming().first()
         assertEquals(1, upcoming.size)
         assertEquals("t1", upcoming.first().id)
     }
 
     @Test
-    fun deleteTreatment_removesFromDb() = runBlocking {
-        treatmentDao.insertTreatment(treatmentEntity("t1"))
-        treatmentDao.deleteTreatment("t1")
+    fun delete_removesFromDb() = runBlocking {
+        treatmentDao.insert(treatmentEntity("t1"))
+        treatmentDao.delete("t1")
 
         val list = treatmentDao.observeByPlantation(plantationId).first()
         assertTrue(list.isEmpty())
     }
 
     @Test
-    fun updateStatus_changesStatusCorrectly() = runBlocking {
-        treatmentDao.insertTreatment(treatmentEntity("t1"))
-        treatmentDao.updateStatus("t1", TreatmentStatus.COMPLETED, now.toEpochMilli())
+    fun insert_withReplaceStrategy_updatesExistingEntity() = runBlocking {
+        treatmentDao.insert(treatmentEntity("t1", TreatmentStatus.PENDING))
+        treatmentDao.insert(treatmentEntity("t1", TreatmentStatus.DONE))
 
         val list = treatmentDao.observeByPlantation(plantationId).first()
-        assertEquals(TreatmentStatus.COMPLETED, list.first().status)
+        assertEquals(1, list.size)
+        assertEquals(TreatmentStatus.DONE, list.first().status)
+    }
+
+    @Test
+    fun findById_returnsCorrectTreatment() = runBlocking {
+        treatmentDao.insert(treatmentEntity("t1"))
+        treatmentDao.insert(treatmentEntity("t2"))
+
+        val found = treatmentDao.findById("t1")
+        assertEquals("t1", found?.id)
+    }
+
+    @Test
+    fun findById_returnsNullWhenNotFound() = runBlocking {
+        val found = treatmentDao.findById("nonexistent")
+        assertEquals(null, found)
     }
 }

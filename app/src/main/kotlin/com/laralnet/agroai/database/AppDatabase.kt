@@ -2,6 +2,10 @@ package com.laralnet.agroai.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.laralnet.agroai.action.infrastructure.persistence.dao.PlantationActionDao
+import com.laralnet.agroai.action.infrastructure.persistence.entity.PlantationActionEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.AIModelEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.PromptTemplateEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.AIModelDao
@@ -25,9 +29,10 @@ import com.laralnet.agroai.weather.infrastructure.persistence.entity.WeatherEnti
         AIModelEntity::class,
         PromptTemplateEntity::class,
         WeatherEntity::class,
-        AnalysisRecordEntity::class
+        AnalysisRecordEntity::class,
+        PlantationActionEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -36,4 +41,30 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun aiModelDao(): AIModelDao
     abstract fun weatherDao(): WeatherDao
     abstract fun analysisRecordDao(): AnalysisRecordDao
+    abstract fun plantationActionDao(): PlantationActionDao
+
+    companion object {
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS plantation_actions (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        plantationId TEXT NOT NULL,
+                        plantTypeId TEXT,
+                        actionType TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        notes TEXT NOT NULL,
+                        scheduledAt INTEGER NOT NULL,
+                        status TEXT NOT NULL,
+                        calendarEventId INTEGER,
+                        calendarAccountEmail TEXT,
+                        source TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+    }
 }

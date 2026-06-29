@@ -182,8 +182,8 @@ class PhotoAnalysisViewModelTest {
 
     private fun activeModel() = AIModel(
         id = "m1",
-        variant = ModelVariant.GEMMA3_1B,
-        version = ModelVariant.GEMMA3_1B.gemmaVersion,
+        variant = ModelVariant.GEMMA3N_E2B,
+        version = ModelVariant.GEMMA3N_E2B.gemmaVersion,
         downloadState = DownloadState.DOWNLOADED,
         filePath = "/data/models/gemma3_1b.task",
         isActive = true

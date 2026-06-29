@@ -23,8 +23,17 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Título, descripción, fecha y hora configurables por tratamiento
 - Marcar tratamiento como completado con notas de ejecución
 - Eliminar tratamiento (con borrado opcional del evento de calendario)
-- Vista rápida de los 3 próximos tratamientos pendientes en la pantalla de inicio
+- **Pantalla de inicio**: widget de meteorología por GPS + tratamientos de hoy (hasta 3) y próximos hasta 5 días
 - Integración directa con Google Calendar al programar (opcional)
+
+### Acciones de Plantación
+- Acciones generadas automáticamente por el worker de salud en background (ciclo de 6 horas) a partir del análisis de la IA
+- 12 tipos: Regar, Podar, Cosechar, Fertilizar, Fumigar, Injertar, Trasplantar, Supervisar, Tratar, Observar, Reparar, Otro
+- Estados: Pendiente, Hecha, Omitida
+- Origen distinguible: Manual o IA
+- `ActionListScreen`: lista filtrable (Todas / Pendientes / Hechas) por plantación
+- `ActionDetailScreen`: detalle completo con notas y opción de marcar como hecha
+- Notificaciones de nuevas acciones sugeridas (canal `plantation_health`, Android 13+ requiere permiso)
 
 ### IA Local con Gemma
 - Análisis de fotos de plantas, árboles, frutos y plantaciones

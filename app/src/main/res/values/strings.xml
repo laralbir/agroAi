@@ -246,6 +246,8 @@
 
     <!-- Plantation detail -->
     <string name="plantation_detail_treatments">Treatments</string>
+    <string name="plantation_forecast_title">15-day forecast</string>
+    <string name="plantation_review_now">Review now</string>
     <string name="plantation_detail_no_treatments">No treatments scheduled</string>
     <string name="plantation_units">units</string>
 
@@ -348,6 +350,10 @@
     <string name="treatment_delete_confirm_body">This action cannot be undone.</string>
     <string name="treatment_in_calendar">Added to Google Calendar</string>
     <string name="home_upcoming_treatments">Upcoming treatments</string>
+    <string name="home_today_treatments">Today</string>
+    <string name="home_no_today_treatments">No tasks for today</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_in_n_days">In %d days</string>
     <string name="treatment_load_calendars">Load</string>
     <string name="treatment_select_calendar">Select calendar</string>
     <string name="treatment_no_calendars">No calendars found for this account</string>
@@ -426,6 +432,69 @@
     <string name="notif_health_title">Plantation health update</string>
     <string name="notif_health_body_single">New treatment suggestions for %s based on the weather forecast.</string>
     <string name="notif_health_body_multiple">New treatment suggestions for %d plantations based on the weather forecast.</string>
+
+    <!-- Action notifications (agroai_actions channel) -->
+    <string name="notif_channel_actions_name">Plantation Actions</string>
+    <string name="notif_actions_title">New actions suggested</string>
+    <string name="notif_actions_body_single">%1$s · %2$s</string>
+    <string name="notif_actions_body_multiple">%d new actions have been scheduled for your plantations.</string>
+    <string name="notif_actions_view">View</string>
+
+    <!-- Plantation actions screen -->
+    <string name="action_list_title">Actions</string>
+    <string name="action_section_title">Actions</string>
+    <string name="action_see_all">See all</string>
+    <string name="action_create">New action</string>
+    <string name="action_detail_title">Action detail</string>
+    <string name="action_empty">No actions yet. Tap + to add one.</string>
+    <string name="action_empty_pending">No pending actions.</string>
+    <string name="action_mark_done">Mark as done</string>
+    <string name="action_delete">Delete action</string>
+    <string name="action_delete_title">Delete action</string>
+    <string name="action_delete_body">This action will be removed. If it was added to your calendar, the event will also be deleted.</string>
+    <string name="action_complete_title">Complete action</string>
+    <string name="action_complete_notes_hint">Notes (optional)</string>
+    <string name="action_synced_calendar">Synced with %s</string>
+    <string name="action_source_ai">Suggested by AI</string>
+
+    <!-- Action filters -->
+    <string name="action_filter_all">All</string>
+    <string name="action_filter_pending">Pending</string>
+    <string name="action_filter_done">Done</string>
+    <string name="action_filter_skipped">Skipped</string>
+
+    <!-- Action status labels -->
+    <string name="action_status_pending">Pending</string>
+    <string name="action_status_done">Done</string>
+    <string name="action_status_skipped">Skipped</string>
+
+    <!-- Action type labels -->
+    <string name="action_type_label">Action type</string>
+    <string name="action_type_regar">Water</string>
+    <string name="action_type_podar">Prune</string>
+    <string name="action_type_cavar">Dig</string>
+    <string name="action_type_fertilizar">Fertilize</string>
+    <string name="action_type_fumigar">Spray</string>
+    <string name="action_type_cosechar">Harvest</string>
+    <string name="action_type_injertar">Graft</string>
+    <string name="action_type_trasplantar">Transplant</string>
+    <string name="action_type_abonar">Mulch/Compost</string>
+    <string name="action_type_airear">Aerate</string>
+    <string name="action_type_aclarar">Thin out</string>
+    <string name="action_type_otro">Other</string>
+
+    <!-- Action date presets -->
+    <string name="action_title_label">Title</string>
+    <string name="action_notes_label">Notes</string>
+    <string name="action_date_label">Scheduled date</string>
+    <string name="action_date_tomorrow">Tomorrow</string>
+    <string name="action_date_3days">In 3 days</string>
+    <string name="action_date_7days">In 1 week</string>
+    <string name="action_date_14days">In 2 weeks</string>
+
+    <!-- Onboarding notifications permission -->
+    <string name="onboarding_permission_notifications">Notifications</string>
+    <string name="onboarding_permission_notifications_desc">Receive alerts when new actions are suggested for your plantations.</string>
 
     <!-- Accessibility -->
     <string name="cd_navigate_back">Navigate back</string>

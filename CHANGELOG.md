@@ -10,6 +10,33 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.16.0] - 2026-06-29
+
+### Añadido
+- **Bounded Context `action`**: nuevo agregado `PlantationAction` con 12 tipos de acción (REGAR, PODAR, COSECHAR, FERTILIZAR, FUMIGAR, INJERTAR, TRASPLANTAR, SUPERVISAR, TRATAR, OBSERVAR, REPARAR, OTRO), estados PENDING/DONE/SKIPPED y origen MANUAL/AI
+- **`PlantationHealthWorker`** (WorkManager, ciclo 6 h): analiza plantaciones activas en background y genera acciones sugeridas a partir del resultado de la IA; envía notificaciones vía canal `plantation_health` (requiere permiso `POST_NOTIFICATIONS` en Android 13+)
+- **`ActionListScreen` y `ActionDetailScreen`**: pantallas dedicadas para ver, filtrar (Todas / Pendientes / Hechas) y gestionar las acciones de cada plantación
+- **Sección Acciones en el detalle de plantación**: tarjetas compactas con las acciones pendientes e historial, con botón de navegación a la lista completa
+- **Widget de meteorología en HomeScreen**: temperatura actual y condición del tiempo obtenidas via GPS al entrar en la pantalla de inicio
+- **Sección de tratamientos en HomeScreen**: tratamientos de hoy (hasta 3) y próximos hasta 5 días separados en dos listas
+- **Previsión a 15 días en detalle de plantación**: tabla de pronóstico extendido con temperatura max/min, precipitación y código de tiempo por día
+
+### Tests — cobertura de Fase 8 y Fase 9 (45 tests nuevos / corregidos)
+- **`HomeViewModelTest`** (10 tests): `todayTreatments`, `upcomingTreatments` (cap 5, excluye hoy), `homeWeather`, `hasActiveModel` — incluyendo fix de `SharingStarted.WhileSubscribed(5000)` con `backgroundScope`
+- **`PlantationDetailScreenTest`** (5 tests): smoke tests de la pantalla de detalle con `actions` stub y nuevos parámetros `onNavigateToActionList`/`onNavigateToActionDetail`
+- **`ActionListViewModelTest`** (9 tests): filtro ALL/PENDING/DONE, `load()`, `deleteAction`, `scheduleAction`
+- **`PlantationHealthWorkerTest`** (14 tests): `mapToActionType` (case-insensitive, alias heredados) y `parseSuggestedDate` (nulo, futuro, pasado, inválido)
+- **`ActionListScreenTest`** (7 tests): título, estado vacío, tarjetas de acciones, chips de filtro, navegación al detalle
+
+### Corregido
+- Tests existentes actualizados de variantes de modelo obsoletas (`GEMMA3_1B`, `GEMMA4_E2B`, `GemmaVersion.GEMMA_3`) a `GEMMA3N_E2B`, `GEMMA3N_E4B`, `GemmaVersion.GEMMA_3N`
+- **`HomeScreenTest`** reescrito: mockea `HomeViewModel` directamente en lugar de una clase `HomeUiState` que no existía
+- **`PlantationWizardScreenTest`** reescrito: usa `mockk(relaxed=true)` sobre `PlantationWizardViewModel` tras la refactorización a patrón ViewModel
+- **`TreatmentDaoTest`** reescrito: métodos renombrados, tipos y estados de enumeración corregidos
+- **`PlantationDaoTest`**: método `deletePlantation`→`delete`; test de `count()` reemplazado
+
+---
+
 ## [0.15.0] - 2026-06-28
 
 ### Añadido

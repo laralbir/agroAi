@@ -66,6 +66,6 @@ class SetActiveModelHandlerTest {
     private fun downloadedModel(id: String) = model(id, DownloadState.DOWNLOADED)
 
     private fun model(id: String, state: DownloadState) =
-        AIModel(id = id, variant = ModelVariant.GEMMA3_1B, version = ModelVariant.GEMMA3_1B.gemmaVersion,
+        AIModel(id = id, variant = ModelVariant.GEMMA3N_E2B, version = ModelVariant.GEMMA3N_E2B.gemmaVersion,
             downloadState = state, filePath = "/models/gemma3_1b.task")
 }
