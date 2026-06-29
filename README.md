@@ -172,20 +172,34 @@ cd agroai
 ```
 agroAI/
 ├── app/
-│   └── src/main/kotlin/com/laralnet/agroai/
-│       ├── core/              # Infraestructura transversal
-│       ├── plantation/        # Bounded Context: Plantaciones
-│       ├── aimodel/           # Bounded Context: Modelos IA
-│       ├── treatment/         # Bounded Context: Tratamientos
-│       ├── weather/           # Bounded Context: Meteorología
-│       ├── calendar/          # Bounded Context: Calendario Google
-│       ├── account/           # Bounded Context: Cuentas
-│       ├── database/          # AppDatabase (Room)
-│       └── ui/                # Pantallas y navegación
+│   └── src/
+│       ├── main/kotlin/com/laralnet/agroai/
+│       │   ├── core/              # Infraestructura transversal
+│       │   ├── plantation/        # Bounded Context: Plantaciones
+│       │   ├── aimodel/           # Bounded Context: Modelos IA
+│       │   ├── treatment/         # Bounded Context: Tratamientos
+│       │   ├── weather/           # Bounded Context: Meteorología
+│       │   ├── calendar/          # Bounded Context: Calendario Google
+│       │   ├── account/           # Bounded Context: Cuentas
+│       │   ├── database/          # AppDatabase (Room)
+│       │   └── ui/                # Pantallas y navegación
+│       ├── test/                  # Unit tests (JVM, sin dispositivo)
+│       └── androidTest/           # Instrumented tests (requieren dispositivo o emulador)
 ├── CLAUDE.md                  # Guía de desarrollo para Claude
 ├── CHANGELOG.md               # Historial de cambios
 └── README.md                  # Este archivo
 ```
+
+### Directorios de tests
+
+El proyecto mantiene dos directorios de tests separados por una razón técnica, no organizativa:
+
+| Directorio | Ejecución | Qué contiene | Comando |
+|-----------|-----------|-------------|---------|
+| `src/test/` | JVM local (sin dispositivo) | Tests de dominio, handlers CQRS, ViewModels, mappers, parsers, workers (con mocks) | `./gradlew test` |
+| `src/androidTest/` | Dispositivo o emulador Android | Tests de DAOs Room (SQLite nativo), pantallas Compose (`createComposeRule()`) | `./gradlew connectedAndroidTest` |
+
+Los tests de `src/androidTest/` **no pueden** ejecutarse en JVM porque dependen de APIs exclusivas de Android: Room necesita el SQLite nativo del sistema operativo Android, y los tests de Compose necesitan el runtime gráfico de Android. Moverlos a `src/test/` causaría `ClassNotFoundException` en tiempo de ejecución.
 
 ---
 
