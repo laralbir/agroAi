@@ -601,6 +601,68 @@
       .card-grid { grid-template-columns: 1fr; }
       .perm-grid { grid-template-columns: 1fr 1fr; }
     }
+
+    /* ─── Phone screenshots ─────────────────────────── */
+    .screenshot-row {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 28px 0 8px;
+    }
+
+    .phone-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phone-mock {
+      width: 190px;
+      flex-shrink: 0;
+      border-radius: 28px;
+      border: 5px solid #1c1c1e;
+      overflow: hidden;
+      box-shadow: 0 10px 36px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07);
+      background: #0a0a0a;
+    }
+
+    .phone-mock img { width: 100%; display: block; }
+
+    .phone-label {
+      font-size: .75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Section with screenshot side-by-side */
+    .with-screenshot {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .with-screenshot .content-side { flex: 1; min-width: 0; }
+
+    .with-screenshot .screenshot-side {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: sticky;
+      top: 80px;
+      align-self: flex-start;
+    }
+
+    .with-screenshot .phone-mock { width: 210px; }
+
+    @media (max-width: 960px) {
+      .with-screenshot { flex-direction: column; }
+      .with-screenshot .screenshot-side { position: static; }
+      .with-screenshot .phone-mock { width: 180px; }
+    }
   </style>
 </head>
 <body class="lang-es">
@@ -732,7 +794,7 @@
       <p class="lang-en">Your intelligent agricultural assistant with on-device AI. Manage plantations, analyze photos with Gemma, and plan treatments — no data ever leaves your device.</p>
 
       <div class="hero-chips">
-        <span class="hero-chip">🌿 Gemma 3 / 4</span>
+        <span class="hero-chip">🌿 Gemma 3n E2B / E4B</span>
         <span class="hero-chip">📡 IA 100% local</span>
         <span class="hero-chip">🗺️ OpenStreetMap</span>
         <span class="hero-chip">☁️ Open-Meteo</span>
@@ -788,6 +850,30 @@
           <p class="lang-en">OpenStreetMap with cached tiles to geolocate your plantations without mobile data.</p>
         </div>
       </div>
+
+      <!-- Screenshot gallery -->
+      <div class="screenshot-row">
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/home.png" alt="Inicio" loading="lazy"></div>
+          <span class="phone-label lang-es">Inicio</span>
+          <span class="phone-label lang-en">Home</span>
+        </div>
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/plantations.png" alt="Plantaciones" loading="lazy"></div>
+          <span class="phone-label lang-es">Plantaciones</span>
+          <span class="phone-label lang-en">Plantations</span>
+        </div>
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/calendar.png" alt="Calendario" loading="lazy"></div>
+          <span class="phone-label lang-es">Calendario</span>
+          <span class="phone-label lang-en">Calendar</span>
+        </div>
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/settings.png" alt="Ajustes" loading="lazy"></div>
+          <span class="phone-label lang-es">Ajustes</span>
+          <span class="phone-label lang-en">Settings</span>
+        </div>
+      </div>
     </section>
 
     <!-- ─── REQUIREMENTS ──────────────────────────── -->
@@ -827,10 +913,10 @@
             <tr>
               <td class="lang-es">Almacenamiento libre</td>
               <td class="lang-en">Free storage</td>
-              <td class="lang-es">1 GB (modelo 1B: 0.6 GB)</td>
-              <td class="lang-en">1 GB (1B model: 0.6 GB)</td>
-              <td class="lang-es">2 GB o más</td>
-              <td class="lang-en">2 GB or more</td>
+              <td class="lang-es">2 GB (Gemma 3n E2B)</td>
+              <td class="lang-en">2 GB (Gemma 3n E2B)</td>
+              <td class="lang-es">4 GB o más (E4B: 4 GB)</td>
+              <td class="lang-en">4 GB or more (E4B: 4 GB)</td>
             </tr>
             <tr>
               <td class="lang-es">Conexión a internet</td>
@@ -861,6 +947,8 @@
         <h2 class="lang-en">First steps</h2>
       </div>
 
+      <div class="with-screenshot">
+      <div class="content-side">
       <div class="steps">
         <div class="step">
           <div class="step-left">
@@ -882,8 +970,8 @@
           <div class="step-body">
             <h4 class="lang-es">Descarga un modelo Gemma</h4>
             <h4 class="lang-en">Download a Gemma model</h4>
-            <p class="lang-es">Ve a <strong>Ajustes → Modelos de IA</strong> (o sigue el banner de bienvenida). Selecciona Gemma 3 1B para empezar y pulsa <em>Descargar</em>. Si aún no has conectado tu cuenta, la app te llevará al proceso de autorización antes de iniciar la descarga. La descarga se realiza en segundo plano.</p>
-            <p class="lang-en">Go to <strong>Settings → AI Models</strong> (or follow the welcome banner). Select Gemma 3 1B to get started and tap <em>Download</em>. If you haven't connected your account yet, the app will take you through the authorization flow before starting the download. The download runs in the background.</p>
+            <p class="lang-es">Ve a <strong>Ajustes → Modelos de IA</strong> (o sigue el banner de bienvenida). Selecciona <strong>Gemma 3n E2B</strong> para empezar y pulsa <em>Descargar</em>. Si aún no has conectado tu cuenta, la app te llevará al proceso de autorización antes de iniciar la descarga. La descarga se realiza en segundo plano.</p>
+            <p class="lang-en">Go to <strong>Settings → AI Models</strong> (or follow the welcome banner). Select <strong>Gemma 3n E2B</strong> to get started and tap <em>Download</em>. If you haven't connected your account yet, the app will take you through the authorization flow before starting the download. The download runs in the background.</p>
           </div>
         </div>
         <div class="step">
@@ -923,6 +1011,13 @@
           </div>
         </div>
       </div>
+      </div><!-- /content-side -->
+      <div class="screenshot-side">
+        <div class="phone-mock"><img src="assets/screenshots/home.png" alt="Pantalla de Inicio" loading="lazy"></div>
+        <span class="phone-label lang-es">Pantalla de Inicio</span>
+        <span class="phone-label lang-en">Home Screen</span>
+      </div>
+      </div><!-- /with-screenshot -->
     </section>
 
     <!-- ─── PLANTATIONS ───────────────────────────── -->
@@ -933,6 +1028,8 @@
         <h2 class="lang-en">Plantation Management</h2>
       </div>
 
+      <div class="with-screenshot">
+      <div class="content-side">
       <div class="card lang-es">
         <p>La pantalla <strong>Plantaciones</strong> es el núcleo de la app. Desde aquí puedes ver todas tus parcelas y acceder a su detalle. El asistente de creación te lleva paso a paso en 4 etapas:</p>
       </div>
@@ -1000,6 +1097,13 @@
           <span class="lang-en">Map tiles are automatically downloaded and cached on the device. Once you've visited the areas of interest with a connection, the map works without mobile data.</span>
         </div>
       </div>
+      </div><!-- /content-side -->
+      <div class="screenshot-side">
+        <div class="phone-mock"><img src="assets/screenshots/plantation-wizard.png" alt="Asistente de Plantación" loading="lazy"></div>
+        <span class="phone-label lang-es">Asistente — Paso 1/4</span>
+        <span class="phone-label lang-en">Wizard — Step 1/4</span>
+      </div>
+      </div><!-- /with-screenshot -->
     </section>
 
     <!-- ─── TREATMENTS ──────────────────────────────── -->
@@ -1269,6 +1373,8 @@
         <h2 class="lang-en">AI Models (Gemma)</h2>
       </div>
 
+      <div class="with-screenshot">
+      <div class="content-side">
       <div class="card lang-es">
         <p>AgroAI usa <strong>Gemma 3</strong> de Google, un modelo de lenguaje grande de código abierto que se ejecuta completamente en tu dispositivo mediante <strong>MediaPipe Tasks GenAI</strong>. Los modelos se descargan desde HuggingFace y se guardan en el almacenamiento externo de la app.</p>
       </div>
@@ -1288,63 +1394,40 @@
 
       <div class="model-cards" style="margin-bottom:24px;">
         <div class="model-card recommended">
-          <div class="model-recommend-label lang-es">Disponible ✓</div>
-          <div class="model-recommend-label lang-en">Available ✓</div>
-          <div class="model-name">Gemma 3 1B</div>
-          <div class="model-size lang-es">~0.6 GB de descarga</div>
-          <div class="model-size lang-en">~0.6 GB download</div>
+          <div class="model-recommend-label lang-es">Recomendado ✓</div>
+          <div class="model-recommend-label lang-en">Recommended ✓</div>
+          <div class="model-name">Gemma 3n E2B</div>
+          <div class="model-size lang-es">~2.0 GB de descarga</div>
+          <div class="model-size lang-en">~2.0 GB download</div>
           <div class="model-specs">
-            <div class="model-spec">💾 <span class="lang-es">Espacio: 0.6 GB</span><span class="lang-en">Storage: 0.6 GB</span></div>
-            <div class="model-spec">🧠 RAM: 2 GB</div>
-            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)">litert-community/Gemma3-1B-IT</div>
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 2.0 GB</span><span class="lang-en">Storage: 2.0 GB</span></div>
+            <div class="model-spec">🧠 RAM: 4.0 GB</div>
+            <div class="model-spec">📸 <span class="lang-es">Multimodal (texto + imagen)</span><span class="lang-en">Multimodal (text + image)</span></div>
           </div>
-          <span class="badge badge-green lang-es">Recomendado</span>
-          <span class="badge badge-green lang-en">Recommended</span>
+          <span class="badge badge-green lang-es">Disponible</span>
+          <span class="badge badge-green lang-en">Available</span>
         </div>
-        <div class="model-card" style="opacity:.7;">
-          <div class="model-name">Gemma 3 4B</div>
-          <div class="model-size lang-es">~2.6 GB · próximamente</div>
-          <div class="model-size lang-en">~2.6 GB · coming soon</div>
+        <div class="model-card">
+          <div class="model-name">Gemma 3n E4B</div>
+          <div class="model-size lang-es">~4.0 GB de descarga</div>
+          <div class="model-size lang-en">~4.0 GB download</div>
           <div class="model-specs">
-            <div class="model-spec">💾 <span class="lang-es">Espacio: 2.6 GB</span><span class="lang-en">Storage: 2.6 GB</span></div>
-            <div class="model-spec">🧠 RAM: 4 GB</div>
-            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-es">Sin .task Android aún</div>
-            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-en">No Android .task yet</div>
+            <div class="model-spec">💾 <span class="lang-es">Espacio: 4.0 GB</span><span class="lang-en">Storage: 4.0 GB</span></div>
+            <div class="model-spec">🧠 RAM: 6.0 GB</div>
+            <div class="model-spec">📸 <span class="lang-es">Multimodal (texto + imagen)</span><span class="lang-en">Multimodal (text + image)</span></div>
           </div>
-          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-es">No disponible</span>
-          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-en">Unavailable</span>
-        </div>
-        <div class="model-card" style="opacity:.7;">
-          <div class="model-name">Gemma 3 12B</div>
-          <div class="model-size lang-es">~7.6 GB · próximamente</div>
-          <div class="model-size lang-en">~7.6 GB · coming soon</div>
-          <div class="model-specs">
-            <div class="model-spec">💾 <span class="lang-es">Espacio: 7.6 GB</span><span class="lang-en">Storage: 7.6 GB</span></div>
-            <div class="model-spec">🧠 RAM: 12 GB</div>
-            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-es">Sin .task Android aún</div>
-            <div class="model-spec" style="font-size:.72rem;color:var(--text-muted)" class="lang-en">No Android .task yet</div>
-          </div>
-          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-es">No disponible</span>
-          <span class="badge" style="background:var(--border);color:var(--text-muted)" class="lang-en">Unavailable</span>
-        </div>
-        <div class="model-card" style="opacity:.6;">
-          <div class="model-name">Gemma 4</div>
-          <div class="model-size lang-es">Próximamente</div>
-          <div class="model-size lang-en">Coming soon</div>
-          <div class="model-specs">
-            <div class="model-spec" style="color:var(--text-muted)">—</div>
-          </div>
-          <span class="badge" style="background:var(--border);color:var(--text-muted)">Soon</span>
+          <span class="badge badge-blue lang-es">Alta precisión</span>
+          <span class="badge badge-blue lang-en">High accuracy</span>
         </div>
       </div>
 
-      <div class="alert alert-warn" style="margin-bottom:20px;">
-        <span class="alert-icon">⚠️</span>
+      <div class="alert alert-info" style="margin-bottom:20px;">
+        <span class="alert-icon">📸</span>
         <div>
-          <strong class="lang-es">Modelos 4B, 12B y Gemma 4 no disponibles para Android aún</strong>
-          <strong class="lang-en">4B, 12B and Gemma 4 models not yet available for Android</strong>
-          <span class="lang-es">Los repositorios HuggingFace de Gemma 3 4B, 12B y Gemma 4 solo contienen ficheros <code>.web.task</code> optimizados para WebAssembly. Estos <strong>no son compatibles</strong> con el SDK Android de MediaPipe (<code>tasks-genai</code>). Cuando <em>litert-community</em> publique ficheros <code>.task</code> para Android se habilitarán automáticamente en la app.</span>
-          <span class="lang-en">HuggingFace repos for Gemma 3 4B, 12B and Gemma 4 only contain <code>.web.task</code> files optimized for WebAssembly. These are <strong>not compatible</strong> with the Android MediaPipe SDK (<code>tasks-genai</code>). When <em>litert-community</em> publishes Android <code>.task</code> files they will be enabled automatically in the app.</span>
+          <strong class="lang-es">Modelos multimodales — analizan fotos de cultivos</strong>
+          <strong class="lang-en">Multimodal models — analyze crop photos</strong>
+          <span class="lang-es">Gemma 3n E2B y E4B incluyen el encoder visual <strong>SigLIP</strong>, lo que les permite procesar imágenes reales junto al texto. Es lo que permite el análisis de fotos de plantas directamente en el dispositivo, sin enviar nada a la nube.</span>
+          <span class="lang-en">Gemma 3n E2B and E4B include the <strong>SigLIP</strong> visual encoder, allowing them to process real images alongside text. This is what enables on-device plant photo analysis without sending anything to the cloud.</span>
         </div>
       </div>
 
@@ -1414,12 +1497,19 @@
       <div class="alert alert-tip" style="margin-top:12px;">
         <span class="alert-icon">💡</span>
         <div>
-          <strong class="lang-es">Solo Gemma 3 1B disponible actualmente</strong>
-          <strong class="lang-en">Only Gemma 3 1B available right now</strong>
-          <span class="lang-es">Es el único modelo con fichero <code>.task</code> compatible con Android. Pesa solo 0.6 GB y ofrece un rendimiento excelente para análisis agrícola en gama media y alta.</span>
-          <span class="lang-en">It's the only model with an Android-compatible <code>.task</code> file. It's only 0.6 GB and delivers excellent performance for agricultural analysis on mid-range and high-end devices.</span>
+          <strong class="lang-es">¿Qué modelo elegir?</strong>
+          <strong class="lang-en">Which model should I pick?</strong>
+          <span class="lang-es"><strong>Gemma 3n E2B</strong> es la opción recomendada para la mayoría de dispositivos: ocupa 2 GB, necesita 4 GB de RAM y ofrece excelente rendimiento en análisis de fotos de cultivos. <strong>Gemma 3n E4B</strong> aporta mayor profundidad de razonamiento pero requiere 6 GB de RAM — ideal para dispositivos de gama alta.</span>
+          <span class="lang-en"><strong>Gemma 3n E2B</strong> is the recommended choice for most devices: uses 2 GB storage, requires 4 GB RAM, and delivers excellent crop photo analysis. <strong>Gemma 3n E4B</strong> provides deeper reasoning but requires 6 GB RAM — best for high-end devices.</span>
         </div>
       </div>
+      </div><!-- /content-side -->
+      <div class="screenshot-side">
+        <div class="phone-mock"><img src="assets/screenshots/ai-models.png" alt="Modelos de IA" loading="lazy"></div>
+        <span class="phone-label lang-es">Gestión de Modelos</span>
+        <span class="phone-label lang-en">Model Management</span>
+      </div>
+      </div><!-- /with-screenshot -->
     </section>
 
     <!-- ─── ANALYSIS ──────────────────────────────── -->
@@ -1513,6 +1603,14 @@
           <strong class="lang-en">No active model</strong>
           <span class="lang-es">Si no hay ningún modelo Gemma descargado y activo, la pantalla de análisis mostrará un aviso. Ve a <strong>Ajustes → Modelos de IA</strong> para descargar uno.</span>
           <span class="lang-en">If no Gemma model is downloaded and active, the analysis screen will show a warning. Go to <strong>Settings → AI Models</strong> to download one.</span>
+        </div>
+      </div>
+
+      <div class="screenshot-row" style="margin-top:24px;">
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/analysis.png" alt="Análisis por Foto" loading="lazy"></div>
+          <span class="phone-label lang-es">Pantalla de Análisis</span>
+          <span class="phone-label lang-en">Analysis Screen</span>
         </div>
       </div>
     </section>
@@ -1638,6 +1736,14 @@
           <span class="lang-en">Go to <strong>Settings → Google Accounts</strong> to select which account and calendar AgroAI will use. Calendar write permission is required.</span>
         </div>
       </div>
+
+      <div class="screenshot-row" style="margin-top:24px;">
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/calendar.png" alt="Calendario" loading="lazy"></div>
+          <span class="phone-label lang-es">Calendario — Junio 2026</span>
+          <span class="phone-label lang-en">Calendar — June 2026</span>
+        </div>
+      </div>
     </section>
 
     <!-- ─── SETTINGS ──────────────────────────────── -->
@@ -1700,6 +1806,14 @@
           <strong class="lang-en">Prompt editor</strong>
           <span class="lang-es">Selecciona una de las 3 plantillas y edita el texto directamente. Usa el botón <em>Vista previa</em> para ver exactamente qué recibirá Gemma con datos de plantación de ejemplo. Los cambios con nivel <span class="badge badge-amber">Medio</span> o <span class="badge badge-red">Alto</span> muestran un diálogo de confirmación antes de guardar. El botón <em>Restablecer</em> devuelve el prompt al contenido original de fábrica (requiere confirmación). Las plantillas que hayas editado muestran el badge <em>Personalizado</em>.</span>
           <span class="lang-en">Select one of the 3 templates and edit the text directly. Use the <em>Preview</em> button to see exactly what Gemma will receive with sample plantation data. Changes with <span class="badge badge-amber">Medium</span> or <span class="badge badge-red">High</span> risk level show a confirmation dialog before saving. The <em>Reset</em> button restores the prompt to its original factory content (requires confirmation). Edited templates show a <em>Customized</em> badge.</span>
+        </div>
+      </div>
+
+      <div class="screenshot-row" style="margin-top:24px;">
+        <div class="phone-item">
+          <div class="phone-mock"><img src="assets/screenshots/settings.png" alt="Ajustes" loading="lazy"></div>
+          <span class="phone-label lang-es">Pantalla de Ajustes</span>
+          <span class="phone-label lang-en">Settings Screen</span>
         </div>
       </div>
     </section>
