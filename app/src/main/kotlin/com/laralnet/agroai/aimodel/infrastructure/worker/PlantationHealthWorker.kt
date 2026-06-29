@@ -18,6 +18,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.laralnet.agroai.MainActivity
 import com.laralnet.agroai.R
 import com.laralnet.agroai.action.application.command.ScheduleActionCommand
@@ -78,7 +79,12 @@ class PlantationHealthWorker @AssistedInject constructor(
 
         val calendarAccount = dataStore.data.first()[KEY_CALENDAR_ACCOUNT]?.ifBlank { null }
 
-        val plantations = plantationRepository.observeAll().first()
+        val targetPlantationId = inputData.getString(INPUT_KEY_PLANTATION_ID)
+        val allPlantations = plantationRepository.observeAll().first()
+        val plantations = if (targetPlantationId != null)
+            allPlantations.filter { it.id == targetPlantationId }
+        else
+            allPlantations
         val scheduledActions = mutableListOf<Pair<String, String>>() // plantationName, actionTitle
 
         for (plantation in plantations) {
@@ -274,6 +280,7 @@ class PlantationHealthWorker @AssistedInject constructor(
     companion object {
         const val WORK_NAME = "plantation_health_daily"
         private const val WORK_NAME_ONETIME = "plantation_health_onetime"
+        const val INPUT_KEY_PLANTATION_ID = "plantation_id"
         const val CHANNEL_ID = "agroai_actions"
         private const val NOTIFICATION_ID = 1002
         private val KEY_CALENDAR_ACCOUNT = stringPreferencesKey("selected_google_account")
@@ -299,6 +306,16 @@ class PlantationHealthWorker @AssistedInject constructor(
                 WORK_NAME_ONETIME,
                 ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequestBuilder<PlantationHealthWorker>().build()
+            )
+        }
+
+        fun scheduleOneTimeForPlantation(context: Context, plantationId: String) {
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "${WORK_NAME_ONETIME}_$plantationId",
+                ExistingWorkPolicy.KEEP,
+                OneTimeWorkRequestBuilder<PlantationHealthWorker>()
+                    .setInputData(workDataOf(INPUT_KEY_PLANTATION_ID to plantationId))
+                    .build()
             )
         }
 

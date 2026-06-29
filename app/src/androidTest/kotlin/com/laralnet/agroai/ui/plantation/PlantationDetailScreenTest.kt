@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.laralnet.agroai.action.domain.model.PlantationAction
@@ -129,5 +130,13 @@ class PlantationDetailScreenTest {
         composeRule.onNodeWithTag("forecast_section").performClick()
         // First day entry should appear (emoji + temp range row)
         composeRule.onNodeWithText("25° / 12°", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun `tapping WeatherCard opens detail sheet with weather info`() {
+        setContent()
+        composeRule.onNodeWithTag("weather_card").performClick()
+        // Sheet should appear with current temperature
+        composeRule.onNodeWithText("22.0°C", substring = true).assertIsDisplayed()
     }
 }

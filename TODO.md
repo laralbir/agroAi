@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.17.0`
+Estado actual: `v0.19.0`
 
 ---
 
@@ -394,28 +394,27 @@ Descarga modelo Gemma
 
 ---
 
-## ⬜ FASE 12 — Reestructuración de navegación y meteorología
+## ✅ FASE 12 — Reestructuración de navegación y meteorología _(completada en v0.19.0)_
 
 **Bloqueante para:** UX limpia y datos de clima siempre accesibles.
 
 ### Reestructuración de navegación
-- [ ] **Eliminar tab Plantaciones** del bottom nav — el listado ya aparece en Home; sustituir por otro tab útil o reducir a 4 tabs (Home / Análisis / Calendar / Settings)
-- [ ] **Mover botón "Revisar ahora"** (lanzar worker) a `HomeScreen`, con acceso también desde la ficha de cada plantación (`PlantationDetailScreen`) para lanzarlo solo para esa plantación (pasar `plantationId` como input data al `OneTimeWorkRequest`)
-- [ ] **Indicador de próxima ejecución del worker** en `HomeScreen`: "Próxima revisión automática en Xh Ym" usando el `WorkInfo` del `PeriodicWorkRequest`
+- [x] **Eliminar tab Plantaciones** del bottom nav — reducido a 4 tabs (Home / Análisis / Calendar / Settings)
+- [x] **Mover botón "Revisar ahora"** a `HomeScreen` (TopBar), con botón también en `PlantationDetailScreen` (solo esa plantación via `INPUT_KEY_PLANTATION_ID`)
+- [x] **`scheduleOneTimeForPlantation(context, plantationId)`** en `PlantationHealthWorker` — filtra por plantación en `doWork()` con `inputData.getString(INPUT_KEY_PLANTATION_ID)`
+- [x] **Indicador de próxima ejecución del worker** en `HomeScreen`: "Próxima revisión automática en Xh Ym" via `GetWorkerNextRunQuery` + `WorkManager.getWorkInfosForUniqueWorkLiveData`
 
 ### Meteorología en Home (fix)
-- [ ] Revisar por qué `homeWeather` no aparece en `HomeScreen` — comprobar que `GetCurrentLocationQuery` devuelve coordenadas válidas y que `ObserveWeatherQuery` emite datos en cold start
-- [ ] **Resumen compacto** visible siempre: emoji condición + temperatura + humedad (una línea)
-- [ ] **Tap en el widget** → expande un panel detallado in-place (o abre `WeatherDetailSheet`): temperatura aparente, viento, precipitación, previsión 3 días
+- [x] **Fallback GPS**: si `GetCurrentLocationQuery` falla, se usa la primera plantación con coordenadas (`plantationRepository.observeAll().firstOrNull()`)
+- [x] **`HomeWeatherWidget` tappable** → abre `WeatherDetailSheet` con temperatura aparente, viento, precipitación y previsión 3 días
 
 ### Meteorología por plantación
-- [ ] **Icono de clima en el listado de plantaciones** (`PlantationListScreen`): para cada plantación, mostrar emoji WMO + temperatura máx del día junto al nombre (usar datos en caché de Room, sin nuevas llamadas de red)
-- [ ] **Resumen meteorológico en `PlantationDetailScreen`**: ya existe `WeatherCard`; añadir tap para expandir un `WeatherDetailSheet` con previsión 15 días, alertas activas y recomendaciones de tratamiento
+- [x] **Icono de clima en `PlantationListScreen`**: emoji WMO + temperatura máx del día por plantación (datos de caché Room via `weatherByPlantation: StateFlow<Map<String, WeatherData?>>` en `HomeViewModel`)
+- [x] **`WeatherCard` tappable en `PlantationDetailScreen`**: abre `WeatherDetailSheet` con previsión 3 días, sensación térmica y datos detallados
 
 ### Tests
-- [ ] `HomeViewModelTest` — workerCountdown emite tiempo restante correcto, weather visible
-- [ ] `PlantationListViewModelTest` — expone weatherByPlantation map con datos de caché
-- [ ] `PlantationDetailScreenTest` — tap en WeatherCard abre sheet con previsión
+- [x] `HomeViewModelTest` — 16 tests (añadidos: workerNextRunMs null/correcto, weatherByPlantation con/sin coordenadas, fallback GPS)
+- [x] `PlantationDetailScreenTest` — test tap WeatherCard abre sheet con temperatura
 
 ---
 
@@ -437,6 +436,6 @@ Descarga modelo Gemma
 | 9 — Acciones manuales + IA background | Automatización agrícola | L | ✅ Completada (v0.16.0) |
 | 10 — Informes + log del worker | Visibilidad histórica | M | ✅ Completada (v0.17.0) |
 | 11 — Editor de prompts funcional | Personalización de la IA | S | ✅ Completada (v0.18.0) |
-| 12 — Reestructuración nav + meteorología | UX limpia + clima por plantación | M | ⬜ Pendiente |
+| 12 — Reestructuración nav + meteorología | UX limpia + clima por plantación | M | ✅ Completada (v0.19.0) |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas

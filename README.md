@@ -23,11 +23,14 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - Título, descripción, fecha y hora configurables por tratamiento
 - Marcar tratamiento como completado con notas de ejecución
 - Eliminar tratamiento (con borrado opcional del evento de calendario)
-- **Pantalla de inicio**: widget de meteorología por GPS + tratamientos de hoy (hasta 3) y próximos hasta 5 días
+- **Pantalla de inicio**: widget de meteorología expandible por GPS (tap → `WeatherDetailSheet` con temperatura aparente, viento, precipitación y previsión 3 días) + tratamientos de hoy (hasta 3) y próximos hasta 5 días
+- **Botón "Revisar ahora"** en la barra superior de Home — lanza `PlantationHealthWorker` para todas las plantaciones de forma inmediata
+- **Indicador de próxima revisión automática** en Home: "Próxima revisión en Xh Ym" basado en el estado del `PeriodicWorkRequest`
 - Integración directa con Google Calendar al programar (opcional)
 
 ### Acciones de Plantación
 - Acciones generadas automáticamente por el worker de salud en background (ciclo de 6 horas) a partir del análisis de la IA
+- **Botón "Revisar esta plantación"** en `PlantationDetailScreen` — lanza el worker solo para esa plantación (vía `INPUT_KEY_PLANTATION_ID`)
 - 12 tipos: Regar, Podar, Cosechar, Fertilizar, Fumigar, Injertar, Trasplantar, Supervisar, Tratar, Observar, Reparar, Otro
 - Estados: Pendiente, Hecha, Omitida
 - Origen distinguible: Manual o IA
@@ -63,8 +66,10 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 
 ### Meteorología (Open-Meteo)
 - Integración con [Open-Meteo](https://open-meteo.com/) — API pública y gratuita, sin clave API
-- Predicción basada en coordenadas GPS de cada plantación (funciona en cualquier país)
-- **Widget en la pantalla de detalle de plantación**: temperatura actual, condición, humedad y viento
+- Predicción basada en coordenadas GPS de cada plantación (funciona en cualquier país); fallback automático a la primera plantación con coordenadas si el GPS falla
+- **`HomeWeatherWidget` expandible** en la pantalla de inicio: condición + temperatura en una línea; tap → `WeatherDetailSheet` con temperatura aparente, viento, precipitación y previsión 3 días
+- **Clima por plantación en el listado** (`PlantationListScreen`): emoji WMO + temperatura máx del día junto a cada plantación (datos de caché, sin llamadas extra)
+- **`WeatherDetailSheet` en el detalle de plantación**: tap en `WeatherCard` → sheet con previsión 3 días, sensación térmica y datos detallados
 - **Alertas en el detalle de tratamiento**: aviso destacado si el pronóstico del día programado incluye helada, lluvia intensa, tormenta, granizo o nieve
 - Caché local en Room (tabla `weather_cache`) — datos disponibles sin conexión tras la primera carga
 - Actualización automática cada 6 horas vía WorkManager (requiere conexión)

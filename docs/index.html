@@ -1221,8 +1221,8 @@
           <div class="step-body">
             <h4 class="lang-es">Acciones generadas automáticamente</h4>
             <h4 class="lang-en">Automatically generated actions</h4>
-            <p class="lang-es">El worker de salud analiza tus plantaciones cada 6 horas en background. Cuando detecta algo que atender, crea acciones sugeridas y envía una notificación.</p>
-            <p class="lang-en">The health worker analyses your plantations every 6 hours in the background. When it detects something to address, it creates suggested actions and sends a notification.</p>
+            <p class="lang-es">El worker de salud analiza tus plantaciones cada 6 horas en background. Cuando detecta algo que atender, crea acciones sugeridas y envía una notificación. La pantalla de inicio muestra un indicador de "Próxima revisión en Xh Ym" y un botón <strong>Revisar ahora</strong> (barra superior) para lanzar el análisis de forma inmediata para todas las plantaciones. Desde el detalle de cada plantación puedes lanzarlo solo para esa parcela con <strong>Revisar esta plantación</strong>.</p>
+            <p class="lang-en">The health worker analyses your plantations every 6 hours in the background. When it detects something to address, it creates suggested actions and sends a notification. The home screen shows a "Next review in Xh Ym" indicator and a <strong>Review now</strong> button (top bar) to trigger an immediate analysis for all plantations. From each plantation's detail screen you can run it just for that plot with <strong>Review this plantation</strong>.</p>
           </div>
         </div>
         <div class="step">
@@ -1533,8 +1533,12 @@
       </div>
 
       <ul class="feature-list" style="margin-bottom:16px;">
-        <li class="lang-es"><strong>Widget en el detalle de plantación</strong>: temperatura actual, condición (con emoji), humedad y velocidad/dirección del viento</li>
-        <li class="lang-en"><strong>Widget in plantation detail</strong>: current temperature, condition (with emoji), humidity and wind speed/direction</li>
+        <li class="lang-es"><strong>Widget en la pantalla de inicio</strong>: condición + temperatura en una línea; toca el widget para abrir el panel detallado con temperatura aparente, viento, precipitación y previsión de 3 días</li>
+        <li class="lang-en"><strong>Widget on the home screen</strong>: condition + temperature in one line; tap it to open the detail panel with apparent temperature, wind, precipitation, and a 3-day forecast</li>
+        <li class="lang-es"><strong>Clima por plantación en el listado</strong>: emoji de condición WMO + temperatura máxima del día junto al nombre de cada plantación (datos de caché, sin llamadas extra)</li>
+        <li class="lang-en"><strong>Per-plantation weather in the list</strong>: WMO condition emoji + daily max temperature next to each plantation name (cache data, no extra network calls)</li>
+        <li class="lang-es"><strong>Panel de detalle en la ficha de plantación</strong>: toca la tarjeta de clima para abrir un panel con previsión de 3 días, sensación térmica y datos de viento y precipitación</li>
+        <li class="lang-en"><strong>Detail panel in plantation detail</strong>: tap the weather card to open a sheet with a 3-day forecast, apparent temperature, wind, and precipitation data</li>
         <li class="lang-es"><strong>Alertas en el detalle de tratamiento</strong>: tarjeta roja de aviso si el día agendado presenta helada, lluvia intensa, tormenta, granizo o nieve</li>
         <li class="lang-en"><strong>Alerts in treatment detail</strong>: red warning card if the scheduled day has frost, heavy rain, storm, hail or snow</li>
         <li class="lang-es">Predicción diaria para los próximos 15 días con temperatura máx/mín, probabilidad de lluvia y UV (usada también en los prompts de análisis)</li>
@@ -1552,8 +1556,8 @@
         <div>
           <strong class="lang-es">Basado en coordenadas GPS</strong>
           <strong class="lang-en">Based on GPS coordinates</strong>
-          <span class="lang-es">El widget y las alertas solo aparecen en plantaciones con ubicación definida (latitud y longitud). Configúrala en el asistente de creación o edición de la plantación.</span>
-          <span class="lang-en">The widget and alerts only appear on plantations with a defined location (latitude and longitude). Set it in the plantation creation or editing wizard.</span>
+          <span class="lang-es">El widget de inicio usa el GPS del dispositivo; si no hay señal, usa automáticamente la primera plantación con coordenadas configuradas. Las alertas y el panel de detalle solo aparecen en plantaciones con ubicación definida (latitud y longitud). Configúrala en el asistente de creación o edición de la plantación.</span>
+          <span class="lang-en">The home widget uses the device GPS; if there's no signal, it automatically falls back to the first plantation with configured coordinates. Alerts and the detail panel only appear on plantations with a defined location (latitude and longitude). Set it in the plantation creation or editing wizard.</span>
         </div>
       </div>
     </section>

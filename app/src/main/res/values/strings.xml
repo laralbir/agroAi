@@ -547,4 +547,13 @@
     <string name="worker_run_detail_title">Run Detail</string>
     <string name="worker_run_duration">Duration</string>
     <string name="worker_run_summary">AI Analysis Summary</string>
+
+    <!-- Phase 12: Navigation restructuring and weather -->
+    <string name="home_worker_next_run">Auto-review in %1$sh %2$sm</string>
+    <string name="home_worker_next_run_soon">Auto-review soon</string>
+    <string name="weather_detail_title">Current Weather</string>
+    <string name="weather_3day_forecast">Next 3 days</string>
+    <string name="plantation_review_this">Review this plantation</string>
+    <string name="cd_review_now">Launch AI review</string>
+    <string name="cd_weather_detail">Weather details</string>
 </resources>

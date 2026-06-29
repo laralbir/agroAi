@@ -1,12 +1,14 @@
 package com.laralnet.agroai.ui.screens.home
 
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Agriculture
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,11 +19,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.aimodel.infrastructure.worker.PlantationHealthWorker
 import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.treatment.domain.model.Treatment
 import com.laralnet.agroai.treatment.domain.model.TreatmentStatus
 import com.laralnet.agroai.ui.screens.treatment.resolveLabel
+import com.laralnet.agroai.weather.domain.model.DailyForecast
 import com.laralnet.agroai.weather.domain.model.WeatherCondition
 import com.laralnet.agroai.weather.domain.model.WeatherData
 import java.time.Instant
@@ -46,11 +50,30 @@ fun HomeScreen(
     val todayTreatments by viewModel.todayTreatments.collectAsState()
     val upcomingTreatments by viewModel.upcomingTreatments.collectAsState()
     val homeWeather by viewModel.homeWeather.collectAsState()
+    val workerNextRunMs by viewModel.workerNextRunMs.collectAsState()
+    val context = LocalContext.current
+
+    var showWeatherSheet by remember { mutableStateOf(false) }
+
+    if (showWeatherSheet && homeWeather != null) {
+        WeatherDetailSheet(
+            weather = homeWeather!!,
+            onDismiss = { showWeatherSheet = false }
+        )
+    }
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = { Text(stringResource(R.string.app_name)) }
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = { PlantationHealthWorker.scheduleOneTime(context) }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.cd_review_now)
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -100,7 +123,16 @@ fun HomeScreen(
                 }
 
                 homeWeather?.let { weather ->
-                    item { HomeWeatherWidget(weather = weather) }
+                    item {
+                        HomeWeatherWidget(
+                            weather = weather,
+                            onClick = { showWeatherSheet = true }
+                        )
+                    }
+                }
+
+                workerNextRunMs?.let { nextMs ->
+                    item { WorkerCountdownBadge(nextRunMs = nextMs) }
                 }
 
                 item {
@@ -155,10 +187,29 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeWeatherWidget(weather: WeatherData) {
+private fun WorkerCountdownBadge(nextRunMs: Long) {
+    val remainingMs = (nextRunMs - System.currentTimeMillis()).coerceAtLeast(0)
+    val hours = remainingMs / 3_600_000
+    val minutes = (remainingMs % 3_600_000) / 60_000
+    val text = if (hours == 0L && minutes < 5)
+        stringResource(R.string.home_worker_next_run_soon)
+    else
+        stringResource(R.string.home_worker_next_run, hours, minutes)
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+@Composable
+private fun HomeWeatherWidget(weather: WeatherData, onClick: () -> Unit) {
     val current = weather.current ?: return
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Row(
@@ -199,6 +250,107 @@ private fun HomeWeatherWidget(weather: WeatherData) {
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WeatherDetailSheet(weather: WeatherData, onDismiss: () -> Unit) {
+    val current = weather.current
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                stringResource(R.string.weather_detail_title),
+                style = MaterialTheme.typography.titleLarge
+            )
+            if (current != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column {
+                        Text(
+                            "%.1f°C".format(current.temperatureCelsius),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        Text(
+                            stringResource(R.string.weather_feels_like, "%.1f".format(current.feelsLikeCelsius)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        current.condition.toEmoji(),
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        stringResource(R.string.weather_humidity, current.humidity),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        stringResource(
+                            R.string.weather_wind,
+                            "%.0f".format(current.windSpeedKmh),
+                            current.windDirection
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    if (current.precipitationMm > 0) {
+                        Text(
+                            stringResource(R.string.weather_precipitation, "%.1f".format(current.precipitationMm)),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+
+            val next3 = weather.forecast.take(3)
+            if (next3.isNotEmpty()) {
+                HorizontalDivider()
+                Text(
+                    stringResource(R.string.weather_3day_forecast),
+                    style = MaterialTheme.typography.titleSmall
+                )
+                next3.forEach { day -> ForecastRow(day) }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun ForecastRow(day: DailyForecast) {
+    val zone = ZoneId.systemDefault()
+    val label = day.date.atZone(zone).toLocalDate()
+        .format(DateTimeFormatter.ofPattern("EEE d MMM"))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+        Text(day.condition.toEmoji(), style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "%.0f° / %.0f°".format(day.maxTempCelsius, day.minTempCelsius),
+            style = MaterialTheme.typography.bodySmall
+        )
+        if (day.precipitationProbability > 0) {
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "💧${day.precipitationProbability}%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -253,7 +405,7 @@ private fun relativeDate(scheduledAt: Instant, context: Context): String {
     }
 }
 
-private fun WeatherCondition.toEmoji() = when (this) {
+fun WeatherCondition.toEmoji() = when (this) {
     WeatherCondition.CLEAR -> "☀️"
     WeatherCondition.PARTLY_CLOUDY -> "⛅"
     WeatherCondition.CLOUDY -> "🌥️"

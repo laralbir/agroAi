@@ -10,6 +10,24 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.19.0] - 2026-06-29
+
+### Añadido
+- **Tab Plantaciones eliminado** del bottom nav — 4 tabs: Home / Análisis / Calendar / Ajustes
+- **Botón "Revisar ahora"** en `HomeScreen` (TopBar) — lanza `PlantationHealthWorker` para todas las plantaciones
+- **Botón "Revisar esta plantación"** en `PlantationDetailScreen` — lanza el worker solo para esa plantación via `INPUT_KEY_PLANTATION_ID`
+- **Indicador de próxima revisión automática** en `HomeScreen`: "Próxima revisión en Xh Ym" con `GetWorkerNextRunQuery` + WorkManager
+- **Fallback de clima**: si GPS falla, se usa la primera plantación con coordenadas para mostrar el tiempo en Home
+- **`HomeWeatherWidget` expandible**: tap → `WeatherDetailSheet` con temperatura aparente, viento, precipitación y previsión 3 días
+- **Clima por plantación en `PlantationListScreen`**: emoji WMO + temperatura máx del día (datos en caché, sin llamadas de red extra)
+- **`WeatherDetailSheet` en `PlantationDetailScreen`**: tap en `WeatherCard` → sheet con previsión 3 días, sensación térmica y datos detallados
+
+### Tests
+- `HomeViewModelTest`: 16 tests (+7 nuevos: workerNextRunMs, weatherByPlantation, fallback GPS)
+- `PlantationDetailScreenTest`: test de tap en WeatherCard que abre el sheet
+
+---
+
 ## [0.18.0] - 2026-06-29
 
 ### Añadido

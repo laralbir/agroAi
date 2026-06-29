@@ -547,4 +547,13 @@
     <string name="worker_run_detail_title">Detalle de ejecución</string>
     <string name="worker_run_duration">Duración</string>
     <string name="worker_run_summary">Resumen del análisis IA</string>
+
+    <!-- Fase 12: Reestructuración de navegación y meteorología -->
+    <string name="home_worker_next_run">Revisión automática en %1$sh %2$sm</string>
+    <string name="home_worker_next_run_soon">Revisión automática próximamente</string>
+    <string name="weather_detail_title">Tiempo actual</string>
+    <string name="weather_3day_forecast">Próximos 3 días</string>
+    <string name="plantation_review_this">Revisar esta plantación</string>
+    <string name="cd_review_now">Lanzar revisión IA</string>
+    <string name="cd_weather_detail">Detalles del tiempo</string>
 </resources>

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
@@ -147,9 +146,6 @@ fun AgroAINavGraph(
     val bottomItems = listOf(
         BottomNavItem(Screen.Home, R.string.nav_home) {
             Icon(Icons.Default.Home, contentDescription = null)
-        },
-        BottomNavItem(Screen.Plantations, R.string.nav_plantations) {
-            Icon(Icons.Default.Agriculture, contentDescription = null)
         },
         BottomNavItem(
             screen = Screen.PhotoAnalysis,

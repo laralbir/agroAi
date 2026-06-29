@@ -5,20 +5,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
-import com.laralnet.agroai.aimodel.infrastructure.worker.PlantationHealthWorker
 import com.laralnet.agroai.ui.components.AppTopBar
 import com.laralnet.agroai.plantation.domain.model.Plantation
 import com.laralnet.agroai.ui.screens.home.HomeViewModel
+import com.laralnet.agroai.ui.screens.home.toEmoji
+import com.laralnet.agroai.weather.domain.model.WeatherData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,20 +27,12 @@ fun PlantationListScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val plantations by viewModel.plantations.collectAsState()
-    val context = LocalContext.current
+    val weatherByPlantation by viewModel.weatherByPlantation.collectAsState()
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = { Text(stringResource(R.string.plantation_title)) },
-                actions = {
-                    IconButton(onClick = { PlantationHealthWorker.scheduleOneTime(context) }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = stringResource(R.string.plantation_review_now)
-                        )
-                    }
-                }
+                title = { Text(stringResource(R.string.plantation_title)) }
             )
         },
         floatingActionButton = {
@@ -60,7 +51,11 @@ fun PlantationListScreen(
                 .padding(paddingValues)
         ) {
             items(plantations, key = { it.id }) { plantation ->
-                PlantationListItem(plantation = plantation, onClick = { onNavigateToDetail(plantation.id) })
+                PlantationListItem(
+                    plantation = plantation,
+                    weather = weatherByPlantation[plantation.id],
+                    onClick = { onNavigateToDetail(plantation.id) }
+                )
             }
         }
     }
@@ -68,7 +63,11 @@ fun PlantationListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PlantationListItem(plantation: Plantation, onClick: () -> Unit) {
+private fun PlantationListItem(
+    plantation: Plantation,
+    weather: WeatherData?,
+    onClick: () -> Unit
+) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth()
@@ -89,6 +88,25 @@ private fun PlantationListItem(plantation: Plantation, onClick: () -> Unit) {
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(plantation.type.defaultIconEmoji, style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+            },
+            trailingContent = {
+                val current = weather?.current
+                if (current != null) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            current.condition.toEmoji(),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            "%.0f°".format(
+                                weather.forecast.firstOrNull()?.maxTempCelsius
+                                    ?: current.temperatureCelsius
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }

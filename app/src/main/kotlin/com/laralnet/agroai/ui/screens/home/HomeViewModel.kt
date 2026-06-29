@@ -2,6 +2,7 @@ package com.laralnet.agroai.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.laralnet.agroai.aimodel.application.query.GetWorkerNextRunQuery
 import com.laralnet.agroai.aimodel.application.query.ObserveModelsQuery
 import com.laralnet.agroai.location.application.query.GetCurrentLocationQuery
 import com.laralnet.agroai.plantation.domain.model.Plantation
@@ -16,6 +17,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -27,12 +30,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    plantationRepository: PlantationRepository,
+    private val plantationRepository: PlantationRepository,
     observeModels: ObserveModelsQuery,
     observeUpcomingTreatments: ObserveUpcomingTreatmentsQuery,
     private val getCurrentLocation: GetCurrentLocationQuery,
     private val refreshWeatherHandler: RefreshWeatherHandler,
-    private val observeWeatherQuery: ObserveWeatherQuery
+    private val observeWeatherQuery: ObserveWeatherQuery,
+    private val getWorkerNextRunQuery: GetWorkerNextRunQuery
 ) : ViewModel() {
 
     val plantations: StateFlow<List<Plantation>> = plantationRepository
@@ -71,11 +75,40 @@ class HomeViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    // ms until next scheduled periodic worker run; null if not scheduled or unknown
+    val workerNextRunMs: StateFlow<Long?> = getWorkerNextRunQuery()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    // cached weather keyed by plantation id (no new network calls — Room only)
+    val weatherByPlantation: StateFlow<Map<String, WeatherData?>> = plantations
+        .flatMapLatest { list ->
+            val withCoords = list.filter { it.location.hasCoordinates }
+            if (withCoords.isEmpty()) return@flatMapLatest flowOf(emptyMap())
+            val weatherFlows = withCoords.map { p ->
+                observeWeatherQuery(p.location.latitude!!, p.location.longitude!!)
+                    .map { weather -> p.id to weather }
+            }
+            combine(weatherFlows) { entries -> entries.toMap() }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
     init {
         viewModelScope.launch {
-            val place = getCurrentLocation().getOrNull() ?: return@launch
-            _homeLocation.value = Pair(place.latitude, place.longitude)
-            refreshWeatherHandler.handle(place.latitude, place.longitude)
+            val place = getCurrentLocation().getOrNull()
+            if (place != null) {
+                _homeLocation.value = Pair(place.latitude, place.longitude)
+                refreshWeatherHandler.handle(place.latitude, place.longitude)
+            } else {
+                // Fallback: first plantation with GPS coordinates
+                plantationRepository.observeAll()
+                    .firstOrNull()
+                    ?.firstOrNull { it.location.hasCoordinates }
+                    ?.location
+                    ?.let { loc ->
+                        _homeLocation.value = Pair(loc.latitude!!, loc.longitude!!)
+                        refreshWeatherHandler.handle(loc.latitude!!, loc.longitude!!)
+                    }
+            }
         }
     }
 }
