@@ -54,6 +54,7 @@ import com.laralnet.agroai.ui.screens.settings.SettingsScreen
 import com.laralnet.agroai.ui.screens.calendar.CalendarScreen
 import com.laralnet.agroai.ui.screens.treatment.ScheduleTreatmentScreen
 import com.laralnet.agroai.ui.screens.treatment.TreatmentDetailScreen
+import com.laralnet.agroai.ui.screens.prompteditor.PromptEditorScreen
 import com.laralnet.agroai.ui.screens.workerlog.WorkerLogScreen
 import com.laralnet.agroai.ui.screens.workerlog.WorkerRunDetailScreen
 
@@ -115,6 +116,7 @@ sealed class Screen(val route: String) {
     data object PlantationReport : Screen("plantation/{plantationId}/report") {
         fun route(plantationId: String) = "plantation/$plantationId/report"
     }
+    data object PromptEditor : Screen("prompt_editor")
     data object WorkerLog : Screen("worker_log")
     data object WorkerRunDetail : Screen("worker_run/{runId}") {
         fun route(runId: String) = "worker_run/$runId"
@@ -430,7 +432,15 @@ fun AgroAINavGraph(
                     },
                     onNavigateToWorkerLog = {
                         navController.navigate(Screen.WorkerLog.route)
+                    },
+                    onNavigateToPromptEditor = {
+                        navController.navigate(Screen.PromptEditor.route)
                     }
+                )
+            }
+            composable(Screen.PromptEditor.route) {
+                PromptEditorScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable(Screen.Calendar.route) {

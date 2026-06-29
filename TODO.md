@@ -375,20 +375,22 @@ Descarga modelo Gemma
 
 ---
 
-## ⬜ FASE 11 — Editor de prompts funcional
+## ✅ FASE 11 — Editor de prompts funcional _(completada en v0.18.0)_
 
 **Bloqueante para:** personalización real del comportamiento de la IA.
 
 ### Pantalla de edición
-- [ ] `PromptEditorScreen` accesible desde Settings → "Gestionar prompts" (actualmente existe la pantalla pero el guardado no funciona)
-- [ ] `SavePromptHandler` — persiste el `PromptTemplate` editado en Room; marca `isCustomized = true`
-- [ ] Botón **Restablecer** — diálogo de confirmación (warningLevel `HIGH`) → restaura el contenido por defecto de fábrica (`PromptTemplate.photoAnalysisDefault()`)
-- [ ] Diálogo de advertencia al editar prompts con `warningLevel >= MEDIUM`
-- [ ] Vista previa del prompt renderizada con variables de ejemplo sustituidas (plantación de muestra)
+- [x] `PromptEditorScreen` accesible desde Settings → "Gestionar prompts"
+- [x] `SavePromptTemplateHandler` — persiste el `PromptTemplate` editado en Room; marca `isCustomized = true`
+- [x] Botón **Restablecer** — diálogo de confirmación → restaura el contenido por defecto de fábrica (`defaultContent`)
+- [x] Diálogo de advertencia al guardar prompts con `warningLevel >= MEDIUM`
+- [x] Vista previa del prompt con datos de ejemplo sustituidos (plantación de muestra)
+- [x] Seed automático de los 3 templates por defecto en BD si está vacía
+- [x] Badge "Personalizado" en tarjeta del template cuando `isCustomized = true`
 
 ### Tests
-- [ ] `SavePromptHandlerTest` — guarda, marca customized, no modifica otros campos
-- [ ] `PromptEditorViewModelTest` — carga inicial, reset, save, warning dialog
+- [x] `SavePromptHandlerTest` — guarda, marca customized, no modifica otros campos
+- [x] `PromptEditorViewModelTest` — carga inicial (12 tests): load, seed, selectTemplate, onContentChanged, savePrompt (MEDIUM/HIGH/LOW), confirmSave, dismissDialog, resetPrompt, confirmReset, clearSavedOk
 
 ---
 
@@ -434,7 +436,7 @@ Descarga modelo Gemma
 | 8 — Home mejorado + meteorología | Utilidad diaria | S | ✅ Completada (v0.15.0) |
 | 9 — Acciones manuales + IA background | Automatización agrícola | L | ✅ Completada (v0.16.0) |
 | 10 — Informes + log del worker | Visibilidad histórica | M | ✅ Completada (v0.17.0) |
-| 11 — Editor de prompts funcional | Personalización de la IA | S | ⬜ Pendiente |
+| 11 — Editor de prompts funcional | Personalización de la IA | S | ✅ Completada (v0.18.0) |
 | 12 — Reestructuración nav + meteorología | UX limpia + clima por plantación | M | ⬜ Pendiente |
 
 `S` = 1-2 días · `M` = 3-5 días · `L` = 1-2 semanas

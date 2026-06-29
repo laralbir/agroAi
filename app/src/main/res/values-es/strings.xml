@@ -174,11 +174,27 @@
     <string name="model_test_copied">¡Copiado!</string>
 
     <!-- Prompt editor -->
+    <string name="prompt_list_title">Gestionar Prompts</string>
     <string name="prompt_editor_title">Editar Prompt</string>
+    <string name="prompt_template_photo_analysis">Análisis de fotos</string>
+    <string name="prompt_template_plantation_health">Salud de plantación</string>
+    <string name="prompt_template_weather_adjustment">Ajuste meteorológico</string>
+    <string name="prompt_customized">Personalizado</string>
+    <string name="prompt_select_hint">Selecciona un prompt para editar</string>
     <string name="prompt_warning_medium">Aviso: Modificar este prompt puede afectar a las sugerencias de la IA. Procede con cuidado.</string>
     <string name="prompt_warning_high">Riesgo alto: Los cambios estructurales en este prompt pueden alterar significativamente el comportamiento de la IA. Edita solo si sabes lo que haces.</string>
+    <string name="prompt_warning_level_low">Riesgo bajo</string>
+    <string name="prompt_warning_level_medium">Riesgo medio</string>
+    <string name="prompt_warning_level_high">Riesgo alto</string>
     <string name="prompt_reset">Restaurar por defecto</string>
+    <string name="prompt_reset_dialog_title">¿Restaurar por defecto?</string>
+    <string name="prompt_reset_dialog_body">Se restaurará el prompt original. Todos tus cambios se perderán.</string>
+    <string name="prompt_reset_dialog_confirm">Restaurar</string>
     <string name="prompt_save">Guardar</string>
+    <string name="prompt_save_dialog_title">¿Guardar cambios?</string>
+    <string name="prompt_save_dialog_confirm">Guardar</string>
+    <string name="prompt_saved">Guardado</string>
+    <string name="prompt_preview_title">Vista previa con datos de ejemplo</string>
 
     <!-- Calendar -->
     <string name="calendar_title">Calendario</string>

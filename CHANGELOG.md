@@ -10,6 +10,20 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.18.0] - 2026-06-29
+
+### Añadido
+- **`PromptEditorScreen`**: pantalla de edición de prompts accesible desde Ajustes → "Gestionar prompts"; selector horizontal de las 3 plantillas disponibles (Análisis de fotos, Salud de plantación, Ajuste meteorológico) con badge de nivel de riesgo y badge "Personalizado" cuando la plantilla ha sido editada
+- **`PromptEditorViewModel`**: gestiona el estado del editor; seed automático de las 3 plantillas por defecto en BD si está vacía; diálogo de advertencia antes de guardar cuando `warningLevel >= MEDIUM`; diálogo de confirmación antes de restaurar el valor de fábrica
+- **Vista previa con datos de ejemplo**: sección colapsable en el editor que muestra el prompt completo tal como lo recibirá Gemma, con datos de plantación de muestra sustituidos
+- **Botón "Restablecer"**: restaura el contenido original (`defaultContent`) con diálogo de confirmación; desactivado cuando el contenido ya es el de fábrica
+- **`Screen.PromptEditor`**: ruta de navegación `prompt_editor` añadida al NavGraph y enlazada desde `SettingsScreen`
+
+### Tests — Fase 11 (12 tests nuevos)
+- **`PromptEditorViewModelTest`** (12 tests): carga inicial, seed de BD vacía, `selectTemplate`, `onContentChanged`, `savePrompt` (LOW sin diálogo, MEDIUM/HIGH con diálogo), `confirmSave` (captura comando correcto, sets `savedOk`), `dismissSaveDialog`, `resetPrompt`, `confirmReset` (restaura `defaultContent`), `clearSavedOk`
+
+---
+
 ## [0.17.0] - 2026-06-29
 
 ### Añadido

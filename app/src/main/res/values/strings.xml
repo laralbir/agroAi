@@ -174,11 +174,27 @@
     <string name="model_test_copied">Copied!</string>
 
     <!-- Prompt editor -->
+    <string name="prompt_list_title">Manage Prompts</string>
     <string name="prompt_editor_title">Edit Prompt</string>
+    <string name="prompt_template_photo_analysis">Photo Analysis</string>
+    <string name="prompt_template_plantation_health">Plantation Health</string>
+    <string name="prompt_template_weather_adjustment">Weather Adjustment</string>
+    <string name="prompt_customized">Customized</string>
+    <string name="prompt_select_hint">Select a prompt to edit</string>
     <string name="prompt_warning_medium">Warning: Modifying this prompt may affect AI suggestions. Proceed with caution.</string>
     <string name="prompt_warning_high">High risk: Structural changes to this prompt can significantly alter AI behavior. Edit only if you know what you are doing.</string>
+    <string name="prompt_warning_level_low">Low risk</string>
+    <string name="prompt_warning_level_medium">Medium risk</string>
+    <string name="prompt_warning_level_high">High risk</string>
     <string name="prompt_reset">Reset to default</string>
+    <string name="prompt_reset_dialog_title">Reset to default?</string>
+    <string name="prompt_reset_dialog_body">This will restore the original prompt. All your changes will be lost.</string>
+    <string name="prompt_reset_dialog_confirm">Reset</string>
     <string name="prompt_save">Save</string>
+    <string name="prompt_save_dialog_title">Save changes?</string>
+    <string name="prompt_save_dialog_confirm">Save anyway</string>
+    <string name="prompt_saved">Saved</string>
+    <string name="prompt_preview_title">Preview with sample data</string>
 
     <!-- Calendar -->
     <string name="calendar_title">Calendar</string>

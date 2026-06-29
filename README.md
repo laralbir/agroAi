@@ -51,7 +51,7 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 - **Recuperación de token automática**: si la descarga falla con HTTP 401, el Worker intenta renovar el token con el refresh token y reintenta; si el refresh también falla, aparece el botón "Reconectar cuenta HuggingFace" que relanza el OAuth y continúa la descarga automáticamente
 - **Prueba de modelo integrada** — verifica que el modelo descargado funciona con una pregunta agrícola de muestra; muestra tiempos de carga e inferencia
 - El primer modelo descargado se activa automáticamente
-- Prompts editables con indicación de nivel de riesgo
+- **Editor de prompts** (Ajustes → "Gestionar prompts"): selector de 3 plantillas (Análisis de fotos, Salud de plantación, Ajuste meteorológico); diálogo de advertencia al guardar con nivel Medio o Alto; botón "Restablecer" con confirmación; vista previa del prompt completo con datos de plantación de ejemplo; badge "Personalizado" cuando la plantilla ha sido editada
 
 ### Integración Google Calendar
 - Soporte multi-cuenta Google
@@ -232,6 +232,5 @@ Las dependencias de terceros tienen sus propias licencias:
 
 ## Contacto
 
-- **Web**: [laralnet.com](https://laralnet.com)
 - **App domain**: laralnet.com.agroai
 - **Email**: laralbir@gmail.com

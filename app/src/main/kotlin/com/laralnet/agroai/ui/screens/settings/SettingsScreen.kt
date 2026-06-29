@@ -32,6 +32,7 @@ import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 fun SettingsScreen(
     onNavigateToModels: () -> Unit,
     onNavigateToWorkerLog: () -> Unit = {},
+    onNavigateToPromptEditor: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
@@ -146,7 +147,7 @@ fun SettingsScreen(
                 icon = Icons.Default.Edit,
                 title = stringResource(R.string.settings_prompt_editor),
                 subtitle = stringResource(R.string.settings_prompt_editor_subtitle),
-                onClick = { /* navigate to prompt editor */ }
+                onClick = onNavigateToPromptEditor
             )
 
             Divider(modifier = Modifier.padding(vertical = 12.dp))
