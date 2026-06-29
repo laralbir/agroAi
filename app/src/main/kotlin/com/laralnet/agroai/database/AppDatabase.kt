@@ -9,6 +9,8 @@ import com.laralnet.agroai.action.infrastructure.persistence.entity.PlantationAc
 import com.laralnet.agroai.aimodel.infrastructure.persistence.AIModelEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.PromptTemplateEntity
 import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.AIModelDao
+import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.WorkerRunDao
+import com.laralnet.agroai.aimodel.infrastructure.persistence.entity.WorkerRunEntity
 import com.laralnet.agroai.photoanalysis.infrastructure.persistence.dao.AnalysisRecordDao
 import com.laralnet.agroai.photoanalysis.infrastructure.persistence.entity.AnalysisRecordEntity
 import com.laralnet.agroai.plantation.infrastructure.persistence.dao.PlantationDao
@@ -30,9 +32,10 @@ import com.laralnet.agroai.weather.infrastructure.persistence.entity.WeatherEnti
         PromptTemplateEntity::class,
         WeatherEntity::class,
         AnalysisRecordEntity::class,
-        PlantationActionEntity::class
+        PlantationActionEntity::class,
+        WorkerRunEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,8 +45,27 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
     abstract fun analysisRecordDao(): AnalysisRecordDao
     abstract fun plantationActionDao(): PlantationActionDao
+    abstract fun workerRunDao(): WorkerRunDao
 
     companion object {
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS worker_runs (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        timestamp INTEGER NOT NULL,
+                        plantationId TEXT,
+                        plantationName TEXT,
+                        actionsCreated INTEGER NOT NULL,
+                        summary TEXT NOT NULL,
+                        durationMs INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(

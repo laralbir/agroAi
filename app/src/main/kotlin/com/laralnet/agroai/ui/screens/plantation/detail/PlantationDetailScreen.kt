@@ -62,6 +62,7 @@ fun PlantationDetailScreen(
     onNavigateToTreatmentDetail: (String) -> Unit,
     onNavigateToActionList: (String) -> Unit,
     onNavigateToActionDetail: (String) -> Unit,
+    onNavigateToReport: (String) -> Unit = {},
     viewModel: PlantationDetailViewModel = hiltViewModel()
 ) {
     LaunchedEffect(plantationId) { viewModel.load(plantationId) }
@@ -117,6 +118,9 @@ fun PlantationDetailScreen(
                 actions = {
                     IconButton(onClick = onNavigateToAnalysis) {
                         Icon(Icons.Default.CameraAlt, contentDescription = stringResource(R.string.analysis_take_photo))
+                    }
+                    IconButton(onClick = { onNavigateToReport(plantationId) }) {
+                        Icon(Icons.AutoMirrored.Filled.Article, contentDescription = stringResource(R.string.report_title))
                     }
                     IconButton(onClick = onNavigateToEdit) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.plantation_edit))

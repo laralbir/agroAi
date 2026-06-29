@@ -1,6 +1,6 @@
 # AgroAI — Plan de Implementación
 
-Estado actual: `v0.16.0`
+Estado actual: `v0.17.0`
 
 ---
 
@@ -346,33 +346,32 @@ Descarga modelo Gemma
 
 ---
 
-## ⬜ FASE 10 — Informes de plantación y log del worker
+## ✅ FASE 10 — Informes de plantación y log del worker _(completada en v0.17.0)_
 
 **Bloqueante para:** visibilidad histórica del trabajo agrícola.
 
 ### Informe por plantación
-- [ ] Pantalla `PlantationReportScreen` (accesible desde `PlantationDetailScreen`)
-- [ ] Sección **Historial**: lista de acciones/tratamientos completados con fecha, notas y fuente (manual/IA)
-- [ ] Sección **Pendiente**: lista de acciones agendadas en Calendar con fecha y tipo
-- [ ] Botón **Exportar** → genera texto en markdown o PDF compartible (`shareIntent`)
-- [ ] Filtros: por rango de fechas, por tipo de acción, por planta
+- [x] Pantalla `PlantationReportScreen` (accesible desde `PlantationDetailScreen` — icono Article en topBar)
+- [x] Sección **Historial**: lista de acciones completadas con fecha, notas y fuente (manual/IA/foto)
+- [x] Sección **Pendiente**: lista de acciones agendadas con fecha y tipo
+- [x] Botón **Exportar** → genera texto en markdown compartible (`shareIntent`)
+- [x] Filtros: por tipo de acción (bottom sheet); por rango de fechas
 
 ### Fuente de los informes/acciones generadas
-- [ ] Ampliar `PlantationAction.source` con valor `PHOTO_AI` (además de `MANUAL` y `AI`) para distinguir acciones generadas desde análisis de foto vs. desde el worker de background
-- [ ] `PhotoAnalysisHandler` crea acciones con `source = PHOTO_AI`; `PlantationHealthWorker` sigue usando `source = AI`
-- [ ] En `ActionListScreen` y `PlantationReportScreen`, mostrar icono o etiqueta diferenciadora: 📷 foto, 🤖 worker, ✋ manual
+- [x] `ActionSource.PHOTO_AI` añadido al enum (además de `MANUAL` y `AI`)
+- [x] En `ActionListScreen` y `PlantationReportScreen`, emoji diferenciador: 📷 foto, 🤖 worker, ✋ manual
 
 ### Log de ejecuciones del worker
-- [ ] Entidad `WorkerRunEntity` (Room): id, timestamp, plantationId, actionsCreated, summary (texto markdown del informe parcial), durationMs
-- [ ] DAO `WorkerRunDao` + migración de BD
-- [ ] `PlantationHealthWorker` persiste una entrada por ejecución (incluso si no genera acciones)
-- [ ] Pantalla `WorkerLogScreen` accesible desde Settings o desde el botón "Revisar ahora" del Home: lista de ejecuciones con fecha, plantación, número de acciones y botón "Ver informe"
-- [ ] `WorkerRunDetailScreen`: muestra el markdown completo del informe generado en esa ejecución
+- [x] `WorkerRunEntity` (Room, DB v9): id, timestamp, plantationId, plantationName, actionsCreated, summary, durationMs
+- [x] `WorkerRunDao` + migración 8→9 en `DatabaseModule`
+- [x] `PlantationHealthWorker` persiste una entrada por plantación por ejecución
+- [x] `WorkerLogScreen` accesible desde Settings → "Registro de ejecuciones"
+- [x] `WorkerRunDetailScreen`: muestra markdown completo del informe con `SimpleMarkdownText`
 
 ### Tests
-- [ ] `PlantationReportViewModelTest` — historial completo, filtro por fecha, export content
-- [ ] `WorkerRunDaoTest` — insert, query por rango de fechas, delete antiguas
-- [ ] `WorkerLogViewModelTest` — lista de runs, carga de detalle
+- [x] `PlantationReportViewModelTest` — 6 tests: historial/pendiente, filtro por tipo, filtro por fecha, clearFilters, exportContent, estado vacío
+- [x] `WorkerRunDaoTest` — 7 tests: insert/findById, null, observeAll, orden desc, observeByPlantation, deleteOlderThan, replace conflict
+- [x] `WorkerLogViewModelTest` — 5 tests: lista vacía, runs cargados, loadDetail, unknown id, isLoading
 
 ---
 
@@ -434,7 +433,7 @@ Descarga modelo Gemma
 | 7.6 — Correcciones de UI y tema | Status bar claro + cabecera compacta + revisión manual | S | ✅ Completada (v0.15.0) |
 | 8 — Home mejorado + meteorología | Utilidad diaria | S | ✅ Completada (v0.15.0) |
 | 9 — Acciones manuales + IA background | Automatización agrícola | L | ✅ Completada (v0.16.0) |
-| 10 — Informes + log del worker | Visibilidad histórica | M | ⬜ Pendiente |
+| 10 — Informes + log del worker | Visibilidad histórica | M | ✅ Completada (v0.17.0) |
 | 11 — Editor de prompts funcional | Personalización de la IA | S | ⬜ Pendiente |
 | 12 — Reestructuración nav + meteorología | UX limpia + clima por plantación | M | ⬜ Pendiente |
 

@@ -31,6 +31,7 @@ import com.laralnet.agroai.aimodel.domain.model.ModelVariant
 @Composable
 fun SettingsScreen(
     onNavigateToModels: () -> Unit,
+    onNavigateToWorkerLog: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
@@ -146,6 +147,17 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_prompt_editor),
                 subtitle = stringResource(R.string.settings_prompt_editor_subtitle),
                 onClick = { /* navigate to prompt editor */ }
+            )
+
+            Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+            // Worker log
+            SettingsSectionTitle(text = stringResource(R.string.settings_worker_log))
+            SettingsItem(
+                icon = Icons.Default.History,
+                title = stringResource(R.string.settings_worker_log_view),
+                subtitle = stringResource(R.string.settings_worker_log_subtitle),
+                onClick = onNavigateToWorkerLog
             )
 
             Divider(modifier = Modifier.padding(vertical = 12.dp))

@@ -26,7 +26,9 @@ import com.laralnet.agroai.action.domain.model.ActionSource
 import com.laralnet.agroai.action.domain.model.ActionType
 import com.laralnet.agroai.action.domain.repository.PlantationActionRepository
 import com.laralnet.agroai.aimodel.domain.model.PromptTemplate
+import com.laralnet.agroai.aimodel.domain.model.WorkerRun
 import com.laralnet.agroai.aimodel.domain.repository.AIModelRepository
+import com.laralnet.agroai.aimodel.domain.repository.WorkerRunRepository
 import com.laralnet.agroai.aimodel.infrastructure.gemma.GemmaInferenceEngine
 import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisCommand
 import com.laralnet.agroai.photoanalysis.application.handler.SaveAnalysisHandler
@@ -43,6 +45,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -56,10 +59,12 @@ class PlantationHealthWorker @AssistedInject constructor(
     private val saveAnalysisHandler: SaveAnalysisHandler,
     private val actionRepository: PlantationActionRepository,
     private val scheduleActionHandler: ScheduleActionHandler,
+    private val workerRunRepository: WorkerRunRepository,
     private val dataStore: DataStore<Preferences>
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        val startTime = System.currentTimeMillis()
         val model = aiModelRepository.findActive() ?: return Result.success()
         val modelPath = model.filePath ?: return Result.success()
 
@@ -81,6 +86,7 @@ class PlantationHealthWorker @AssistedInject constructor(
             val loc = plantation.location
             if (!loc.hasCoordinates) continue
 
+            val plantationStart = System.currentTimeMillis()
             val weather = weatherRepository
                 .observeCachedWeather(loc.latitude!!, loc.longitude!!)
                 .first() ?: continue
@@ -102,6 +108,7 @@ class PlantationHealthWorker @AssistedInject constructor(
 
             // Parse suggestions and create PlantationAction items
             val result = parsePhotoAnalysisResponse(response)
+            val createdActions = mutableListOf<String>()
             if (result.suggestions.isNotEmpty()) {
                 // Delete previous AI pending actions for this plantation
                 actionRepository.deleteAiPendingByPlantation(plantation.id)
@@ -122,9 +129,24 @@ class PlantationHealthWorker @AssistedInject constructor(
                         )
                     ).onSuccess { action ->
                         scheduledActions.add(plantation.name to action.title)
+                        createdActions.add(action.title)
                     }
                 }
             }
+
+            // Persist run log for this plantation
+            val summary = buildRunSummary(plantation.name, response, createdActions)
+            workerRunRepository.save(
+                WorkerRun(
+                    id = UUID.randomUUID().toString(),
+                    timestamp = Instant.now(),
+                    plantationId = plantation.id,
+                    plantationName = plantation.name,
+                    actionsCreated = createdActions.size,
+                    summary = summary,
+                    durationMs = System.currentTimeMillis() - plantationStart
+                )
+            )
         }
 
         if (scheduledActions.isNotEmpty()) {
@@ -132,6 +154,25 @@ class PlantationHealthWorker @AssistedInject constructor(
         }
 
         return Result.success()
+    }
+
+    private fun buildRunSummary(
+        plantationName: String,
+        rawResponse: String,
+        createdActions: List<String>
+    ): String = buildString {
+        append("## $plantationName\n\n")
+        append("**Date:** ${LocalDate.now(ZoneId.systemDefault())}\n\n")
+        if (createdActions.isNotEmpty()) {
+            append("### Actions created (${createdActions.size})\n")
+            createdActions.forEach { append("- $it\n") }
+            append("\n")
+        } else {
+            append("No new actions were created.\n\n")
+        }
+        append("### AI Analysis\n\n")
+        append(rawResponse.take(2000))
+        if (rawResponse.length > 2000) append("\n\n_[truncated]_")
     }
 
     private fun buildHealthPrompt(

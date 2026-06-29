@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.laralnet.agroai.R
+import com.laralnet.agroai.action.domain.model.ActionSource
 import com.laralnet.agroai.action.domain.model.ActionStatus
 import com.laralnet.agroai.action.domain.model.ActionType
 import com.laralnet.agroai.action.domain.model.PlantationAction
@@ -142,7 +143,7 @@ private fun ActionCard(
             headlineContent = { Text(action.title, style = MaterialTheme.typography.titleSmall) },
             supportingContent = {
                 Text(
-                    "${actionTypeEmoji(action.actionType)} $dateStr",
+                    "${actionTypeEmoji(action.actionType)} $dateStr  ${actionSourceEmoji(action.source)}",
                     style = MaterialTheme.typography.bodySmall
                 )
             },
@@ -337,6 +338,12 @@ internal fun actionTypeEmoji(type: ActionType): String = when (type) {
     ActionType.AIREAR -> "🌬️"
     ActionType.ACLARAR -> "☀️"
     ActionType.OTRO -> "📋"
+}
+
+internal fun actionSourceEmoji(source: ActionSource): String = when (source) {
+    ActionSource.MANUAL -> "✋"
+    ActionSource.AI -> "🤖"
+    ActionSource.PHOTO_AI -> "📷"
 }
 
 @Composable

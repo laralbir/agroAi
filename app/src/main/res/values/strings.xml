@@ -508,4 +508,27 @@
     <string name="cd_plantation_location">Plantation location</string>
     <string name="cd_plantation_type">Plantation type</string>
     <string name="cd_view_plant_reports">View analysis reports for this plant</string>
+
+    <!-- Plantation Report (Phase 10) -->
+    <string name="report_title">Plantation Report</string>
+    <string name="report_section_pending">Scheduled (%1$d)</string>
+    <string name="report_section_history">History (%1$d)</string>
+    <string name="report_empty_pending">No scheduled actions.</string>
+    <string name="report_empty_history">No completed actions yet.</string>
+    <string name="report_filter">Filter</string>
+    <string name="report_filter_clear">Clear</string>
+    <string name="report_export">Share report</string>
+    <string name="report_export_subject">Report — %1$s</string>
+
+    <!-- Worker Log (Phase 10) -->
+    <string name="settings_worker_log">AI Worker</string>
+    <string name="settings_worker_log_view">Execution log</string>
+    <string name="settings_worker_log_subtitle">Review automatic AI analysis runs</string>
+    <string name="worker_log_title">AI Worker Log</string>
+    <string name="worker_log_empty">No runs recorded yet. The worker runs every 6 hours.</string>
+    <string name="worker_log_actions_created">actions</string>
+    <string name="worker_log_all_plantations">All plantations</string>
+    <string name="worker_run_detail_title">Run Detail</string>
+    <string name="worker_run_duration">Duration</string>
+    <string name="worker_run_summary">AI Analysis Summary</string>
 </resources>

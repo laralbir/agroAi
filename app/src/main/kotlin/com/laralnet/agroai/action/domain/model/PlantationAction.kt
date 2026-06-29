@@ -9,7 +9,7 @@ enum class ActionType {
 
 enum class ActionStatus { PENDING, DONE, SKIPPED }
 
-enum class ActionSource { MANUAL, AI }
+enum class ActionSource { MANUAL, AI, PHOTO_AI }
 
 data class PlantationAction(
     val id: String = UUID.randomUUID().toString(),

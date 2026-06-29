@@ -1,5 +1,7 @@
 package com.laralnet.agroai.core.infrastructure.di
 
+import com.laralnet.agroai.aimodel.domain.repository.WorkerRunRepository
+import com.laralnet.agroai.aimodel.infrastructure.repository.RoomWorkerRunRepository
 import com.laralnet.agroai.calendar.domain.repository.CalendarRepository
 import com.laralnet.agroai.calendar.infrastructure.google.GoogleCalendarRepository
 import com.laralnet.agroai.plantation.domain.repository.PlantationRepository
@@ -33,4 +35,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindWeatherRepository(impl: OpenMeteoWeatherRepository): WeatherRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWorkerRunRepository(impl: RoomWorkerRunRepository): WorkerRunRepository
 }

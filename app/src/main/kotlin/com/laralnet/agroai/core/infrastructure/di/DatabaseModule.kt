@@ -6,6 +6,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.laralnet.agroai.action.infrastructure.persistence.dao.PlantationActionDao
 import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.AIModelDao
+import com.laralnet.agroai.aimodel.infrastructure.persistence.dao.WorkerRunDao
 import com.laralnet.agroai.database.AppDatabase
 import com.laralnet.agroai.photoanalysis.infrastructure.persistence.dao.AnalysisRecordDao
 import com.laralnet.agroai.plantation.infrastructure.persistence.dao.PlantationDao
@@ -90,7 +91,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "agroai.db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, AppDatabase.MIGRATION_7_8)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9)
             .build()
 
     @Provides
@@ -110,4 +111,7 @@ object DatabaseModule {
 
     @Provides
     fun providePlantationActionDao(db: AppDatabase): PlantationActionDao = db.plantationActionDao()
+
+    @Provides
+    fun provideWorkerRunDao(db: AppDatabase): WorkerRunDao = db.workerRunDao()
 }

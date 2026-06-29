@@ -508,4 +508,27 @@
     <!-- Onboarding — permiso de notificaciones -->
     <string name="onboarding_permission_notifications">Notificaciones</string>
     <string name="onboarding_permission_notifications_desc">Recibe alertas cuando se sugieran nuevas acciones para tus plantaciones.</string>
+
+    <!-- Informe de plantación (Fase 10) -->
+    <string name="report_title">Informe de plantación</string>
+    <string name="report_section_pending">Programadas (%1$d)</string>
+    <string name="report_section_history">Historial (%1$d)</string>
+    <string name="report_empty_pending">No hay acciones programadas.</string>
+    <string name="report_empty_history">Todavía no hay acciones completadas.</string>
+    <string name="report_filter">Filtrar</string>
+    <string name="report_filter_clear">Limpiar</string>
+    <string name="report_export">Compartir informe</string>
+    <string name="report_export_subject">Informe — %1$s</string>
+
+    <!-- Log del worker (Fase 10) -->
+    <string name="settings_worker_log">Worker IA</string>
+    <string name="settings_worker_log_view">Registro de ejecuciones</string>
+    <string name="settings_worker_log_subtitle">Revisa los análisis automáticos de la IA</string>
+    <string name="worker_log_title">Registro Worker IA</string>
+    <string name="worker_log_empty">No hay ejecuciones registradas aún. El worker se ejecuta cada 6 horas.</string>
+    <string name="worker_log_actions_created">acciones</string>
+    <string name="worker_log_all_plantations">Todas las plantaciones</string>
+    <string name="worker_run_detail_title">Detalle de ejecución</string>
+    <string name="worker_run_duration">Duración</string>
+    <string name="worker_run_summary">Resumen del análisis IA</string>
 </resources>

@@ -49,10 +49,13 @@ import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardScreen
 import com.laralnet.agroai.ui.screens.plantation.wizard.PlantationWizardViewModel
 import com.laralnet.agroai.ui.screens.action.ActionDetailScreen
 import com.laralnet.agroai.ui.screens.action.ActionListScreen
+import com.laralnet.agroai.ui.screens.report.PlantationReportScreen
 import com.laralnet.agroai.ui.screens.settings.SettingsScreen
 import com.laralnet.agroai.ui.screens.calendar.CalendarScreen
 import com.laralnet.agroai.ui.screens.treatment.ScheduleTreatmentScreen
 import com.laralnet.agroai.ui.screens.treatment.TreatmentDetailScreen
+import com.laralnet.agroai.ui.screens.workerlog.WorkerLogScreen
+import com.laralnet.agroai.ui.screens.workerlog.WorkerRunDetailScreen
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
@@ -108,6 +111,13 @@ sealed class Screen(val route: String) {
     data object PlantReports : Screen("plantation/{plantationId}/plant/{plantTypeId}/reports") {
         fun route(plantationId: String, plantTypeId: String) =
             "plantation/$plantationId/plant/$plantTypeId/reports"
+    }
+    data object PlantationReport : Screen("plantation/{plantationId}/report") {
+        fun route(plantationId: String) = "plantation/$plantationId/report"
+    }
+    data object WorkerLog : Screen("worker_log")
+    data object WorkerRunDetail : Screen("worker_run/{runId}") {
+        fun route(runId: String) = "worker_run/$runId"
     }
     data object Onboarding : Screen("onboarding")
     /** Silent router — navigates immediately to Onboarding or Home, never shown to the user. */
@@ -273,6 +283,9 @@ fun AgroAINavGraph(
                     },
                     onNavigateToActionDetail = { aId ->
                         navController.navigate(Screen.ActionDetail.route(aId))
+                    },
+                    onNavigateToReport = { pId ->
+                        navController.navigate(Screen.PlantationReport.route(pId))
                     }
                 )
             }
@@ -414,6 +427,9 @@ fun AgroAINavGraph(
                 SettingsScreen(
                     onNavigateToModels = {
                         navController.navigate(Screen.ModelManagement.route)
+                    },
+                    onNavigateToWorkerLog = {
+                        navController.navigate(Screen.WorkerLog.route)
                     }
                 )
             }
@@ -471,6 +487,34 @@ fun AgroAINavGraph(
                 arguments = listOf(navArgument("actionId") { type = NavType.StringType })
             ) {
                 ActionDetailScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.PlantationReport.route,
+                arguments = listOf(navArgument("plantationId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val plantationId = backStackEntry.arguments?.getString("plantationId") ?: return@composable
+                PlantationReportScreen(
+                    plantationId = plantationId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.WorkerLog.route) {
+                WorkerLogScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToDetail = { runId ->
+                        navController.navigate(Screen.WorkerRunDetail.route(runId))
+                    }
+                )
+            }
+            composable(
+                route = Screen.WorkerRunDetail.route,
+                arguments = listOf(navArgument("runId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val runId = backStackEntry.arguments?.getString("runId") ?: return@composable
+                WorkerRunDetailScreen(
+                    runId = runId,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

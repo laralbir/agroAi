@@ -10,6 +10,23 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.17.0] - 2026-06-29
+
+### Añadido
+- **`ActionSource.PHOTO_AI`**: nueva fuente de acción para distinguir acciones generadas desde análisis de foto (📷) de las generadas por el worker en background (🤖) o creadas manualmente (✋); visible con emoji en `ActionListScreen` y `PlantationReportScreen`
+- **`PlantationReportScreen`**: pantalla de informe por plantación accesible desde el icono Article en el topBar del detalle; secciones "Programadas" e "Historial", filtro por tipo de acción (bottom sheet), botón Compartir que exporta el informe en markdown via `shareIntent`
+- **`WorkerRunEntity` (Room, DB v9)**: entidad persistida por el worker por plantación por ejecución (timestamp, acciones creadas, resumen markdown, duración en ms); migración 8→9 añadida
+- **`WorkerLogScreen`**: pantalla de registro de ejecuciones del worker accesible desde Ajustes → "Registro de ejecuciones"; muestra fecha, plantación, número de acciones y duración
+- **`WorkerRunDetailScreen`**: detalle de una ejecución; resumen completo del análisis renderizado con `SimpleMarkdownText`
+- **Actualizado `PlantationHealthWorker`**: persiste un `WorkerRun` al final de cada análisis de plantación
+
+### Tests — Fase 10 (18 tests nuevos)
+- **`PlantationReportViewModelTest`** (6 tests): historial/pendiente, filtro por tipo, filtro por fecha, `clearFilters`, `exportContent`, estado vacío
+- **`WorkerRunDaoTest`** (7 tests instrumentados): insert/findById, null plantationId, observeAll, orden desc, observeByPlantation, deleteOlderThan, replace on conflict
+- **`WorkerLogViewModelTest`** (5 tests): lista vacía, runs cargados, `loadDetail`, id desconocido, `isLoading`
+
+---
+
 ## [0.16.0] - 2026-06-29
 
 ### Añadido
