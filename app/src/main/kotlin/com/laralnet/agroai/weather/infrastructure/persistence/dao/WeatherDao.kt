@@ -13,6 +13,9 @@ interface WeatherDao {
     @Query("SELECT * FROM weather_cache WHERE id = :id")
     fun observe(id: String): Flow<WeatherEntity?>
 
+    @Query("SELECT * FROM weather_cache WHERE id = :id")
+    suspend fun getOnce(id: String): WeatherEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: WeatherEntity)
 

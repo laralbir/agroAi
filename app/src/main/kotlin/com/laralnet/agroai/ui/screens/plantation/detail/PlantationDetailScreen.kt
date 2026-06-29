@@ -72,6 +72,7 @@ fun PlantationDetailScreen(
     val plantation by viewModel.plantation.collectAsState()
     val treatments by viewModel.treatments.collectAsState()
     val weather by viewModel.weather.collectAsState()
+    val isWeatherLoading by viewModel.isWeatherLoading.collectAsState()
     val actions by viewModel.actions.collectAsState()
     val context = LocalContext.current
 
@@ -83,7 +84,12 @@ fun PlantationDetailScreen(
 
     if (showWeatherSheet) {
         weather?.let { w ->
-            WeatherDetailSheet(weather = w, onDismiss = { showWeatherSheet = false })
+            WeatherDetailSheet(
+                weather = w,
+                locationName = plantation?.location?.municipality
+                    ?.ifBlank { plantation?.location?.displayAddress },
+                onDismiss = { showWeatherSheet = false }
+            )
         }
     }
 
@@ -165,11 +171,21 @@ fun PlantationDetailScreen(
                     item { PlantationLocationCard(location = loc) }
                 }
 
-                weather?.let { w ->
-                    item { WeatherCard(weather = w, onClick = { showWeatherSheet = true }) }
-                    if (w.forecast.isNotEmpty()) {
-                        item { ForecastSection(forecast = w.forecast) }
+                val locationName = p.location.municipality.ifBlank { p.location.displayAddress }
+                when {
+                    weather != null -> {
+                        item {
+                            WeatherCard(
+                                weather = weather!!,
+                                locationName = locationName,
+                                onClick = { showWeatherSheet = true }
+                            )
+                        }
+                        if (weather!!.forecast.isNotEmpty()) {
+                            item { ForecastSection(forecast = weather!!.forecast) }
+                        }
                     }
+                    isWeatherLoading -> item { WeatherLoadingCard() }
                 }
 
                 if (p.plants.isNotEmpty()) {
@@ -462,9 +478,36 @@ private fun ForecastDayRow(day: DailyForecast, locale: Locale) {
     }
 }
 
+@Composable
+private fun WeatherLoadingCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                stringResource(R.string.weather_loading),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WeatherCard(weather: WeatherData, onClick: () -> Unit = {}) {
+private fun WeatherCard(weather: WeatherData, locationName: String = "", onClick: () -> Unit = {}) {
     val current = weather.current ?: return
     Card(
         onClick = onClick,
@@ -486,6 +529,13 @@ private fun WeatherCard(weather: WeatherData, onClick: () -> Unit = {}) {
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (locationName.isNotBlank()) {
+                    Text(
+                        locationName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
                 Text(
                     current.condition.toLabel(),
                     style = MaterialTheme.typography.labelMedium,
@@ -517,7 +567,7 @@ private fun WeatherCard(weather: WeatherData, onClick: () -> Unit = {}) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WeatherDetailSheet(weather: WeatherData, onDismiss: () -> Unit) {
+private fun WeatherDetailSheet(weather: WeatherData, locationName: String?, onDismiss: () -> Unit) {
     val current = weather.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -531,6 +581,13 @@ private fun WeatherDetailSheet(weather: WeatherData, onDismiss: () -> Unit) {
                 stringResource(R.string.weather_detail_title),
                 style = MaterialTheme.typography.titleLarge
             )
+            if (!locationName.isNullOrBlank()) {
+                Text(
+                    locationName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             if (current != null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

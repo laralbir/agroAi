@@ -153,11 +153,11 @@ class PhotoAnalysisViewModel @Inject constructor(
             }
         }
 
-        // Refresh weather when selection changes and has coordinates
+        // Refresh weather when selection changes (only if stale)
         viewModelScope.launch {
             selectedPlantation.filterNotNull().collect { p ->
                 if (p.location.hasCoordinates)
-                    refreshWeatherHandler.handle(p.location.latitude!!, p.location.longitude!!)
+                    refreshWeatherHandler.handleIfStale(p.location.latitude!!, p.location.longitude!!)
             }
         }
     }
@@ -278,6 +278,12 @@ class PhotoAnalysisViewModel @Inject constructor(
                     analysisResult = result,
                     streamingText = ""
                 )
+            }
+
+            // Force weather refresh after analysis so the forecast is up to date for the next run
+            selectedPlantation.value?.location?.let { loc ->
+                if (loc.hasCoordinates)
+                    refreshWeatherHandler.handle(loc.latitude!!, loc.longitude!!)
             }
 
             // Navigate to result screen

@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -39,6 +40,9 @@ class PlantationDetailViewModel @Inject constructor(
 
     private val _plantation = MutableStateFlow<Plantation?>(null)
     val plantation: StateFlow<Plantation?> = _plantation
+
+    private val _isWeatherLoading = MutableStateFlow(false)
+    val isWeatherLoading: StateFlow<Boolean> = _isWeatherLoading.asStateFlow()
 
     val treatments: StateFlow<List<Treatment>> = plantationId
         .flatMapLatest { id ->
@@ -69,7 +73,12 @@ class PlantationDetailViewModel @Inject constructor(
         val p = plantationRepository.findById(id) ?: return@launch
         _plantation.value = p
         if (p.location.hasCoordinates) {
-            refreshWeatherHandler.handle(p.location.latitude!!, p.location.longitude!!)
+            _isWeatherLoading.value = true
+            try {
+                refreshWeatherHandler.handleIfStale(p.location.latitude!!, p.location.longitude!!)
+            } finally {
+                _isWeatherLoading.value = false
+            }
         }
     }
 

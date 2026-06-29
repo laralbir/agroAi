@@ -50,6 +50,8 @@ fun HomeScreen(
     val todayTreatments by viewModel.todayTreatments.collectAsState()
     val upcomingTreatments by viewModel.upcomingTreatments.collectAsState()
     val homeWeather by viewModel.homeWeather.collectAsState()
+    val homeLocationName by viewModel.homeLocationName.collectAsState()
+    val isWeatherLoading by viewModel.isWeatherLoading.collectAsState()
     val workerNextRunMs by viewModel.workerNextRunMs.collectAsState()
     val context = LocalContext.current
 
@@ -58,6 +60,7 @@ fun HomeScreen(
     if (showWeatherSheet && homeWeather != null) {
         WeatherDetailSheet(
             weather = homeWeather!!,
+            locationName = homeLocationName,
             onDismiss = { showWeatherSheet = false }
         )
     }
@@ -122,13 +125,15 @@ fun HomeScreen(
                     Spacer(Modifier.height(16.dp))
                 }
 
-                homeWeather?.let { weather ->
-                    item {
+                when {
+                    homeWeather != null -> item {
                         HomeWeatherWidget(
-                            weather = weather,
+                            weather = homeWeather!!,
+                            locationName = homeLocationName,
                             onClick = { showWeatherSheet = true }
                         )
                     }
+                    isWeatherLoading -> item { WeatherLoadingCard() }
                 }
 
                 workerNextRunMs?.let { nextMs ->
@@ -204,7 +209,34 @@ private fun WorkerCountdownBadge(nextRunMs: Long) {
 }
 
 @Composable
-private fun HomeWeatherWidget(weather: WeatherData, onClick: () -> Unit) {
+private fun WeatherLoadingCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Text(
+                stringResource(R.string.weather_loading),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeWeatherWidget(weather: WeatherData, locationName: String?, onClick: () -> Unit) {
     val current = weather.current ?: return
     Card(
         modifier = Modifier
@@ -212,42 +244,47 @@ private fun HomeWeatherWidget(weather: WeatherData, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(current.condition.toEmoji(), style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            if (!locationName.isNullOrBlank()) {
                 Text(
-                    "%.1f°C".format(current.temperatureCelsius),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    stringResource(R.string.weather_humidity, current.humidity),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    locationName,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
             }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    stringResource(
-                        R.string.weather_wind,
-                        "%.0f".format(current.windSpeedKmh),
-                        current.windDirection
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                )
-                if (current.precipitationMm > 0) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(current.condition.toEmoji(), style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        stringResource(R.string.weather_precipitation, "%.1f".format(current.precipitationMm)),
+                        "%.1f°C".format(current.temperatureCelsius),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        stringResource(R.string.weather_humidity, current.humidity),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                     )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        stringResource(
+                            R.string.weather_wind,
+                            "%.0f".format(current.windSpeedKmh),
+                            current.windDirection
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    )
+                    if (current.precipitationMm > 0) {
+                        Text(
+                            stringResource(R.string.weather_precipitation, "%.1f".format(current.precipitationMm)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             }
         }
@@ -256,7 +293,7 @@ private fun HomeWeatherWidget(weather: WeatherData, onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WeatherDetailSheet(weather: WeatherData, onDismiss: () -> Unit) {
+private fun WeatherDetailSheet(weather: WeatherData, locationName: String?, onDismiss: () -> Unit) {
     val current = weather.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -270,6 +307,13 @@ private fun WeatherDetailSheet(weather: WeatherData, onDismiss: () -> Unit) {
                 stringResource(R.string.weather_detail_title),
                 style = MaterialTheme.typography.titleLarge
             )
+            if (!locationName.isNullOrBlank()) {
+                Text(
+                    locationName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             if (current != null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

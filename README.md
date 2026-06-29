@@ -67,11 +67,14 @@ AgroAI es una aplicación Android nativa que utiliza el modelo Gemma (3/4) ejecu
 ### Meteorología (Open-Meteo)
 - Integración con [Open-Meteo](https://open-meteo.com/) — API pública y gratuita, sin clave API
 - Predicción basada en coordenadas GPS de cada plantación (funciona en cualquier país); fallback automático a la primera plantación con coordenadas si el GPS falla
-- **`HomeWeatherWidget` expandible** en la pantalla de inicio: condición + temperatura en una línea; tap → `WeatherDetailSheet` con temperatura aparente, viento, precipitación y previsión 3 días
+- **`HomeWeatherWidget` expandible** en la pantalla de inicio: muestra el municipio de la ubicación GPS, condición + temperatura; tap → `WeatherDetailSheet` con temperatura aparente, viento, precipitación y previsión completa
+- **Previsión de 15 días** en el detalle de plantación (sección desplegable) con temperatura máx/mín, probabilidad de lluvia e índice UV por día
+- **Ubicación visible** en todos los widgets y paneles de detalle para saber de qué punto geográfico es el pronóstico
+- **Spinner de carga** mientras se obtiene el tiempo por primera vez — sin saltos de layout
 - **Clima por plantación en el listado** (`PlantationListScreen`): emoji WMO + temperatura máx del día junto a cada plantación (datos de caché, sin llamadas extra)
-- **`WeatherDetailSheet` en el detalle de plantación**: tap en `WeatherCard` → sheet con previsión 3 días, sensación térmica y datos detallados
+- **`WeatherDetailSheet` en el detalle de plantación**: tap en `WeatherCard` → sheet con previsión, sensación térmica y datos detallados
 - **Alertas en el detalle de tratamiento**: aviso destacado si el pronóstico del día programado incluye helada, lluvia intensa, tormenta, granizo o nieve
-- Caché local en Room (tabla `weather_cache`) — datos disponibles sin conexión tras la primera carga
+- Caché inteligente en Room (tabla `weather_cache`) — se refresca solo si el dato tiene más de 1 hora; refresh forzado tras análisis de imagen
 - Actualización automática cada 6 horas vía WorkManager (requiere conexión)
 
 ### Personalización

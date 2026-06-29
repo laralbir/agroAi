@@ -10,6 +10,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/) y el p
 
 ---
 
+## [0.20.0] - 2026-06-29
+
+### Corregido
+- **Predicción meteorológica no aparecía** — bug crítico: Open-Meteo devuelve coordenadas "snapped" a su grid que diferían de las coordenadas de la query; la clave del caché se calculaba con las coordenadas de la respuesta, pero la búsqueda usaba las coordenadas originales → nunca coincidían. Ahora la clave siempre usa las coordenadas de la query.
+- **Fechas de la previsión siempre mostraban "1 ene 1970"** — Gson no puede serializar `java.time.Instant` fiablemente en Android vía reflexión (campos `private final` → valores por defecto = epoch 0). Añadido `InstantEpochMillisAdapter` que serializa como `Long` (epoch millis).
+- **Crash al abrir el panel de previsión** — entradas legacy de caché con fechas serializadas como objeto `{}` producían `null` en un campo `Instant` no-nullable al deserializar con `Unsafe`; la UI reventaba en `day.date.atZone()`. El adapter ahora devuelve `Instant.EPOCH` y `toDomain()` filtra esas entradas.
+- **Previsión vacía con caché legacy** — la detección de caché obsoleto buscaba `"epochSecond"` en el JSON, pero si Android serializa `Instant` como `{}` (objeto vacío) la cadena no aparecía. Ahora la detección verifica que `"date":` vaya seguido de un dígito (Long); si no, trata el caché como stale y fuerza un refresh.
+
+### Añadido
+- **Caché inteligente de 1 hora** — el tiempo solo se descarga de la red si la entrada en caché tiene más de 1 hora; si el dato es fresco se usa directamente sin llamada de red (`refreshWeatherIfStale`).
+- **Refresh forzado tras análisis de imagen** — al completar un análisis con Gemma se actualiza el tiempo de la plantación seleccionada para que el próximo análisis disponga de la previsión más reciente.
+- **Spinner de carga de clima** — mientras se obtiene el tiempo por primera vez aparece un card con `CircularProgressIndicator` en el mismo espacio que ocupará el widget, evitando saltos de layout.
+- **Ubicación en los widgets de clima** — el widget de home muestra el nombre del municipio GPS (o de la plantación de fallback); el card de clima en el detalle de plantación muestra el municipio de la plantación. Ambos `WeatherDetailSheet` también incluyen la ubicación bajo el título.
+
+---
+
 ## [0.19.0] - 2026-06-29
 
 ### Añadido

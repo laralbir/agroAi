@@ -1,7 +1,11 @@
 package com.laralnet.agroai.weather.infrastructure.api
 
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
 import com.laralnet.agroai.weather.domain.model.CurrentWeather
 import com.laralnet.agroai.weather.domain.model.DailyForecast
 import com.laralnet.agroai.weather.domain.model.WeatherCondition
@@ -22,7 +26,9 @@ class OpenMeteoWeatherRepository @Inject constructor(
     private val dao: WeatherDao
 ) : WeatherRepository {
 
-    private val gson = Gson()
+    private val gson = GsonBuilder()
+        .registerTypeAdapter(Instant::class.java, InstantEpochMillisAdapter)
+        .create()
 
     override suspend fun fetchWeather(latitude: Double, longitude: Double): Result<WeatherData> =
         runCatching { parseResponse(api.getForecast(latitude = latitude, longitude = longitude)) }
@@ -34,8 +40,24 @@ class OpenMeteoWeatherRepository @Inject constructor(
 
     override suspend fun refreshWeather(latitude: Double, longitude: Double) {
         fetchWeather(latitude, longitude).getOrNull()?.let { data ->
-            dao.upsert(data.toEntity())
+            // Use query coordinates as key — Open-Meteo snaps lat/lon to its grid,
+            // so response.latitude/longitude differ from the query. Always key by the
+            // query coords so observeCachedWeather() can find the entry.
+            dao.upsert(data.toEntity(queryLat = latitude, queryLon = longitude))
         }
+    }
+
+    override suspend fun refreshWeatherIfStale(latitude: Double, longitude: Double, maxAgeMs: Long) {
+        val cached = dao.getOnce(locationKey(latitude, longitude))
+        val ageMs = if (cached != null) System.currentTimeMillis() - cached.fetchedAt else Long.MAX_VALUE
+        // Valid forecast JSON has dates stored as Long: "date":1234567890000
+        // Legacy entries (pre Instant-adapter fix) have "date":{} or "date":{"epochSecond":…}
+        // — those get filtered as EPOCH and produce empty forecasts.
+        // Treat any cache with non-empty forecastJson that lacks a numeric date as stale.
+        val hasValidForecast = cached?.forecastJson?.let { json ->
+            json != "[]" && json.contains(Regex(""""date"\s*:\s*\d"""))
+        } == true
+        if (ageMs > maxAgeMs || !hasValidForecast) refreshWeather(latitude, longitude)
     }
 
     private fun parseResponse(response: OpenMeteoResponse): WeatherData {
@@ -76,10 +98,10 @@ class OpenMeteoWeatherRepository @Inject constructor(
         )
     }
 
-    private fun WeatherData.toEntity(): WeatherEntity = WeatherEntity(
-        id = locationKey(latitude, longitude),
-        latitude = latitude,
-        longitude = longitude,
+    private fun WeatherData.toEntity(queryLat: Double = latitude, queryLon: Double = longitude): WeatherEntity = WeatherEntity(
+        id = locationKey(queryLat, queryLon),
+        latitude = queryLat,
+        longitude = queryLon,
         fetchedAt = fetchedAt.toEpochMilli(),
         currentJson = current?.let { gson.toJson(it) },
         forecastJson = gson.toJson(forecast)
@@ -87,12 +109,14 @@ class OpenMeteoWeatherRepository @Inject constructor(
 
     private fun WeatherEntity.toDomain(): WeatherData {
         val listType = object : TypeToken<List<DailyForecast>>() {}.type
+        val forecast: List<DailyForecast> = gson.fromJson(forecastJson, listType)
         return WeatherData(
             latitude = latitude,
             longitude = longitude,
             fetchedAt = Instant.ofEpochMilli(fetchedAt),
             current = currentJson?.let { gson.fromJson(it, CurrentWeather::class.java) },
-            forecast = gson.fromJson(forecastJson, listType)
+            // Filter sentinel EPOCH entries produced by the legacy-object fallback in the adapter
+            forecast = forecast.filter { it.date != Instant.EPOCH }
         )
     }
 
@@ -119,5 +143,31 @@ class OpenMeteoWeatherRepository @Inject constructor(
     companion object {
         fun locationKey(lat: Double, lon: Double) =
             "%.2f_%.2f".format(Locale.ROOT, lat, lon)
+
+        // Gson cannot reliably serialize/deserialize java.time.Instant via reflection on Android
+        // (private final fields → always reads back as epoch 0 = Jan 1, 1970).
+        // Storing as epoch millis (Long) is safe and compact.
+        private object InstantEpochMillisAdapter : TypeAdapter<Instant>() {
+            override fun write(out: JsonWriter, value: Instant?) {
+                if (value == null) out.nullValue() else out.value(value.toEpochMilli())
+            }
+
+            override fun read(reader: JsonReader): Instant {
+                if (reader.peek() == JsonToken.NULL) {
+                    reader.nextNull()
+                    return Instant.EPOCH
+                }
+                // Legacy entries were written as a JSON object {epochSecond:…, nano:…}; return
+                // EPOCH as sentinel so toDomain() can filter them out. Never return null here —
+                // DailyForecast.date is non-nullable and Gson bypasses Kotlin null-safety via
+                // Unsafe, which causes a NPE when the field is accessed in the UI.
+                return if (reader.peek() == JsonToken.BEGIN_OBJECT) {
+                    reader.skipValue()
+                    Instant.EPOCH
+                } else {
+                    Instant.ofEpochMilli(reader.nextLong())
+                }
+            }
+        }
     }
 }

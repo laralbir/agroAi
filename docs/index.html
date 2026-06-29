@@ -1533,18 +1533,20 @@
       </div>
 
       <ul class="feature-list" style="margin-bottom:16px;">
-        <li class="lang-es"><strong>Widget en la pantalla de inicio</strong>: condición + temperatura en una línea; toca el widget para abrir el panel detallado con temperatura aparente, viento, precipitación y previsión de 3 días</li>
-        <li class="lang-en"><strong>Widget on the home screen</strong>: condition + temperature in one line; tap it to open the detail panel with apparent temperature, wind, precipitation, and a 3-day forecast</li>
+        <li class="lang-es"><strong>Widget en la pantalla de inicio</strong>: muestra el nombre del municipio GPS, condición y temperatura; toca el widget para abrir el panel detallado con temperatura aparente, viento, precipitación y previsión completa</li>
+        <li class="lang-en"><strong>Widget on the home screen</strong>: shows the GPS municipality name, condition and temperature; tap it to open the detail panel with apparent temperature, wind, precipitation, and full forecast</li>
+        <li class="lang-es"><strong>Previsión a 15 días en la ficha de plantación</strong>: sección desplegable con temperatura máx/mín, probabilidad de lluvia e índice UV para cada día; la tarjeta de hoy muestra el municipio de la plantación</li>
+        <li class="lang-en"><strong>15-day forecast in plantation detail</strong>: expandable section with max/min temperature, rain probability and UV index per day; the today card shows the plantation's municipality</li>
+        <li class="lang-es"><strong>Spinner de carga</strong>: mientras se obtiene el pronóstico por primera vez aparece un indicador de progreso en el mismo espacio — sin saltos de pantalla</li>
+        <li class="lang-en"><strong>Loading spinner</strong>: while the forecast is being fetched for the first time a progress indicator appears in the same space — no layout jumps</li>
         <li class="lang-es"><strong>Clima por plantación en el listado</strong>: emoji de condición WMO + temperatura máxima del día junto al nombre de cada plantación (datos de caché, sin llamadas extra)</li>
         <li class="lang-en"><strong>Per-plantation weather in the list</strong>: WMO condition emoji + daily max temperature next to each plantation name (cache data, no extra network calls)</li>
-        <li class="lang-es"><strong>Panel de detalle en la ficha de plantación</strong>: toca la tarjeta de clima para abrir un panel con previsión de 3 días, sensación térmica y datos de viento y precipitación</li>
-        <li class="lang-en"><strong>Detail panel in plantation detail</strong>: tap the weather card to open a sheet with a 3-day forecast, apparent temperature, wind, and precipitation data</li>
         <li class="lang-es"><strong>Alertas en el detalle de tratamiento</strong>: tarjeta roja de aviso si el día agendado presenta helada, lluvia intensa, tormenta, granizo o nieve</li>
         <li class="lang-en"><strong>Alerts in treatment detail</strong>: red warning card if the scheduled day has frost, heavy rain, storm, hail or snow</li>
-        <li class="lang-es">Predicción diaria para los próximos 15 días con temperatura máx/mín, probabilidad de lluvia y UV (usada también en los prompts de análisis)</li>
-        <li class="lang-en">Daily forecast for the next 15 days with max/min temperature, rain probability and UV index (also used in analysis prompts)</li>
-        <li class="lang-es">Caché local en Room — disponible sin conexión tras la primera carga</li>
-        <li class="lang-en">Local Room cache — available offline after first load</li>
+        <li class="lang-es">Predicción diaria usada también en los prompts de análisis de imagen para que Gemma tenga contexto meteorológico actualizado</li>
+        <li class="lang-en">Daily forecast also used in image analysis prompts so Gemma has up-to-date weather context</li>
+        <li class="lang-es">Caché inteligente en Room — se refresca solo si el dato tiene más de 1 hora; refresh forzado al completar un análisis de imagen</li>
+        <li class="lang-en">Smart Room cache — refreshed only if data is older than 1 hour; forced refresh when an image analysis completes</li>
         <li class="lang-es">Actualización automática cada 6 horas (requiere conexión)</li>
         <li class="lang-en">Automatic refresh every 6 hours (requires network)</li>
         <li class="lang-es">Sin clave API — funciona desde el primer uso en cualquier país</li>
@@ -1556,8 +1558,8 @@
         <div>
           <strong class="lang-es">Basado en coordenadas GPS</strong>
           <strong class="lang-en">Based on GPS coordinates</strong>
-          <span class="lang-es">El widget de inicio usa el GPS del dispositivo; si no hay señal, usa automáticamente la primera plantación con coordenadas configuradas. Las alertas y el panel de detalle solo aparecen en plantaciones con ubicación definida (latitud y longitud). Configúrala en el asistente de creación o edición de la plantación.</span>
-          <span class="lang-en">The home widget uses the device GPS; if there's no signal, it automatically falls back to the first plantation with configured coordinates. Alerts and the detail panel only appear on plantations with a defined location (latitude and longitude). Set it in the plantation creation or editing wizard.</span>
+          <span class="lang-es">El widget de inicio usa el GPS del dispositivo y muestra el municipio detectado; si no hay señal, usa automáticamente la primera plantación con coordenadas configuradas. Las alertas y el panel de detalle solo aparecen en plantaciones con ubicación definida. Configúrala en el asistente de creación o edición de la plantación.</span>
+          <span class="lang-en">The home widget uses the device GPS and shows the detected municipality; if there's no signal, it automatically falls back to the first plantation with configured coordinates. Alerts and the detail panel only appear on plantations with a defined location. Set it in the plantation creation or editing wizard.</span>
         </div>
       </div>
     </section>

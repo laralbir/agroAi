@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -67,6 +68,11 @@ class HomeViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _homeLocation = MutableStateFlow<Pair<Double, Double>?>(null)
+    private val _homeLocationName = MutableStateFlow<String?>(null)
+    val homeLocationName: StateFlow<String?> = _homeLocationName.asStateFlow()
+
+    private val _isWeatherLoading = MutableStateFlow(true)
+    val isWeatherLoading: StateFlow<Boolean> = _isWeatherLoading.asStateFlow()
 
     val homeWeather: StateFlow<WeatherData?> = _homeLocation
         .flatMapLatest { loc ->
@@ -94,20 +100,26 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val place = getCurrentLocation().getOrNull()
-            if (place != null) {
-                _homeLocation.value = Pair(place.latitude, place.longitude)
-                refreshWeatherHandler.handle(place.latitude, place.longitude)
-            } else {
-                // Fallback: first plantation with GPS coordinates
-                plantationRepository.observeAll()
-                    .firstOrNull()
-                    ?.firstOrNull { it.location.hasCoordinates }
-                    ?.location
-                    ?.let { loc ->
-                        _homeLocation.value = Pair(loc.latitude!!, loc.longitude!!)
-                        refreshWeatherHandler.handle(loc.latitude!!, loc.longitude!!)
-                    }
+            try {
+                val place = getCurrentLocation().getOrNull()
+                if (place != null) {
+                    _homeLocation.value = Pair(place.latitude, place.longitude)
+                    _homeLocationName.value = place.municipality.ifBlank { place.displayName }
+                    refreshWeatherHandler.handleIfStale(place.latitude, place.longitude)
+                } else {
+                    // Fallback: first plantation with GPS coordinates
+                    plantationRepository.observeAll()
+                        .firstOrNull()
+                        ?.firstOrNull { it.location.hasCoordinates }
+                        ?.location
+                        ?.let { loc ->
+                            _homeLocation.value = Pair(loc.latitude!!, loc.longitude!!)
+                            _homeLocationName.value = loc.municipality.ifBlank { loc.displayAddress }
+                            refreshWeatherHandler.handleIfStale(loc.latitude!!, loc.longitude!!)
+                        }
+                }
+            } finally {
+                _isWeatherLoading.value = false
             }
         }
     }
